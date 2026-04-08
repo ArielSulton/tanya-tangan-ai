@@ -1,0 +1,18 @@
+groups:
+  - name: tunarasa_infrastructure_rules
+    interval: 30s
+    rules:
+      # Database connection pool utilization
+      - record: tunarasa:infra:db_pool_utilization
+        expr: |
+          (tunarasa_database_connections_active / tunarasa_db_connections_max) * 100
+
+      # Redis memory utilization (when available)
+      - record: tunarasa:infra:redis_memory_utilization
+        expr: |
+          (tunarasa_redis_memory_used_bytes / tunarasa_redis_memory_max_bytes) * 100
+
+      # System health composite score (simplified)
+      - record: tunarasa:infra:health_score
+        expr: |
+          avg(tunarasa_ai_quality_score) * 100

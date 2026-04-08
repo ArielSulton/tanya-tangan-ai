@@ -1,0 +1,243 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { Resend } from 'resend'
+import { requireSuperAdmin } from '@/lib/auth/supabase-auth'
+import { AdminInvitationEmail } from '@/components/emails/AdminInvitationEmail'
+import { db } from '@/lib/db'
+import { adminInvitations, users } from '@/lib/db/schema'
+import { eq, and } from 'drizzle-orm'
+import { invitationRateLimiter, applyRateLimit } from '@/lib/security/rate-limiter'
+
+// Lazy initialize Resend
+function getResend() {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY environment variable is required')
+  }
+  return new Resend(apiKey)
+}
+
+/**
+ * Send admin invitation email via Resend API
+ * Only superadmins can send invitations
+ */
+export async function POST(request: NextRequest) {
+  try {
+    // Check authentication and authorization - require super admin
+    const authUser = await requireSuperAdmin()
+
+    // Apply rate limiting per user
+    const rateLimitKey = `invite:${authUser.user_id}`
+    const rateLimitResult = applyRateLimit(
+      invitationRateLimiter,
+      rateLimitKey,
+      'Too many invitation attempts. Please wait before sending more invitations.',
+    )
+
+    if (rateLimitResult.isLimited) {
+      return rateLimitResult.response!
+    }
+
+    // Parse request body
+    const body = (await request.json()) as { email: string; role: string; customMessage?: string }
+    const { email, role, customMessage } = body
+
+    // Validate input
+    if (!email || !role) {
+      return NextResponse.json({ error: 'Missing required fields: email and role' }, { status: 400 })
+    }
+
+    // Enhanced email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+    }
+
+    if (!['admin', 'superadmin'].includes(role)) {
+      return NextResponse.json({ error: 'Invalid role. Must be admin or superadmin' }, { status: 400 })
+    }
+
+    // Security check: Only superadmins can create other superadmins
+    if (role === 'superadmin' && authUser.role_id !== 1) {
+      return NextResponse.json({ error: 'Only superadmins can invite other superadmins' }, { status: 403 })
+    }
+
+    // Check for existing user with this email
+    const existingUser = await db
+      .select({ userId: users.userId, email: users.email })
+      .from(users)
+      .where(eq(users.email, email.toLowerCase()))
+      .limit(1)
+
+    if (existingUser.length > 0) {
+      return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 })
+    }
+
+    // Check for existing pending invitation
+    const existingInvitation = await db
+      .select({ invitationId: adminInvitations.invitationId, status: adminInvitations.status })
+      .from(adminInvitations)
+      .where(and(eq(adminInvitations.email, email.toLowerCase()), eq(adminInvitations.status, 'pending')))
+      .limit(1)
+
+    if (existingInvitation.length > 0) {
+      return NextResponse.json({ error: 'Pending invitation already exists for this email' }, { status: 409 })
+    }
+
+    // Generate invitation token and expiry
+    const invitationToken = generateInvitationToken()
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+
+    // Create invitation link
+    const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation?token=${invitationToken}`
+
+    // Send email via Resend
+    const { data, error } = await getResend().emails.send({
+      from: 'Tanya Tangan AI Admin <admin@mail.tunarasa.my.id>',
+      to: [email],
+      subject: 'Invitation to Join Tanya Tangan AI Admin Team',
+      react: AdminInvitationEmail({
+        invitedByName: authUser.full_name ?? authUser.first_name ?? 'Admin',
+        invitedByEmail: authUser.email ?? '',
+        inviteeEmail: email,
+        role: role as 'admin' | 'superadmin',
+        invitationUrl,
+        customMessage,
+        expiresAt,
+      }),
+      // Fallback HTML for email clients that don't support React
+      html: generateFallbackHTML({
+        invitedByName: authUser.full_name ?? authUser.first_name ?? 'Admin',
+        role,
+        invitationUrl,
+        customMessage,
+        expiresAt,
+      }),
+    })
+
+    if (error) {
+      console.error('Resend email error:', error)
+      return NextResponse.json({ error: 'Failed to send invitation email' }, { status: 500 })
+    }
+
+    // Store invitation in database
+    const newInvitation = await db
+      .insert(adminInvitations)
+      .values({
+        email: email.toLowerCase(), // Normalize email case
+        role,
+        invitedBy: authUser.user_id,
+        customMessage,
+        token: invitationToken,
+        expiresAt,
+        status: 'pending',
+      })
+      .returning({
+        invitationId: adminInvitations.invitationId,
+      })
+
+    // Log successful invitation for security audit
+    console.log(`Admin invitation sent: ${email} (role: ${role}) by ${authUser.email} (userId: ${authUser.user_id})`)
+
+    return NextResponse.json({
+      message: 'Invitation sent successfully',
+      invitationId: newInvitation[0].invitationId,
+      token: invitationToken, // TODO: Remove in production for security
+      emailId: data?.id,
+      expiresAt: expiresAt.toISOString(),
+    })
+  } catch (error) {
+    console.error('Admin invitation error:', error)
+
+    if (error instanceof Error && error.message.includes('Admin access required')) {
+      return NextResponse.json({ error: 'Forbidden - Super admin access required' }, { status: 403 })
+    }
+
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json({ error: 'Unauthorized - Authentication required' }, { status: 401 })
+    }
+
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+/**
+ * Generate secure invitation token
+ */
+function generateInvitationToken(): string {
+  return crypto.randomUUID() + '-' + Date.now().toString(36)
+}
+
+/**
+ * Generate fallback HTML email template
+ */
+function generateFallbackHTML({
+  invitedByName,
+  role,
+  invitationUrl,
+  customMessage,
+  expiresAt,
+}: {
+  invitedByName: string
+  role: string
+  invitationUrl: string
+  customMessage?: string
+  expiresAt: Date
+}) {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tanya Tangan AI Admin Invitation</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
+          .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
+          .footer { background: #f9fafb; padding: 20px; border-radius: 0 0 12px 12px; text-align: center; font-size: 14px; color: #6b7280; }
+          .button { display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+          .custom-message { background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          .role-badge { background: #fbbf24; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>🤝 Welcome to Tanya Tangan AI</h1>
+          <p>You've been invited to join our admin team</p>
+        </div>
+
+        <div class="content">
+          <p>Hello,</p>
+
+          <p><strong>${invitedByName}</strong> has invited you to join the Tanya Tangan AI administration team as an <span class="role-badge">${role.toUpperCase()}</span>.</p>
+
+          ${customMessage ? `<div class="custom-message"><strong>Personal Message:</strong><br>"${customMessage}"</div>` : ''}
+
+          <p>Tanya Tangan AI is a sign language recognition system that helps bridge communication gaps for the hearing-impaired community. As an admin, you'll help monitor and improve our system to serve users better.</p>
+
+          <p>Click the button below to accept your invitation and set up your account:</p>
+
+          <div style="text-align: center;">
+            <a href="${invitationUrl}" class="button">Accept Invitation</a>
+          </div>
+
+          <p><strong>What you'll have access to:</strong></p>
+          <ul>
+            <li>📊 System dashboard and analytics</li>
+            <li>👥 User session monitoring</li>
+            <li>🤖 AI model performance metrics</li>
+            <li>📈 System health and monitoring</li>
+            ${role === 'superadmin' ? '<li>👑 User management and admin invitations</li>' : ''}
+          </ul>
+
+          <p><small><strong>Important:</strong> This invitation will expire on ${expiresAt.toLocaleDateString()} at ${expiresAt.toLocaleTimeString()}. If you didn't expect this invitation, please ignore this email.</small></p>
+        </div>
+
+        <div class="footer">
+          <p>© 2025 Tanya Tangan AI Team. Made with ❤️ for accessible communication.</p>
+          <p>If you have any questions, please contact our support team.</p>
+        </div>
+      </body>
+    </html>
+  `
+}

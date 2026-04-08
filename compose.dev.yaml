@@ -1,0 +1,357 @@
+services:
+  # Init service to fix shared volume permissions
+  init-permissions:
+    container_name: tunarasa-init-permissions
+    image: alpine:latest
+    volumes:
+      - shared_uploads:/app/uploads
+    command: >
+      sh -c "
+        echo 'Setting up shared uploads directory permissions...' &&
+        mkdir -p /app/uploads/rag-files &&
+        chown -R 1001:1000 /app/uploads &&
+        chmod -R 775 /app/uploads &&
+        echo 'Permissions set successfully: frontend=1001:1000, backend can write via group' &&
+        ls -la /app/uploads/
+      "
+    networks:
+      - tunarasa-net
+
+  # Frontend Service (Next.js)
+  frontend:
+    container_name: tunarasa-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+    depends_on:
+      init-permissions:
+        condition: service_completed_successfully
+      backend:
+        condition: service_started
+    environment:
+      # Environment Configuration
+      - NODE_ENV=development
+      - ENVIRONMENT=${ENVIRONMENT}
+      - DEBUG=${DEBUG}
+      - SITE_NAME=${SITE_NAME}
+
+      # Frontend Configuration (Next.js)
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - BACKEND_URL=${BACKEND_URL}
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PRIVATE_STANDALONE=${NEXT_PRIVATE_STANDALONE}
+
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - user=${user}
+      - password=${password}
+      - host=${host}
+      - port=${port}
+      - dbname=${dbname}
+
+      # Authentication & Security
+      - SECRET_KEY=${SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - NEXT_PUBLIC_ENABLE_SUPABASE_AUTH=${NEXT_PUBLIC_ENABLE_SUPABASE_AUTH}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - SUPABASE_PROJECT_ID=${SUPABASE_PROJECT_ID}
+      - NEXT_PUBLIC_SIGN_IN_URL=${NEXT_PUBLIC_SIGN_IN_URL}
+      - NEXT_PUBLIC_SIGN_UP_URL=${NEXT_PUBLIC_SIGN_UP_URL}
+      - NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL}
+      - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL}
+      - SUPERADMIN_EMAILS=${SUPERADMIN_EMAILS}
+      - ADMIN_EMAILS=${ADMIN_EMAILS}
+
+      # AI Services Configuration
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - LLM_MODEL=${LLM_MODEL}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS}
+
+      # RAG System Configuration
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL}
+      - RAG_CHUNK_SIZE=${RAG_CHUNK_SIZE}
+      - RAG_CHUNK_OVERLAP=${RAG_CHUNK_OVERLAP}
+      - RAG_RETRIEVAL_K=${RAG_RETRIEVAL_K}
+      - RAG_SIMILARITY_THRESHOLD=${RAG_SIMILARITY_THRESHOLD}
+
+      # External Services
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - REDIS_URL=${REDIS_URL}
+
+      # API & Security Configuration
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE}
+      - UPLOAD_DIR=${UPLOAD_DIR}
+      - API_V1_STR=${API_V1_STR}
+      - PROJECT_NAME=${PROJECT_NAME}
+
+      # Monitoring & Observability
+      - PROMETHEUS_PORT=${PROMETHEUS_PORT}
+      - GRAFANA_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
+      - GRAFANA_URL=${GRAFANA_URL}
+      - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+    ports:
+      - "5000:3000"
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - tunarasa-net
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+      - shared_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "${NEXT_PUBLIC_APP_URL}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # Backend Service (FastAPI)
+  backend:
+    container_name: tunarasa-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      # Environment Configuration
+      - NODE_ENV=development
+      - ENVIRONMENT=${ENVIRONMENT}
+      - DEBUG=${DEBUG}
+      - SITE_NAME=${SITE_NAME}
+
+      # Frontend Configuration (Next.js)
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - BACKEND_URL=${BACKEND_URL}
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PRIVATE_STANDALONE=${NEXT_PRIVATE_STANDALONE}
+
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - user=${user}
+      - password=${password}
+      - host=${host}
+      - port=${port}
+      - dbname=${dbname}
+
+      # Authentication & Security
+      - SECRET_KEY=${SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - NEXT_PUBLIC_ENABLE_SUPABASE_AUTH=${NEXT_PUBLIC_ENABLE_SUPABASE_AUTH}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - SUPABASE_PROJECT_ID=${SUPABASE_PROJECT_ID}
+      - NEXT_PUBLIC_SIGN_IN_URL=${NEXT_PUBLIC_SIGN_IN_URL}
+      - NEXT_PUBLIC_SIGN_UP_URL=${NEXT_PUBLIC_SIGN_UP_URL}
+      - NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL}
+      - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL}
+      - SUPERADMIN_EMAILS=${SUPERADMIN_EMAILS}
+      - ADMIN_EMAILS=${ADMIN_EMAILS}
+
+      # AI Services Configuration
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - LLM_MODEL=${LLM_MODEL}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS}
+
+      # RAG System Configuration
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL}
+      - RAG_CHUNK_SIZE=${RAG_CHUNK_SIZE}
+      - RAG_CHUNK_OVERLAP=${RAG_CHUNK_OVERLAP}
+      - RAG_RETRIEVAL_K=${RAG_RETRIEVAL_K}
+      - RAG_SIMILARITY_THRESHOLD=${RAG_SIMILARITY_THRESHOLD}
+
+      # External Services
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - REDIS_URL=${REDIS_URL}
+
+      # API & Security Configuration
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE}
+      - UPLOAD_DIR=${UPLOAD_DIR}
+      - API_V1_STR=${API_V1_STR}
+      - PROJECT_NAME=${PROJECT_NAME}
+
+      # Monitoring & Observability
+      - PROMETHEUS_PORT=${PROMETHEUS_PORT}
+      - GRAFANA_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
+      - GRAFANA_URL=${GRAFANA_URL}
+      - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+    depends_on:
+      init-permissions:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - tunarasa-net
+    volumes:
+      - ./backend:/app
+      - ./assets:/app/assets
+      - shared_uploads:/app/uploads
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "${NEXT_PUBLIC_BACKEND_URL}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # Redis Service (Caching & Sessions)
+  redis:
+    container_name: tunarasa-redis
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+      - 8.8.4.4
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - tunarasa-net
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # Prometheus (Metrics Collection)
+  prometheus:
+    container_name: tunarasa-prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/configs/prometheus.dev.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerting:/etc/prometheus/alerting:ro
+      - ./monitoring/prometheus/recording-rules:/etc/prometheus/recording-rules:ro
+      - prometheus_data_dev:/prometheus
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - tunarasa-net
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # Grafana (Advanced Monitoring Dashboard)
+  grafana:
+    container_name: tunarasa-grafana
+    image: grafana/grafana:latest
+    env_file:
+      - .env
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_FEATURE_TOGGLES_ENABLE=panelTitleSearch,publicDashboards
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-worldmap-panel,grafana-piechart-panel
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_LOG_LEVEL=info
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_DATASOURCES_DEFAULT_NAME=Prometheus
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    ports:
+      - "3030:3000"
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - tunarasa-net
+    volumes:
+      - grafana_data_dev:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  redis_data_dev:
+    driver: local
+  prometheus_data_dev:
+    driver: local
+  grafana_data_dev:
+    driver: local
+  shared_uploads:
+    driver: local
+
+networks:
+  tunarasa-net:
+    name: tunarasa-net
+    driver: bridge

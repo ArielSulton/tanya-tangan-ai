@@ -1,0 +1,61 @@
+# FastAPI and ASGI server
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+
+# Database (PostgreSQL via SQLAlchemy)
+sqlalchemy
+psycopg2-binary
+alembic
+asyncpg
+
+# Authentication and Security
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+PyJWT
+
+# AI and LLM
+numpy
+pandas
+langchain
+langchain-community
+langchain-core
+langchain-groq
+groq
+pinecone-client
+pinecone[grpc]
+langchain-pinecone
+tiktoken
+scikit-learn
+
+# Document Processing
+pypdf
+python-docx
+markdown
+
+# Monitoring and Observability
+prometheus-client
+prometheus-fastapi-instrumentator
+deepeval
+
+# Utilities
+python-dotenv
+httpx
+redis
+qrcode[pil]
+Pillow
+aiofiles
+
+# Development
+pre-commit
+pytest
+pytest-asyncio
+black
+ruff
+isort
+mypy
+
+# PDF Generation
+reportlab
