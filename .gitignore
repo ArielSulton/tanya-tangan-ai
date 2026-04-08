@@ -120,6 +120,9 @@ pids/
 *.seed
 *.pid.lock
 
+# Playwright MCP snapshots
+.playwright-mcp/
+
 # Code editors
 .cursorignore
 .cursorrules

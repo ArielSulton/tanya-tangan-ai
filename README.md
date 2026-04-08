@@ -1,444 +1,250 @@
-# 🌟 Tunarasa - Sign Language Recognition & AI Assistant Platform
+# Tanya Tangan - Platform Asisten Belajar Adaptif untuk Siswa Tunarungu
 
-**Tunarasa** is a comprehensive accessibility platform designed to help hearing-impaired users access public services through advanced sign language gesture recognition and AI-powered question answering. The system combines computer vision, large language models, and retrieval-augmented generation to provide real-time, accurate assistance with enterprise-grade quality assurance.
+**Tanya Tangan** adalah platform asisten belajar berbasis AI yang dirancang khusus untuk siswa tunarungu di SLB-B (Sekolah Luar Biasa tipe B). Platform ini mengintegrasikan pengenalan gestur bahasa isyarat SIBI berbasis browser dengan mesin tanya-jawab AI berbasis kurikulum per mata pelajaran dan jenjang pendidikan (SDLB, SMPLB, SMALB).
 
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
-![Version](https://img.shields.io/badge/version-v2.0.3-green.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-65%25-blue.svg)
 ![Python](https://img.shields.io/badge/Python-35%25-green.svg)
-![WCAG](https://img.shields.io/badge/WCAG-2.1%20AA-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-15.4.5-black.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-green.svg)
+![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.116-green.svg)
 
-## 🎯 Key Features & Capabilities
+## Fitur Utama
 
-### 🤖 **AI & Recognition Engine**
-- **Real-time Sign Language Recognition**: MediaPipe Hands + TensorFlow.js for browser-based gesture recognition
-- **AI-Powered Q&A**: LangChain + LLaMA 3.3 via ChatGroq for intelligent response generation
-- **Knowledge Retrieval**: Pinecone vector database for document-based context retrieval
-- **Quality Assessment**: DeepEval integration for LLM response validation
-- **FAQ Clustering & Recommendations**: Advanced clustering system for related question suggestions
-- **Institution-Aware Responses**: Context-aware answers based on selected government institutions
+### AI & Pengenalan Gestur
+- **Pengenalan Gestur SIBI Real-time**: MediaPipe Hands + TensorFlow.js, berjalan langsung di browser tanpa instalasi
+- **Asisten Belajar AI**: LangChain + LLaMA 3.3 via ChatGroq untuk menjawab pertanyaan berbasis kurikulum
+- **RAG per Mata Pelajaran**: Pinecone vector database dengan namespace `subject_{jenjang}_{mapel}` — jawaban disesuaikan dengan mata pelajaran dan jenjang yang dipilih
+- **Rekomendasi FAQ**: Clustering pertanyaan serupa menggunakan scikit-learn
+- **Quality Assessment**: DeepEval untuk validasi kualitas jawaban AI
 
-### 👨‍💼 **Enterprise Administration**
-- **Admin Monitoring**: Comprehensive validation and analytics system with business intelligence
-- **Role-Based Access**: Multi-tier authentication with Supabase Auth integration
-- **Quality Assurance**: Advanced pre-commit hooks with automated code quality enforcement
-- **Real-time Analytics**: SLI/SLO monitoring with Prometheus + Grafana dashboards
-- **Institution Management**: Complete CRUD system for government institution data
-- **QA Logging & Analytics**: Detailed conversation tracking and performance metrics
+### Pemilihan Jenjang & Mata Pelajaran
+- **2-Step Selector**: Pilih jenjang (SDLB / SMPLB / SMALB) → pilih mata pelajaran
+- **Per-subject RAG**: Setiap kombinasi jenjang × mata pelajaran memiliki knowledge base tersendiri
+- **Backwards Compatible**: Parameter `institution_*` masih didukung sebagai alias untuk `subject_*`
 
-### ♿ **Accessibility Excellence**
-- **WCAG 2.1 AA Compliant**: Complete accessibility framework optimized for hearing-impaired users
-- **Multi-Modal Communication**: SIBI gesture recognition, Speech-to-Text, and admin interfaces
-- **Professional UI/UX**: Tunarasa-UI design system with responsive layouts
-- **Performance Optimized**: <500ms gesture recognition, <3s complete Q&A cycle
-- **Institution Selector**: User-friendly interface for selecting relevant government services
-- **Enhanced Chat Interface**: Improved conversation flow with FAQ recommendations
+### Dashboard Admin
+- **Monitoring**: Prometheus + Grafana dengan dashboard SLI/SLO real-time
+- **Role-Based Access**: Supabase Auth JWT — public (anonymous session), admin, superadmin
+- **QA Logging**: Pencatatan dan analitik percakapan lengkap
+- **Manajemen Konten**: Upload dokumen RAG per mata pelajaran/jenjang
 
-## 🏗️ Architecture Overview
+## Arsitektur
 
 ```
-User Device → Institution Selection → Gesture Recognition → Text Processing → RAG System → LLM → Response + QR Code
-     ↓              ↓                      ↓                  ↓              ↓        ↓           ↓
-Frontend → Institution Selector → MediaPipe/TensorFlow.js → Next.js API → Pinecone → ChatGroq → Admin Dashboard
-     ↓              ↓                      ↓                  ↓              ↓        ↓           ↓
-Session → QA Logging → Performance Monitoring → FastAPI Backend → Vector DB → Metrics → FAQ Clustering → Grafana
+Browser → Pilih Jenjang & Mapel → Gesture Recognition (MediaPipe/TF.js)
+       → Next.js API Route (proxy) → FastAPI Backend
+       → Pinecone RAG (namespace: subject_{slug}) → ChatGroq (LLaMA 3.3)
+       → Jawaban + Rekomendasi FAQ
 ```
 
-### Microservices Design
-
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         TUNARASA PLATFORM                       │
-├─────────────────────────────────────────────────────────────────┤
-│  Frontend (Next.js 15)                                          │
-│  • Institution Selector • Gesture Recognition • Admin Dashboard │
-│  • FAQ Recommendations • Chat Interface • Accessibility         │
-├─────────────────────────────────────────────────────────────────┤
-│  Backend (FastAPI)                                              │
-│  • AI/LLM Service • Institution Management • FAQ Clustering     │
-│  • Gesture Processing • QA Logging • Admin API                  │
-├─────────────────────────────────────────────────────────────────┤
-│  Data Layer                                                     │
-│  • Supabase PostgreSQL • Pinecone Vector DB • Redis Cache       │
-├─────────────────────────────────────────────────────────────────┤
-│  Monitoring Stack                                               │
-│  • Prometheus • Grafana • DeepEval • FAQ Analytics              │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────┐
+│                  TANYA TANGAN                     │
+├───────────────────────────────────────────────────┤
+│  Frontend (Next.js 15)                            │
+│  • Subject Selector (jenjang → mapel)             │
+│  • Gesture Recognition (SIBI)                     │
+│  • Chat Interface + FAQ Recommendations           │
+│  • Admin Dashboard                                │
+├───────────────────────────────────────────────────┤
+│  Backend (FastAPI)                                │
+│  • RAG Pipeline per subject_slug                  │
+│  • FAQ Clustering & Rekomendasi                   │
+│  • QA Logging & Analytics                         │
+│  • Admin API                                      │
+├───────────────────────────────────────────────────┤
+│  Data Layer                                       │
+│  • PostgreSQL (Supabase) — relational             │
+│  • Pinecone — vector store per mata pelajaran     │
+│  • Redis — session & response cache               │
+├───────────────────────────────────────────────────┤
+│  Monitoring                                       │
+│  • Prometheus + Grafana + DeepEval                │
+└───────────────────────────────────────────────────┘
 ```
 
-## 🛠️ Technology Stack
+## Tech Stack
 
-### Frontend (Next.js 15.4.5)
-- **Framework**: Next.js 15.4.5 with App Router, React 19.1.1, TypeScript 5.8+
-- **UI Components**: Shadcn UI v2, 45+ Radix UI primitives, Tailwind CSS v4
-- **State Management**: React Hook Form with Zod validation, TanStack Table
-- **Computer Vision**: MediaPipe Hands, TensorFlow.js 4.21.0, FingerPose
-- **Package Manager**: Bun (latest) with Turbopack
-- **Database ORM**: Drizzle ORM 0.44.2 with TypeScript
-- **Additional Features**: Speech-to-Text Recognition, DND Kit, Recharts 2.15.4
+### Frontend (Next.js 15)
+- **Framework**: Next.js 15 App Router, React 19, TypeScript strict, Turbopack
+- **Package Manager**: Bun
+- **UI**: Shadcn UI, Radix UI, Tailwind CSS v4
+- **Computer Vision**: MediaPipe Hands, TensorFlow.js, FingerPose
+- **Database ORM**: Drizzle ORM (PostgreSQL via Supabase)
+- **State**: React Hook Form + Zod, TanStack Table
 
 ### Backend (FastAPI)
-- **API Framework**: FastAPI with Python 3.11+, Pydantic v2, Uvicorn
-- **AI Integration**: LangChain ecosystem (Core, Community, Groq), ChatGroq (LLaMA 3)
-- **Vector Database**: Pinecone with gRPC for document embeddings and RAG
-- **Machine Learning**: Scikit-learn for FAQ clustering, NumPy, Pandas
-- **Authentication**: JWT with PyJWT, role-based access control
-- **Document Processing**: PyPDF, python-docx, Markdown support
-- **Monitoring**: Prometheus FastAPI Instrumentator + DeepEval + Redis
-- **Development**: Pre-commit hooks, Black, Ruff, isort, MyPy, pytest-asyncio
-- **Additional Features**: QR Code generation, PDF reports with ReportLab
+- **Framework**: FastAPI, Python 3.11+, Pydantic v2, Uvicorn
+- **AI**: LangChain + ChatGroq (LLaMA 3.3 70B)
+- **Vector DB**: Pinecone (gRPC)
+- **Clustering**: scikit-learn untuk FAQ clustering
+- **Cache**: Redis
+- **Monitoring**: Prometheus FastAPI Instrumentator, DeepEval
+- **Code Quality**: pre-commit, Black, Ruff, isort, MyPy, pytest
 
-### Data & Infrastructure
-- **Primary Database**: PostgreSQL with SQLAlchemy 2.0
-- **Vector Store**: Pinecone for semantic search
-- **Caching**: Redis for sessions and API responses
-- **Admin Auth**: Supabase Auth with custom role management
-- **Email Service**: Resend API for notifications
-- **Monitoring**: Prometheus + Grafana + DeepEval
-- **Deployment**: Docker + Docker Compose (dev/prod)
+### Infrastructure
+- **Database**: PostgreSQL via Supabase
+- **Auth**: Supabase Auth JWT (admin) + anonymous session (siswa)
+- **Deployment**: Docker + Docker Compose
 
-## 📁 Project Structure
+## Struktur Proyek
 
 ```
-tunarasa/
+tanyatangan/
 ├── backend/                        # FastAPI Application
 │   ├── app/
-│   │   ├── api/                    # API routes with versioning
-│   │   │   ├── middleware/         # Custom middleware (auth, rate limiting)
-│   │   │   └── v1/endpoints/       # API endpoint modules
-│   │   ├── core/                   # Core configuration & database
-│   │   ├── models/                 # SQLAlchemy & Pydantic models
-│   │   ├── services/               # Business logic services
-│   │   └── main.py                 # FastAPI application entry
-│   ├── tests/                      # Comprehensive test suite
-│   ├── .pre-commit-config.yaml     # Code quality automation
-│   ├── documents/                  # Document storage for RAG system
-│   ├── Dockerfile                  # Production container
-│   └── requirements.txt            # Python dependencies
+│   │   ├── api/v1/endpoints/       # Endpoints: rag, gesture, admin, subjects, faq, session, monitoring
+│   │   ├── api/middleware/         # AuthMiddleware (JWT), RateLimitMiddleware
+│   │   ├── core/config.py          # Semua config via pydantic-settings dari .env
+│   │   ├── models/                 # SQLAlchemy models + Pydantic schemas
+│   │   ├── services/               # RAG pipeline, FAQ clustering, QA logging, metrics
+│   │   └── main.py
+│   ├── tests/
+│   └── requirements.txt
 │
 ├── frontend/                       # Next.js Application
 │   ├── src/
-│   │   ├── app/                    # App Router pages & API routes
-│   │   │   ├── api/                # Next.js API routes (proxy layer)
-│   │   │   │   ├── admin/          # Admin-specific API endpoints
-│   │   │   │   ├── institutions/   # Institution selection API
-│   │   │   │   ├── public/         # Public API endpoints
-│   │   │   │   └── setup/          # System setup APIs
-│   │   │   ├── dashboard/          # Admin dashboard pages
-│   │   │   ├── komunikasi/         # Communication interface
-│   │   │   │   └── [slug]/         # Dynamic communication pages
-│   │   │   └── layanan/            # Service selection pages
-│   │   ├── components/             # React components
-│   │   │   ├── ui/                 # 45+ Shadcn UI components
-│   │   │   ├── gesture/            # Gesture recognition components
-│   │   │   ├── chat/               # Enhanced chat interface components
-│   │   │   ├── layanan/            # Service selection components
-│   │   │   ├── admin/              # Admin dashboard components
-│   │   │   ├── auth/               # Authentication components
-│   │   │   └── emails/             # Email templates
-│   │   ├── lib/                    # Utilities and configurations
-│   │   │   ├── ai/                 # AI service integrations
-│   │   │   ├── api/                # API client utilities
-│   │   │   ├── db/                 # Drizzle ORM schema
-│   │   │   └── services/           # Frontend service layer
-│   │   └── hooks/                  # Custom React hooks
-│   ├── public/                     # Static assets
-│   │   └── assets/                 # Brand assets and technical images
-│   ├── drizzle/                    # Database migrations
-│   ├── package.json                # Bun dependencies
-│   └── Dockerfile.{dev,prod}       # Container configurations
+│   │   ├── app/
+│   │   │   ├── api/                # Proxy layer ke FastAPI (menghindari CORS)
+│   │   │   │   ├── subjects/       # GET /api/subjects — list active subjects
+│   │   │   │   ├── chat/           # POST /api/chat/send-message
+│   │   │   │   └── admin/          # Admin-only endpoints
+│   │   │   ├── layanan/            # Subject selector UI (pilih jenjang → mapel)
+│   │   │   ├── komunikasi/[slug]/  # Dynamic page per subject (gesture + chat)
+│   │   │   └── dashboard/          # Admin dashboard
+│   │   ├── components/
+│   │   │   ├── layanan/            # SubjectSelector component (2-step: jenjang → mapel)
+│   │   │   ├── gesture/            # MediaPipe + TF.js gesture recognition
+│   │   │   ├── chat/               # Chat interface + FAQ recommendations
+│   │   │   └── admin/              # Admin dashboard components
+│   │   ├── hooks/useSelectedInstitution.ts  # Subject state management
+│   │   └── lib/db/schema.ts        # Drizzle schema (tabel: subjects/institutions, users, roles, dll)
+│   └── drizzle/                    # Migrations (termasuk kolom jenjang + mata_pelajaran)
 │
-├── monitoring/                     # Advanced Observability Stack
-│   ├── prometheus/                 # Prometheus Metrics collection
-│   │   ├── alerting/rules/         # Comprehensive alerting rules
-│   │   ├── configs/                # Environment-specific Prometheus configs
-│   │   └── recording-rules/        # SLI/SLO recording rules for efficiency
-│   └── grafana/                    # Business intelligence dashboards
-│       ├── dashboards/             # Real-time monitoring & BI dashboards
-│       └── provisioning/           # Grafana configuration and data sources
+├── docs/
+│   ├── rag/                        # Dokumen RAG yang sudah didownload
+│   │   ├── smalb/{mapel}/          # PDF per mata pelajaran SMALB (Kelas X & XI)
+│   │   ├── sdlb/tematik/           # Buku tematik SDLB (parsial)
+│   │   └── tematik/                # Buku tematik BS Tunarungu per kelas/tema
+│   └── reference/                  # Dokumen referensi teknis
 │
-├── readme/                         # Comprehensive system documentation
-├── compose.{dev,prod}.yaml         # Environment orchestration
-├── .env.example                    # Environment configuration template
-└── README.md                       # This file
+├── monitoring/
+│   ├── prometheus/                 # Konfigurasi + alerting rules + recording rules
+│   └── grafana/                    # Dashboard provisioning
+│
+├── compose.dev.yaml                # Docker Compose development
+├── compose.prod.yaml               # Docker Compose production
+├── .env.example                    # Template environment variables
+└── README.md
 ```
 
-## 🚀 Getting Started
+## Memulai
 
 ### Prerequisites
+- **Bun** — package manager frontend
+- **Python 3.11+** — backend runtime
+- **Docker & Docker Compose** — containerized development
 
-- **Bun** (latest): Package manager for frontend
-- **Python 3.11+**: Backend runtime
-- **Docker & Docker Compose**: For containerized development
-- **Git**: Version control
-
-### Environment Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/ArielSulton/tunarasa.git
-   cd tunarasa
-   ```
-
-2. **Copy environment configuration**
-   ```bash
-   cp .env.example .env
-   ```
-
-3. **Configure environment variables**
-   ```bash
-   # Essential configuration in .env
-   GROQ_API_KEY=your_groq_api_key
-   PINECONE_API_KEY=your_pinecone_api_key
-   SUPABASE_SECRET_KEY=your_supabase_secret_key
-   ```
-
-### Environment Variables
-**Complete configuration across 6 files** - see `.env.example` for comprehensive environment variables organized in logical sections:
-- Environment & Node Configuration
-- Frontend Configuration
-- Database Configuration
-- Authentication & Security
-- AI Services Configuration
-- RAG System Configuration
-- External Services
-- API & Security Configuration
-- Monitoring & Observability
-
-**Synchronized Files**: `.env`, `.env.example`, `frontend/Dockerfile.prod`, `compose.dev.yaml`, `compose.prod.yaml`, `backend/app/core/config.py`
-
-### 🧪 Development Setup
+### Setup Environment
 
 ```bash
-# Start all services including monitoring
+cp .env.example .env
+# Edit .env — isi API keys berikut:
+# GROQ_API_KEY, PINECONE_API_KEY, PINECONE_INDEX_NAME
+# NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+# SUPABASE_SERVICE_ROLE_KEY, SUPABASE_JWT_SECRET
+# DATABASE_URL
+```
+
+### Development (Docker)
+
+```bash
+# Jalankan semua service (frontend, backend, monitoring)
 COMPOSE_BAKE=true docker compose -f compose.dev.yaml up --build
 
-# View logs
+# Lihat logs
 docker compose -f compose.dev.yaml logs -f
 
-# Stop services
+# Stop
 docker compose -f compose.dev.yaml down
-
-# Health checks
-curl http://localhost:5000/api/health
-curl http://localhost:8000/api/health
 ```
 
-Services available:
+Service endpoints:
 - **Frontend**: http://localhost:5000
-- **Backend API**: http://localhost:8000/api/v1/docs
-- **Grafana Dashboard**: http://localhost:3030
+- **Backend API + Swagger**: http://localhost:8000/api/v1/docs
+- **Grafana**: http://localhost:3030
 - **Prometheus**: http://localhost:9090
-- **Database Studio**: `bun run db:studio`
 
-### 📚 Database Setup
+### Database Migration
 
 ```bash
-# Generate database migrations
 cd frontend
-bun run db:generate
-
-# Apply migrations
-bun run db:migrate
-
-# Open database studio
-bun run db:studio
+bun run db:generate   # Generate migration
+bun run db:migrate    # Apply migration (termasuk kolom jenjang & mata_pelajaran)
+bun run db:studio     # Buka Drizzle Studio
 ```
 
-### 🚢 Deployment Setup
+### Frontend (tanpa Docker)
 
 ```bash
-# Deploy with production configuration
-COMPOSE_BAKE=true docker compose -f compose.prod.yaml up --build
-
-# View logs
-docker compose -f compose.prod.yaml logs -f
-
-# Stop services
-docker compose -f compose.prod.yaml down
-
-# Health checks
-curl http://localhost:5000/api/health
-curl http://localhost:8000/api/health
+cd frontend
+bun install
+bun run dev       # Dev server dengan Turbopack
+bun run tsc       # Type-check
+bun run lint      # ESLint
+bun run test:e2e  # Playwright E2E tests
 ```
 
-## 🎯 User Flows
+### Backend (tanpa Docker)
 
-### End User Journey
-1. **Access**: User visits platform via browser
-2. **Institution Selection**: User selects relevant government institution/service
-3. **Permission**: Grant camera access for gesture recognition
-4. **Gesture**: Perform sign language gestures (or use speech-to-text alternative)
-5. **Recognition**: MediaPipe processes hand landmarks
-6. **Classification**: TensorFlow.js converts to text question
-7. **Processing**: FastAPI receives and validates question with institution context
-8. **RAG**: Pinecone retrieves relevant documents based on institution and question
-9. **LLM**: ChatGroq processes with contextual information to generate answer
-10. **FAQ Recommendations**: System suggests related frequently asked questions
-11. **Response**: Answer displayed with optional QR code and related FAQs
-12. **QA Logging**: Conversation logged for quality analysis and improvement
-13. **Feedback**: Optional user satisfaction rating
+```bash
+cd backend
+python3.11 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-### Admin Workflow
-1. **Authentication**: Supabase Auth-based login with role verification
-2. **Dashboard**: View system metrics, pending validations, and business intelligence
-3. **Institution Management**: Add, edit, and manage government institution data
-4. **FAQ Administration**: Monitor FAQ clustering results and manage recommendations
-5. **QA Analytics**: Review conversation logs and system performance metrics
-6. **Validation**: Review and approve/reject LLM responses with quality scoring
-7. **Performance Monitoring**: Track response times, accuracy metrics, and SLI/SLO compliance
-8. **User Management**: Invite new admins and manage role-based permissions (super admin only)
-9. **Knowledge Base**: Upload documents, manage RAG system, and update institutional information
+# Tests
+pytest tests/
 
-## 🛡️ Security & Privacy
+# Code quality
+pre-commit run --files $(find . -type f -name '*.py' -not -path './.venv/*')
+```
 
-### Authentication Strategy
-- **Public Access**: Session-based tracking without authentication
-- **Admin Access**: Supabase Auth JWT with role-based permissions
-- **API Security**: Rate limiting, input validation, CORS protection
-- **Data Protection**: Encryption at rest and in transit
+## Upload Dokumen RAG
 
-### Privacy Considerations
-- **Minimal Data Collection**: Only essential information stored
-- **Anonymization**: User sessions without personal identification
-- **GDPR Compliance**: Data export and deletion capabilities
-- **Audit Trail**: Complete logging of admin actions
+Dokumen untuk RAG disimpan di `docs/rag/` dan perlu diembed ke Pinecone. Namespace Pinecone mengikuti format `subject_{slug}` (contoh: `subject_smalb_matematika`).
 
-## ♿ Accessibility Features
+Dokumen yang sudah didownload:
+- **SMALB** (lengkap): PPKn, B. Indonesia, Matematika, IPA, IPS, B. Inggris, PJOK, Seni Budaya — Kelas X & XI
+- **SDLB** (parsial): Buku tematik BS Tunarungu Kelas 1–4 + modul Matematika & B. Inggris Fase B
+- **SMPLB**: Belum tersedia
 
-### WCAG 2.1 AA Compliance
-- **Keyboard Navigation**: Complete functionality without mouse
-- **Screen Reader Support**: Semantic HTML with ARIA labels
-- **High Contrast Modes**: Multiple theme options
-- **Large Touch Targets**: 44px minimum for mobile
-- **Focus Management**: Clear focus indicators and logical flow
+## Model Autentikasi
 
-### Hearing-Impaired Optimizations
-- **Visual Feedback**: Clear gesture recognition indicators
-- **Text Alternatives**: All audio content with text equivalents
-- **Gesture Alternatives**: Text input and file upload options
-- **QR Code Generation**: Quick sharing of responses
-- **Simplified Navigation**: Intuitive, icon-based interface
+| Role | Auth | Akses |
+|---|---|---|
+| Siswa (public) | Anonymous session | `/layanan`, `/komunikasi/[slug]` |
+| Admin | Supabase Auth JWT | `/dashboard`, admin API |
+| Superadmin | Supabase Auth JWT | Semua + user management |
 
-## 📊 Advanced Monitoring & Business Intelligence
+## Konfigurasi Environment
 
-### SLI/SLO Monitoring
-- **Service Level Indicators**: Real-time performance metrics with automated alerting
-- **Response Time Monitoring**: <500ms gesture recognition, <3s Q&A cycle
-- **Error Rate Tracking**: <0.1% system error tolerance with escalation
-- **Quality Assessment**: AI response accuracy >80% with DeepEval validation
+File `.env` di root digunakan bersama oleh frontend dan backend. Variabel utama:
 
-### Business Intelligence Dashboards
-- **Executive Analytics**: Usage patterns, completion rates, user satisfaction trends
-- **Performance Analytics**: Resource utilization, optimization recommendations
-- **AI Quality Metrics**: LLM response relevance, token efficiency, processing optimization
-- **FAQ Analytics**: Clustering performance, recommendation effectiveness, trending topics
-- **Institution Analytics**: Service usage by institution, response quality by department
-- **QA Performance**: Conversation success rates, resolution times, user engagement metrics
-- **Security Monitoring**: Authentication success rates, access pattern analysis
+| Variabel | Keterangan |
+|---|---|
+| `GROQ_API_KEY` | API key ChatGroq (LLaMA 3.3) |
+| `PINECONE_API_KEY` | API key Pinecone |
+| `PINECONE_INDEX_NAME` | Nama index Pinecone |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
+| `SUPABASE_JWT_SECRET` | JWT secret untuk validasi token |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `ENVIRONMENT` | `development` atau `production` |
 
-### Advanced Monitoring Stack
-- **Prometheus**: Advanced metrics collection with SLI/SLO alerting rules
-- **Grafana**: Multi-tier dashboards (operational, business intelligence, executive, FAQ clustering)
-- **DeepEval**: Comprehensive LLM response quality assessment and optimization
-- **FAQ Monitoring**: Automated clustering analysis and recommendation performance tracking
-- **Monitoring Rules**: Comprehensive alerting with FAQ-specific, DeepEval, and SLI/SLO rules
+`ENVIRONMENT=production` menonaktifkan Swagger docs dan mengubah behavior CORS.
 
-## 📈 Performance Targets
+## Lisensi
 
-### Response Time Targets
-- **Gesture Recognition**: <500ms for confidence scoring
-- **LLM Response**: <3s for complete Q&A cycle
-- **Dashboard Loading**: <2s for admin interface
-- **Camera Initialization**: <1s for MediaPipe setup
-
-### Quality Metrics
-- **Gesture Accuracy**: >90% recognition rate
-- **Answer Relevance**: >80% user satisfaction
-- **System Reliability**: <0.1% error rate
-- **Admin Efficiency**: <30s average validation time
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Follow the coding standards and accessibility guidelines
-4. Run tests and ensure they pass
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
-
-### Development Guidelines
-- **Code Quality**: Use pre-commit hooks (Black, Ruff, isort) for Python code
-- **TypeScript Standards**: Follow strict TypeScript practices with ESLint enforcement
-- **Accessibility First**: Maintain WCAG 2.1 AA compliance across all components
-- **Testing Requirements**: Write comprehensive tests for new functionality
-- **Documentation**: Update API specs and system documentation for changes
-- **Commit Standards**: Use semantic commit messages with conventional format
-- **Security**: Follow authentication patterns and input validation standards
-
-## 📄 License
-
-This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-For support and questions:
-
-1. **Issues**: Create an issue on GitHub for bugs and feature requests
-2. **Documentation**: Check the comprehensive `readme/` directory for technical guides
-3. **Release Notes**: Review `readme/release/` for version-specific information
-4. **API Reference**: See `readme/api-specifications.md` for complete API documentation
-5. **Architecture**: Review system design documents in `readme/` for technical understanding
-
-## 🗺️ Roadmap
-
-### Phase 1: Core Infrastructure ✅
-- [x] Database schema implementation with Drizzle ORM
-- [x] Basic Next.js frontend with accessibility framework
-- [x] FastAPI backend with core API endpoints
-- [x] Docker containerization and development environment
-
-### Phase 2: AI Integration ✅
-- [x] MediaPipe Hands integration for gesture recognition
-- [x] TensorFlow.js model training for Indonesian sign language
-- [x] LangChain + ChatGroq integration for Q&A
-- [x] Pinecone setup with document embedding pipeline
-
-### Phase 3: Admin System ✅
-- [x] Supabase Auth authentication integration
-- [x] Admin dashboard with validation interface
-- [x] Email invitation system with Resend
-- [x] Role-based access control implementation
-
-### Phase 4: Monitoring & Quality ✅
-- [x] Prometheus metrics collection with FastAPI Instrumentator
-- [x] DeepEval integration for LLM quality assessment
-- [x] Grafana dashboard configuration with real-time monitoring
-- [x] Performance optimization and comprehensive testing suite
-
-### Phase 5: Production Deployment ✅
-- [x] Production environment setup with Docker orchestration
-- [x] Security hardening with authentication middleware
-- [x] User acceptance testing with accessibility validation
-- [x] Comprehensive documentation and system architecture guides
-
-### Phase 6: Code Quality & Infrastructure Excellence ✅
-- [x] Advanced monitoring system with SLI/SLO implementation
-- [x] Pre-commit hook system with automated code quality enforcement
-- [x] Environment variable synchronization across all configuration files
-- [x] Authentication security hardening and vulnerability resolution
-- [x] Business intelligence dashboards with real-time analytics
-
-### Phase 7: Advanced Features
-- [ ] Enhanced TypeScript quality with comprehensive type checking
-- [ ] Advanced testing framework with automated quality gates
-- [ ] Enhanced gesture recognition with custom models
-- [ ] Multi-language support and localization
-- [ ] Mobile application development
-
----
-
-**Made with ❤️ for accessibility and inclusion**
+AGPL-3.0 — lihat file [LICENSE](LICENSE) untuk detail.

@@ -90,25 +90,25 @@ async def process_rag_file(
         # Get document manager
         doc_manager = get_document_manager()
 
-        # Resolve institution slug for correct namespace convention `institution_{slug}`
-        institution_slug: str | None = None
+        # Resolve subject slug for correct namespace convention `subject_{slug}`
+        subject_slug: str | None = None
         try:
             institution = await InstitutionCRUD.get_by_id(db, rag_file.institution_id)
             if institution and institution.slug:
-                institution_slug = institution.slug
+                subject_slug = institution.slug
         except Exception as e:
             logger.warning(
-                f"Failed to resolve institution slug for id={rag_file.institution_id}: {e}"
+                f"Failed to resolve subject slug for id={rag_file.institution_id}: {e}"
             )
 
-        # Process file into RAG system using institution_slug so DocumentManager builds namespace `institution_{slug}`
+        # Process file into RAG system using subject_slug so DocumentManager builds namespace `subject_{slug}`
         result = await doc_manager.add_document(
             file_path=str(file_path),
             title=rag_file.file_name,
             description=rag_file.description,
             language="id",
             institution_id=rag_file.institution_id,
-            institution_slug=institution_slug,
+            subject_slug=subject_slug,
         )
 
         processing_time = (datetime.now(timezone.utc) - start_time).total_seconds()
@@ -117,8 +117,8 @@ async def process_rag_file(
             # Update database record with success
             # Normalize and persist the actual namespace used for ingestion
             update_data = {}
-            if institution_slug:
-                update_data["pinecone_namespace"] = f"institution_{institution_slug}"
+            if subject_slug:
+                update_data["pinecone_namespace"] = f"subject_{subject_slug}"
 
             # Extract document ID and chunk count from result
             document_id = result.get("document_id")
