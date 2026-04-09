@@ -52,11 +52,12 @@ async def lookup_word(
 async def _fuzzy_lookup(
     gesture_input: str, category: str, db: AsyncSession
 ) -> Optional[str]:
-    """Fuzzy search: find nearest word in DB using ILIKE."""
+    """Fuzzy search: find nearest word in DB using ILIKE. Wildcards are escaped."""
+    escaped = gesture_input.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     result = await db.execute(
         select(Word)
         .where(Word.category == category)
-        .where(Word.text.ilike(f"%{gesture_input}%"))
+        .where(Word.text.ilike(f"%{escaped}%"))
         .limit(1)
     )
     db_word = result.scalar_one_or_none()
@@ -111,4 +112,8 @@ async def log_word_request(
         session_id=session_id,
     )
     db.add(db_request)
-    await db.commit()
+    try:
+        await db.commit()
+    except Exception as e:
+        logger.warning(f"Failed to persist word_request for '{gesture_input}': {e}")
+        await db.rollback()
