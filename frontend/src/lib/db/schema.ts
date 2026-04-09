@@ -563,7 +563,7 @@ export const wordComparisons = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     wordId: uuid('word_id')
       .notNull()
-      .references(() => words.id),
+      .references(() => words.id, { onDelete: 'cascade' }),
     lowImageUrl: text('low_image_url').notNull(),
     highImageUrl: text('high_image_url').notNull(),
     lowLabel: text('low_label').notNull(),
@@ -588,8 +588,11 @@ export const wordRequests = pgTable(
   ],
 ).enableRLS()
 
-export const wordsRelations = relations(words, ({ many }) => ({
-  comparisons: many(wordComparisons),
+export const wordsRelations = relations(words, ({ one }) => ({
+  comparison: one(wordComparisons, {
+    fields: [words.id],
+    references: [wordComparisons.wordId],
+  }),
 }))
 
 export const wordComparisonsRelations = relations(wordComparisons, ({ one }) => ({

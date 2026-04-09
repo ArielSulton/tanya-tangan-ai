@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useState, useCallback, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { GestureRecognition } from '@/components/gesture/gesture-recognition'
 import { ConcreteWordCard } from '@/components/vocab/ConcreteWordCard'
 import { AbstractComparison } from '@/components/vocab/AbstractComparison'
@@ -42,11 +42,20 @@ type LookupResult =
   | { state: 'fallback'; gestureInput: string; suggestedWord: string | null; explanation: string }
   | { state: 'error' }
 
+const VALID_CATEGORIES = ['hewan', 'benda', 'alam', 'perasaan', 'kata_keterangan']
+
 export default function VocabKategoriPage() {
   const params = useParams()
   const kategori = params.kategori as string
+  const router = useRouter()
   const [result, setResult] = useState<LookupResult>({ state: 'idle' })
   const [retryCount, setRetryCount] = useState(0)
+
+  useEffect(() => {
+    if (!VALID_CATEGORIES.includes(kategori)) {
+      router.replace('/vocab')
+    }
+  }, [kategori, router])
 
   const handleWordFormed = useCallback(
     async (word: string) => {
@@ -153,9 +162,14 @@ export default function VocabKategoriPage() {
             />
           )}
 
+          {result.state === 'found' && result.word.word_type === 'abstrak' && !result.word.comparison && (
+            <div className="text-center text-sm text-gray-500 p-4">
+              Data visual untuk kata ini belum tersedia.
+            </div>
+          )}
+
           {result.state === 'fallback' && (
             <AIFallbackCard
-              gestureInput={result.gestureInput}
               suggestedWord={result.suggestedWord}
               explanation={result.explanation}
               onTrySuggested={handleTrySuggested}
