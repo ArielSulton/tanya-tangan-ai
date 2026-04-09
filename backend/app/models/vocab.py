@@ -36,7 +36,7 @@ class LookupResponse(BaseModel):
 
 
 class FallbackRequest(BaseModel):
-    gesture_input: str = Field(min_length=1)
+    gesture_input: str = Field(min_length=1, max_length=100)
     category: str = Field(min_length=1)
     session_id: Optional[str] = None
 

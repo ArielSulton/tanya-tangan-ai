@@ -12,6 +12,7 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,9 @@ async def lookup_word(
 ) -> Optional[WordResult]:
     """Find a word in the DB by exact text + category match."""
     result = await db.execute(
-        select(Word).where(Word.text == word.lower(), Word.category == category)
+        select(Word)
+        .options(selectinload(Word.comparison))
+        .where(Word.text == word.strip().lower(), Word.category == category)
     )
     db_word = result.scalar_one_or_none()
     if not db_word:
@@ -53,7 +56,7 @@ async def _fuzzy_lookup(
     gesture_input: str, category: str, db: AsyncSession
 ) -> Optional[str]:
     """Fuzzy search: find nearest word in DB using ILIKE. Wildcards are escaped."""
-    escaped = gesture_input.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    escaped = gesture_input.strip().lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     result = await db.execute(
         select(Word)
         .where(Word.category == category)

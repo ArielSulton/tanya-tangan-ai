@@ -41,7 +41,7 @@ async def vocab_lookup(
             status_code=400,
             detail=f"Kategori tidak valid. Pilihan: {CATEGORIES}",
         )
-    result = await lookup_word(word.lower(), category, db)
+    result = await lookup_word(word.strip().lower(), category, db)
     if result:
         return LookupResponse(found=True, word=result)
     return LookupResponse(found=False, word=None)
@@ -69,6 +69,4 @@ async def vocab_fallback(
     await log_word_request(
         body.gesture_input, result.suggested_word, body.session_id, db
     )
-    return FallbackResponse(
-        suggested_word=result.suggested_word, explanation=result.explanation
-    )
+    return result
