@@ -118,24 +118,27 @@ WORDS_ABSTRAK = [
         "reference_word": "jauh",
     },
     {
+        # "sangat": tunjukkan sedikit panas vs sangat panas — siswa paham sangat = derajat tertinggi
         "text": "sangat", "category": "kata_keterangan",
-        "low_image_url":  uns("1506905925346-21bda4d32df4"),   # matahari biasa
-        "high_image_url": uns("1472746729193-e1f10dc76f86"),   # api/cahaya sangat terang
-        "low_label": "biasa", "high_label": "sangat",
+        "low_image_url":  uns("1571934811218-4ad4d9a5cd62"),   # hangat / sedikit panas
+        "high_image_url": uns("1472746729193-e1f10dc76f86"),   # api / sangat panas
+        "low_label": "sedikit panas", "high_label": "sangat panas",
         "reference_word": "sangat",
     },
     {
+        # "sedikit": tunjukkan sedikit vs banyak — siswa paham sedikit = jumlah kecil
         "text": "sedikit", "category": "kata_keterangan",
-        "low_image_url":  uns("1603569283847-aa295f0d016a"),   # sedikit
-        "high_image_url": uns("1568702846914-96b305d2aaeb"),   # banyak
-        "low_label": "sedikit", "high_label": "banyak",
+        "low_image_url":  uns("1603569283847-aa295f0d016a"),   # segelintir benda / sedikit
+        "high_image_url": uns("1568702846914-96b305d2aaeb"),   # tumpukan banyak
+        "low_label": "sedikit", "high_label": "banyak sekali",
         "reference_word": "sedikit",
     },
     {
+        # "sekali": tunjukkan besar vs besar sekali — siswa paham sekali = penguat di akhir kata
         "text": "sekali", "category": "kata_keterangan",
-        "low_image_url":  uns("1542401886-a57cf7d5f86c"),      # pohon biasa
-        "high_image_url": uns("1464822759023-fed622ff2c3b"),   # hutan lebat sekali
-        "low_label": "biasa", "high_label": "sekali (sangat)",
+        "low_image_url":  uns("1592194996308-7b43878e84a6"),   # benda kecil / biasa saja
+        "high_image_url": uns("1557050543-4d5f4e07ef46"),      # gajah / sangat besar
+        "low_label": "besar", "high_label": "besar sekali",
         "reference_word": "sekali",
     },
 ]
