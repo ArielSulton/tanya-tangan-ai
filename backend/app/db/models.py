@@ -602,7 +602,7 @@ class Word(Base):
     )
     text: Mapped[str] = mapped_column(Text, nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
-    type: Mapped[str] = mapped_column(String(20), nullable=False)
+    word_type: Mapped[str] = mapped_column("type", String(20), nullable=False)
     level: Mapped[str] = mapped_column(String(20), nullable=False, default="sdlb")
     image_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     image_source: Mapped[str] = mapped_column(String(20), nullable=False, default="api")
@@ -611,7 +611,7 @@ class Word(Base):
     )
 
     comparison: Mapped[Optional["WordComparison"]] = relationship(
-        "WordComparison", back_populates="word", uselist=False
+        "WordComparison", back_populates="word", uselist=False, cascade="all, delete-orphan"
     )
 
     __table_args__ = (
@@ -629,7 +629,7 @@ class WordComparison(Base):
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
     word_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("words.id"), nullable=False
+        String(36), ForeignKey("words.id", ondelete="CASCADE"), nullable=False, unique=True
     )
     low_image_url: Mapped[str] = mapped_column(Text, nullable=False)
     high_image_url: Mapped[str] = mapped_column(Text, nullable=False)
@@ -638,6 +638,10 @@ class WordComparison(Base):
     reference_word: Mapped[str] = mapped_column(String(100), nullable=False)
 
     word: Mapped["Word"] = relationship("Word", back_populates="comparison")
+
+    __table_args__ = (
+        Index("word_comparisons_word_id_idx", "word_id"),
+    )
 
 
 class WordRequest(Base):
