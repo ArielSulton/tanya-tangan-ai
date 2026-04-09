@@ -117,6 +117,27 @@ WORDS_ABSTRAK = [
         "low_label": "sedikit jauh", "high_label": "sangat jauh",
         "reference_word": "jauh",
     },
+    {
+        "text": "sangat", "category": "kata_keterangan",
+        "low_image_url":  uns("1506905925346-21bda4d32df4"),   # matahari biasa
+        "high_image_url": uns("1472746729193-e1f10dc76f86"),   # api/cahaya sangat terang
+        "low_label": "biasa", "high_label": "sangat",
+        "reference_word": "sangat",
+    },
+    {
+        "text": "sedikit", "category": "kata_keterangan",
+        "low_image_url":  uns("1603569283847-aa295f0d016a"),   # sedikit
+        "high_image_url": uns("1568702846914-96b305d2aaeb"),   # banyak
+        "low_label": "sedikit", "high_label": "banyak",
+        "reference_word": "sedikit",
+    },
+    {
+        "text": "sekali", "category": "kata_keterangan",
+        "low_image_url":  uns("1542401886-a57cf7d5f86c"),      # pohon biasa
+        "high_image_url": uns("1464822759023-fed622ff2c3b"),   # hutan lebat sekali
+        "low_label": "biasa", "high_label": "sekali (sangat)",
+        "reference_word": "sekali",
+    },
 ]
 
 
