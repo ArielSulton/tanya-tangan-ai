@@ -69,6 +69,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Monitoring endpoints - allow Prometheus scraping without authentication
         "/api/v1/monitoring/prometheus-metrics",  # Prometheus metrics endpoint for scraping
         "/api/v1/monitoring/health",  # Monitoring service health check
+        # Visual vocabulary endpoints - public access for SDLB-B students (no login required)
+        "/api/v1/vocab/",  # All vocab endpoints: categories, lookup, fallback
     }
 
     # Admin endpoints that require Supabase authentication

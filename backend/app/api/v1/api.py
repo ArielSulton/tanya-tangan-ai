@@ -19,6 +19,7 @@ from app.api.v1.endpoints import (
     session,
     subjects,
     summary,
+    vocab,
 )
 from fastapi import APIRouter
 
@@ -77,3 +78,6 @@ api_router.include_router(
 api_router.include_router(
     subjects.router, prefix="/subjects", tags=["subjects"]
 )
+
+# Vocabulary endpoints for visual vocabulary platform (SDLB-B)
+api_router.include_router(vocab.router, prefix="/vocab", tags=["vocab"])
