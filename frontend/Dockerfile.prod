@@ -1,4 +1,4 @@
-FROM oven/bun:latest AS base
+FROM oven/bun:debian AS base
 
 # Step 1. Install dependencies only when needed
 FROM base AS deps
@@ -151,8 +151,7 @@ WORKDIR /app
 # RUN addgroup --system --gid 1001 bunjs
 # RUN adduser --system --uid 1001 nextjs
 
-# Group 'bun' is already installed in the base image 'oven/bun:latest'
-RUN adduser --system --uid 1001 nextjs --ingroup bun
+RUN useradd --system --uid 1001 --no-create-home --shell /usr/sbin/nologin nextjs
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
@@ -165,13 +164,13 @@ RUN apt-get update && apt-get install -y \
 
 # Create uploads directory with proper permissions for nextjs user
 RUN mkdir -p /app/uploads/rag-files && \
-    chown -R nextjs:bun /app/uploads && \
+    chown -R nextjs:nextjs /app/uploads && \
     chmod -R 775 /app/uploads
 
 # Copy necessary files
-COPY --from=builder --chown=nextjs:bun /app/public ./public
-COPY --from=builder --chown=nextjs:bun /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:bun /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nextjs /app/public ./public
+COPY --from=builder --chown=nextjs:nextjs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nextjs /app/.next/static ./.next/static
 
 # Switch to non-root user
 USER nextjs

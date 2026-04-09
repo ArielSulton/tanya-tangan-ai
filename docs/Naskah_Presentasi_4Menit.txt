@@ -1,0 +1,93 @@
+================================================================================
+              NASKAH PRESENTASI TANYA TANGAN — 4 MENIT
+================================================================================
+
+
+[PEMBUKAAN — 30 detik]
+
+Selamat pagi, Bapak/Ibu juri dan para hadirin.
+
+Coba bayangkan: kamu tahu cara membentuk isyarat untuk kata "sangat" — tangan
+bergerak dengan percaya diri. Tapi kamu tidak tahu artinya. Kamu tidak tahu
+bedanya "sedikit besar" dengan "sangat besar". Dan tidak ada yang bisa
+menjelaskannya dengan cara yang bisa kamu lihat.
+
+Itulah realita yang dialami setiap hari oleh siswa tunarungu di SDLB-B
+seluruh Indonesia.
+
+
+--------------------------------------------------------------------------------
+[MASALAH — 45 detik]
+
+Data WHO 2023 mencatat 1,5 miliar orang mengalami gangguan pendengaran. Di
+Indonesia, lebih dari 923 ribu penduduk tidak dapat mendengar — dan Jawa Timur
+menempati urutan kedua tertinggi jumlah siswa SLB secara nasional.
+
+Tapi masalah utama bukan sekadar keterbatasan mendengar. Penelitian menunjukkan
+bahwa siswa tunarungu rata-rata berada di persentil ke-19 kemampuan kosakata —
+jauh di bawah rekan-rekan mereka yang mendengar. Kesenjangan ini semakin lebar
+di usia 8–9 tahun, ketika pelajaran mulai memperkenalkan kata-kata abstrak
+seperti "sangat", "sedikit", dan "terlalu".
+
+Saya mengonfirmasi ini langsung di lapangan — melalui survei di SLB-B Karya
+Mulia Wonokromo dan SLB Aditama Gebang Surabaya. Para guru mengakui: siswa
+sering hafal isyaratnya, tapi tidak mengerti maknanya. Dan tidak ada media
+digital yang membantu.
+
+
+--------------------------------------------------------------------------------
+[SOLUSI — 1 menit]
+
+Maka saya kembangkan Tanya Tangan — platform pemahaman kosakata visual berbasis
+kecerdasan buatan dan pengenalan gestur bahasa isyarat SIBI untuk siswa SDLB-B.
+
+Cara kerjanya sederhana. Siswa membuka browser — tidak perlu instalasi apapun —
+lalu memilih kategori kata: hewan, benda, alam, perasaan, atau kata keterangan.
+Kemudian siswa mengisyaratkan kata dalam SIBI lewat kamera.
+
+Sistem mengenali gerakan tangan menggunakan MediaPipe dan TensorFlow.js,
+lalu menampilkan:
+
+  - Untuk kata KONKRET seperti "kucing" atau "pohon" — muncul foto objek nyata.
+
+  - Untuk kata ABSTRAK seperti "sangat" — muncul komparasi visual berdampingan:
+    misalnya, gambar "panas" di sebelah kiri, dan "sangat panas" di sebelah
+    kanan. Siswa bisa melihat perbedaannya.
+
+  - Jika kata belum ada di database — sistem tidak berhenti. AI berbasis
+    LLaMA 3.3 via ChatGroq memberikan penjelasan singkat yang mudah dipahami,
+    sambil mencatat kata tersebut untuk pengembangan konten berikutnya.
+
+
+--------------------------------------------------------------------------------
+[KEUNGGULAN & VALIDASI — 45 detik]
+
+Tanya Tangan adalah satu-satunya platform yang menggabungkan tiga kapabilitas
+sekaligus: input gestur SIBI real-time, visualisasi komparatif untuk kata
+abstrak, dan fallback AI — semuanya berbasis browser tanpa instalasi.
+
+Dalam pengujian, sistem mencapai akurasi pengenalan gestur SIBI di atas 85%,
+dan kata ditampilkan dalam waktu kurang dari 2 detik. Hak Kekayaan Intelektual
+juga telah didaftarkan sebagai bentuk perlindungan inovasi.
+
+
+--------------------------------------------------------------------------------
+[DAMPAK & PENUTUP — 30 detik]
+
+Target kami: Tanya Tangan siap MVP pada Juni 2026, dan diimplementasikan secara
+pilot di tiga SLB-B pada Oktober 2026 — dimulai dari mitra di Surabaya.
+
+Setiap anak tunarungu berhak tidak hanya tahu kata-katanya, tapi benar-benar
+mengerti maknanya.
+
+Dengan Tanya Tangan, kami menjembatani itu — satu isyarat tangan, satu gambar,
+satu pemahaman baru.
+
+Terima kasih.
+
+
+================================================================================
+Estimasi waktu : ~4 menit (kecepatan bicara normal 130-140 kata/menit)
+Total kata     : ~530 kata
+Catatan        : Perlambat di bagian "cara kerja" untuk efek demonstrasi
+================================================================================

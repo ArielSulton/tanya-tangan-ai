@@ -22,13 +22,28 @@ CATEGORIES = ["hewan", "benda", "alam", "perasaan", "kata_keterangan"]
 async def lookup_word(
     word: str, category: str, db: AsyncSession
 ) -> Optional[WordResult]:
-    """Find a word in the DB by exact text + category match."""
+    """Find a word by exact text match, preferring the requested category.
+    Falls back to cross-category search so words like 'sangat' are found
+    even when the user is browsing a different category page.
+    """
+    # 1. Try exact category match first
     result = await db.execute(
         select(Word)
         .options(selectinload(Word.comparison))
         .where(Word.text == word.strip().lower(), Word.category == category)
     )
     db_word = result.scalar_one_or_none()
+
+    # 2. If not found, search across all categories
+    if not db_word:
+        result = await db.execute(
+            select(Word)
+            .options(selectinload(Word.comparison))
+            .where(Word.text == word.strip().lower())
+            .limit(1)
+        )
+        db_word = result.scalar_one_or_none()
+
     if not db_word:
         return None
 
