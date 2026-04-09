@@ -64,7 +64,7 @@ export default function VocabKategoriPage() {
 
       try {
         const lookupRes = await fetch(
-          `/api/backend/vocab/lookup?word=${encodeURIComponent(word.toLowerCase())}&category=${encodeURIComponent(kategori)}`,
+          `/api/backend/api/v1/vocab/lookup?word=${encodeURIComponent(word.toLowerCase())}&category=${encodeURIComponent(kategori)}`,
         )
         if (!lookupRes.ok) throw new Error('Lookup failed')
 
@@ -74,7 +74,7 @@ export default function VocabKategoriPage() {
           return
         }
 
-        const fallbackRes = await fetch('/api/backend/vocab/fallback', {
+        const fallbackRes = await fetch('/api/backend/api/v1/vocab/fallback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ gesture_input: word, category: kategori }),

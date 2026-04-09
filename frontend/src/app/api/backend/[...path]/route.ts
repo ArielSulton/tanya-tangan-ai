@@ -43,10 +43,7 @@ async function handleBackendRequest(request: NextRequest, params: { path: string
 
     // Backend URL via Docker internal network
     // Try multiple possible service names/URLs
-    backendUrl =
-      process.env.NODE_ENV === 'production'
-        ? (process.env.BACKEND_URL ?? 'http://backend:8000') // Use env var or fallback
-        : 'http://localhost:8000' // Development
+    backendUrl = process.env.BACKEND_URL ?? 'http://backend:8000'
 
     const targetUrl = `${backendUrl}/${backendPath}`
 
