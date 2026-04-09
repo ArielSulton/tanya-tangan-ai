@@ -7,6 +7,15 @@ from .messages import Message, MessageCreate, MessageUpdate
 from .notes import Note, NoteCreate, NoteUpdate
 from .roles import Role, RoleCreate, RoleUpdate
 from .user import User, UserCreate, UserUpdate
+from .vocab import (
+    WordComparisonSchema,
+    WordResult,
+    CategoryResponse,
+    LookupResponse,
+    FallbackRequest,
+    FallbackResponse,
+    FallbackResult,
+)
 
 __all__ = [
     # Core models
@@ -25,4 +34,12 @@ __all__ = [
     "Role",
     "RoleCreate",
     "RoleUpdate",
+    # Vocab schemas
+    "WordComparisonSchema",
+    "WordResult",
+    "CategoryResponse",
+    "LookupResponse",
+    "FallbackRequest",
+    "FallbackResponse",
+    "FallbackResult",
 ]
