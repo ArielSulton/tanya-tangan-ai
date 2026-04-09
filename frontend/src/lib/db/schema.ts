@@ -536,6 +536,69 @@ export const adminQueueRelations = relations(adminQueue, ({ one }) => ({
   }),
 }))
 
+// ─── Vocab Tables ────────────────────────────────────────────────────────────
+
+export const words = pgTable(
+  'words',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    text: text('text').notNull(),
+    category: text('category').notNull(), // hewan|benda|alam|perasaan|kata_keterangan
+    type: text('type').notNull(), // konkret|abstrak
+    level: text('level').notNull().default('sdlb'),
+    imageUrl: text('image_url'),
+    imageSource: text('image_source').notNull().default('api'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('words_category_idx').on(table.category),
+    index('words_type_idx').on(table.type),
+    index('words_level_idx').on(table.level),
+  ],
+).enableRLS()
+
+export const wordComparisons = pgTable(
+  'word_comparisons',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    wordId: uuid('word_id')
+      .notNull()
+      .references(() => words.id),
+    lowImageUrl: text('low_image_url').notNull(),
+    highImageUrl: text('high_image_url').notNull(),
+    lowLabel: text('low_label').notNull(),
+    highLabel: text('high_label').notNull(),
+    referenceWord: text('reference_word').notNull(),
+  },
+  (table) => [index('word_comparisons_word_id_idx').on(table.wordId)],
+).enableRLS()
+
+export const wordRequests = pgTable(
+  'word_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    gestureInput: text('gesture_input').notNull(),
+    suggestedWord: text('suggested_word'),
+    sessionId: text('session_id'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('word_requests_session_id_idx').on(table.sessionId),
+    index('word_requests_created_at_idx').on(table.createdAt),
+  ],
+).enableRLS()
+
+export const wordsRelations = relations(words, ({ many }) => ({
+  comparisons: many(wordComparisons),
+}))
+
+export const wordComparisonsRelations = relations(wordComparisons, ({ one }) => ({
+  word: one(words, {
+    fields: [wordComparisons.wordId],
+    references: [words.id],
+  }),
+}))
+
 // ========================================
 // EXPORTED RLS POLICY FUNCTIONS
 // ========================================
@@ -567,6 +630,12 @@ export type Institution = typeof institutions.$inferSelect
 export type NewInstitution = typeof institutions.$inferInsert
 export type RagFile = typeof ragFiles.$inferSelect
 export type NewRagFile = typeof ragFiles.$inferInsert
+export type Word = typeof words.$inferSelect
+export type NewWord = typeof words.$inferInsert
+export type WordComparison = typeof wordComparisons.$inferSelect
+export type NewWordComparison = typeof wordComparisons.$inferInsert
+export type WordRequest = typeof wordRequests.$inferSelect
+export type NewWordRequest = typeof wordRequests.$inferInsert
 
 // Enum types for better type safety
 export type UserRole = 'superadmin' | 'admin' | 'user'
@@ -1083,14 +1152,98 @@ export const ragFilesPolicies = sql`
   -- Drop existing policies
   DROP POLICY IF EXISTS "Service role can manage rag_files" ON public.rag_files;
   DROP POLICY IF EXISTS "Admins can manage rag_files" ON public.rag_files;
-  
+
   -- Service role has full access
   CREATE POLICY "Service role can manage rag_files" ON public.rag_files
     FOR ALL USING (auth.role() = 'service_role');
-  
+
   -- Admins can manage all RAG files
   CREATE POLICY "Admins can manage rag_files" ON public.rag_files
-    FOR ALL 
+    FOR ALL
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.users u
+        WHERE u.supabase_user_id = auth.uid()
+        AND u.role_id IN (1, 2)
+        AND u.is_active = true
+      )
+    );
+`
+
+// Policies for words table (public read, admin write)
+export const wordsPolicies = sql`
+  -- Drop existing policies
+  DROP POLICY IF EXISTS "Service role can manage words" ON public.words;
+  DROP POLICY IF EXISTS "Anyone can read words" ON public.words;
+  DROP POLICY IF EXISTS "Admins can manage words" ON public.words;
+
+  -- Service role has full access
+  CREATE POLICY "Service role can manage words" ON public.words
+    FOR ALL USING (auth.role() = 'service_role');
+
+  -- Anyone can read words
+  CREATE POLICY "Anyone can read words" ON public.words
+    FOR SELECT USING (true);
+
+  -- Admins can manage words
+  CREATE POLICY "Admins can manage words" ON public.words
+    FOR ALL
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.users u
+        WHERE u.supabase_user_id = auth.uid()
+        AND u.role_id IN (1, 2)
+        AND u.is_active = true
+      )
+    );
+`
+
+// Policies for word_comparisons table (public read, admin write)
+export const wordComparisonsPolicies = sql`
+  -- Drop existing policies
+  DROP POLICY IF EXISTS "Service role can manage word_comparisons" ON public.word_comparisons;
+  DROP POLICY IF EXISTS "Anyone can read word_comparisons" ON public.word_comparisons;
+  DROP POLICY IF EXISTS "Admins can manage word_comparisons" ON public.word_comparisons;
+
+  -- Service role has full access
+  CREATE POLICY "Service role can manage word_comparisons" ON public.word_comparisons
+    FOR ALL USING (auth.role() = 'service_role');
+
+  -- Anyone can read word comparisons
+  CREATE POLICY "Anyone can read word_comparisons" ON public.word_comparisons
+    FOR SELECT USING (true);
+
+  -- Admins can manage word comparisons
+  CREATE POLICY "Admins can manage word_comparisons" ON public.word_comparisons
+    FOR ALL
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.users u
+        WHERE u.supabase_user_id = auth.uid()
+        AND u.role_id IN (1, 2)
+        AND u.is_active = true
+      )
+    );
+`
+
+// Policies for word_requests table (anyone can manage)
+export const wordRequestsPolicies = sql`
+  -- Drop existing policies
+  DROP POLICY IF EXISTS "Service role can manage word_requests" ON public.word_requests;
+  DROP POLICY IF EXISTS "Anyone can manage word_requests" ON public.word_requests;
+  DROP POLICY IF EXISTS "Admins can manage word_requests" ON public.word_requests;
+
+  -- Service role has full access
+  CREATE POLICY "Service role can manage word_requests" ON public.word_requests
+    FOR ALL USING (auth.role() = 'service_role');
+
+  -- Anyone can manage word requests (anonymous access)
+  CREATE POLICY "Anyone can manage word_requests" ON public.word_requests
+    FOR ALL USING (true);
+
+  -- Admins can manage word requests
+  CREATE POLICY "Admins can manage word_requests" ON public.word_requests
+    FOR ALL
     USING (
       EXISTS (
         SELECT 1 FROM public.users u
@@ -1105,15 +1258,15 @@ export const ragFilesPolicies = sql`
 export const applyAllRLSPolicies = sql`
   -- Apply all RLS policies in correct order
   SELECT 'Starting RLS policy application...';
-  
+
   -- Apply reference table policies first
   ${rolesPolicies};
-  
+
   -- Apply core user management policies
   ${usersPolicies};
   ${userSyncLogPolicies};
   ${adminInvitationsPolicies};
-  
+
   -- Apply application data policies
   ${conversationsPolicies};
   ${messagesPolicies};
@@ -1121,10 +1274,15 @@ export const applyAllRLSPolicies = sql`
   ${notesPolicies};
   ${appSettingsPolicies};
   ${adminQueuePolicies};
-  
+
   -- Apply new institution and RAG file policies
   ${institutionsPolicies};
   ${ragFilesPolicies};
-  
+
+  -- Apply vocab table policies
+  ${wordsPolicies};
+  ${wordComparisonsPolicies};
+  ${wordRequestsPolicies};
+
   SELECT 'RLS policies applied successfully!';
 `
