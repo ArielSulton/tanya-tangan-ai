@@ -53,7 +53,19 @@ async def vocab_fallback(
     db: AsyncSession = Depends(get_db_session),
 ):
     """AI fallback: fuzzy-match word and generate child-friendly explanation."""
-    result = await fallback_suggest(body.gesture_input, body.category, db)
+    if body.category not in CATEGORIES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Kategori tidak valid. Pilihan: {CATEGORIES}",
+        )
+    try:
+        result = await fallback_suggest(body.gesture_input, body.category, db)
+    except Exception as exc:
+        logger.error("fallback_suggest failed for input=%r: %s", body.gesture_input, exc)
+        raise HTTPException(
+            status_code=503,
+            detail="Layanan fallback tidak tersedia sementara.",
+        )
     await log_word_request(
         body.gesture_input, result.suggested_word, body.session_id, db
     )
