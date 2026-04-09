@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { GestureRecognition } from '@/components/gesture/gesture-recognition'
 import { ConcreteWordCard } from '@/components/vocab/ConcreteWordCard'
 import { AbstractComparison } from '@/components/vocab/AbstractComparison'
 import { AIFallbackCard } from '@/components/vocab/AIFallbackCard'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Keyboard } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const CATEGORY_LABELS: Record<string, string> = {
   hewan: 'Hewan',
@@ -50,6 +51,9 @@ export default function VocabKategoriPage() {
   const router = useRouter()
   const [result, setResult] = useState<LookupResult>({ state: 'idle' })
   const [retryCount, setRetryCount] = useState(0)
+  const [showManualInput, setShowManualInput] = useState(false)
+  const [manualWord, setManualWord] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!VALID_CATEGORIES.includes(kategori)) {
@@ -109,6 +113,18 @@ export default function VocabKategoriPage() {
     }
   }
 
+  const handleManualSubmit = () => {
+    if (manualWord.trim()) {
+      void handleWordFormed(manualWord.trim())
+      setManualWord('')
+    }
+  }
+
+  const toggleManualInput = () => {
+    setShowManualInput((v) => !v)
+    setTimeout(() => inputRef.current?.focus(), 50)
+  }
+
   const categoryLabel = CATEGORY_LABELS[kategori] ?? kategori
 
   return (
@@ -123,7 +139,7 @@ export default function VocabKategoriPage() {
           Kategori: <span className="text-indigo-600">{categoryLabel}</span>
         </h1>
 
-        <div className="mb-8">
+        <div className="mb-4">
           <GestureRecognition
             onWordFormed={(word) => {
               void handleWordFormed(word)
@@ -131,6 +147,33 @@ export default function VocabKategoriPage() {
             enableWordFormation={true}
             showAlternatives={false}
           />
+        </div>
+
+        {/* Manual input toggle */}
+        <div className="mb-6 flex flex-col items-center gap-2">
+          <button
+            onClick={toggleManualInput}
+            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-indigo-600 transition-colors"
+          >
+            <Keyboard className="h-3.5 w-3.5" />
+            {showManualInput ? 'Tutup input teks' : 'Ketik kata langsung'}
+          </button>
+
+          {showManualInput && (
+            <div className="flex w-full max-w-xs gap-2">
+              <Input
+                ref={inputRef}
+                value={manualWord}
+                onChange={(e) => setManualWord(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
+                placeholder={`Ketik kata ${categoryLabel.toLowerCase()}...`}
+                className="text-sm"
+              />
+              <Button onClick={handleManualSubmit} disabled={!manualWord.trim() || result.state === 'loading'}>
+                Cari
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col items-center">
