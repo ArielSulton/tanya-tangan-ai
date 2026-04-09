@@ -16,7 +16,6 @@ from httpx import ASGITransport, AsyncClient
 from app.core.database import async_session_factory
 from app.db.models import Word, WordComparison
 from app.main import app
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 # ---------------------------------------------------------------------------
