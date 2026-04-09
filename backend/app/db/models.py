@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Union
 from app.core.database import Base
 from app.models.institution import Institution, RagFile
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -598,7 +598,7 @@ class Word(Base):
     __tablename__ = "words"
 
     id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+        PG_UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
     )
     text: Mapped[str] = mapped_column(Text, nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -626,10 +626,10 @@ class WordComparison(Base):
     __tablename__ = "word_comparisons"
 
     id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+        PG_UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
     )
     word_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("words.id", ondelete="CASCADE"), nullable=False, unique=True
+        PG_UUID(as_uuid=False), ForeignKey("words.id", ondelete="CASCADE"), nullable=False, unique=True
     )
     low_image_url: Mapped[str] = mapped_column(Text, nullable=False)
     high_image_url: Mapped[str] = mapped_column(Text, nullable=False)
@@ -650,7 +650,7 @@ class WordRequest(Base):
     __tablename__ = "word_requests"
 
     id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+        PG_UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
     )
     gesture_input: Mapped[str] = mapped_column(Text, nullable=False)
     suggested_word: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
