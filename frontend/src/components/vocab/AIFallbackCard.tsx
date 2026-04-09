@@ -4,13 +4,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
 
 interface AIFallbackCardProps {
-  _gestureInput: string
+  gestureInput: string
   suggestedWord: string | null
   explanation: string
   onTrySuggested?: (word: string) => void
 }
 
-export function AIFallbackCard({ _gestureInput, suggestedWord, explanation, onTrySuggested }: AIFallbackCardProps) {
+export function AIFallbackCard({ suggestedWord, explanation, onTrySuggested }: AIFallbackCardProps) {
   return (
     <Card className="mx-auto w-full max-w-sm border-orange-200 bg-orange-50">
       <CardContent className="flex flex-col items-center gap-4 p-6">
