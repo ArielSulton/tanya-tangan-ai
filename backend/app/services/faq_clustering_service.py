@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 from app.core.config import settings
-from langchain.retrievers import ContextualCompressionRetriever, MultiQueryRetriever
-from langchain.retrievers.document_compressors import LLMChainExtractor
+from langchain_classic.retrievers import ContextualCompressionRetriever, MultiQueryRetriever
+from langchain_classic.retrievers.document_compressors import LLMChainExtractor
 from pinecone import Pinecone
 from pinecone import Pinecone as PineconeClient
 from pinecone import ServerlessSpec

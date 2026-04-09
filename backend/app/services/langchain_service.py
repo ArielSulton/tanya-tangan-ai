@@ -16,16 +16,16 @@ import redis
 from app.core.config import settings
 from app.core.database import get_db_session
 from app.db.models import Institution
-from langchain.callbacks.base import BaseCallbackHandler
-from langchain.memory import (
+from langchain_classic.memory import (
     ConversationBufferWindowMemory,
     ConversationSummaryBufferMemory,
 )
-from langchain.retrievers import ContextualCompressionRetriever
-from langchain.retrievers.document_compressors import LLMChainExtractor
-from langchain.retrievers.multi_query import MultiQueryRetriever
-from langchain.schema import BaseMemory
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_classic.retrievers import ContextualCompressionRetriever
+from langchain_classic.retrievers.document_compressors import LLMChainExtractor
+from langchain_classic.retrievers.multi_query import MultiQueryRetriever
+from langchain_classic.schema import BaseMemory
+from langchain_core.callbacks.base import BaseCallbackHandler
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import (
@@ -34,7 +34,35 @@ from langchain_core.prompts import (
     SystemMessagePromptTemplate,
 )
 from langchain_groq import ChatGroq
-from langchain_pinecone import PineconeEmbeddings, PineconeVectorStore
+try:
+    from langchain_pinecone import PineconeEmbeddings, PineconeVectorStore
+except ImportError:
+    # langchain-pinecone < 0.1.0 does not ship PineconeEmbeddings.
+    # Provide a minimal shim using the Pinecone inference API (pinecone >= 6).
+    from langchain_core.embeddings import Embeddings as _Embeddings
+    from langchain_pinecone import Pinecone as PineconeVectorStore  # type: ignore[assignment]
+
+    class PineconeEmbeddings(_Embeddings):  # type: ignore[no-redef]
+        def __init__(self, model: str, pinecone_api_key: str, **kwargs: object) -> None:
+            from pinecone import Pinecone as _PC
+            self._model = model
+            self._pc = _PC(api_key=pinecone_api_key)
+
+        def embed_documents(self, texts: list[str]) -> list[list[float]]:
+            result = self._pc.inference.embed(
+                model=self._model,
+                inputs=texts,
+                parameters={"input_type": "passage"},
+            )
+            return [item["values"] for item in result.data]
+
+        def embed_query(self, text: str) -> list[float]:
+            result = self._pc.inference.embed(
+                model=self._model,
+                inputs=[text],
+                parameters={"input_type": "query"},
+            )
+            return result.data[0]["values"]
 from pinecone import Pinecone as PineconeClient
 from sqlalchemy import select
 

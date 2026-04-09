@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 import pinecone
 from app.core.config import settings
 from groq import Groq
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_core.documents import Document
 from langchain_pinecone import PineconeEmbeddings, PineconeVectorStore

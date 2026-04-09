@@ -27,9 +27,32 @@ from typing import Any, Dict, List, Optional, Tuple
 # FastAPI and async
 import aiofiles
 from app.core.config import settings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-from langchain_pinecone import PineconeEmbeddings
+try:
+    from langchain_pinecone import PineconeEmbeddings
+except ImportError:
+    from langchain_core.embeddings import Embeddings as _Embeddings
+
+    class PineconeEmbeddings(_Embeddings):  # type: ignore[no-redef]
+        def __init__(self, model: str, pinecone_api_key: str, **kwargs: object) -> None:
+            from pinecone import Pinecone as _PC
+            self._model = model
+            self._pc = _PC(api_key=pinecone_api_key)
+
+        def embed_documents(self, texts: list[str]) -> list[list[float]]:
+            result = self._pc.inference.embed(
+                model=self._model, inputs=texts,
+                parameters={"input_type": "passage"},
+            )
+            return [item["values"] for item in result.data]
+
+        def embed_query(self, text: str) -> list[float]:
+            result = self._pc.inference.embed(
+                model=self._model, inputs=[text],
+                parameters={"input_type": "query"},
+            )
+            return result.data[0]["values"]
 
 # Core libraries
 from pinecone import Pinecone, ServerlessSpec
