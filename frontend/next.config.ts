@@ -50,6 +50,15 @@ const nextConfig: NextConfig = {
         hostname: 'localhost',
         port: '8000',
       },
+      // External image sources
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      },
       // Production domain patterns
       {
         protocol: 'https',
