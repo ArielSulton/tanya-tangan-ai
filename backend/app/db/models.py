@@ -589,6 +589,75 @@ class AdminQueue(Base):
     )
 
 
+# ─── Vocab Models ────────────────────────────────────────────────────────────
+
+
+class Word(Base):
+    """Vocabulary words with visual assets"""
+
+    __tablename__ = "words"
+
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    category: Mapped[str] = mapped_column(String(50), nullable=False)
+    type: Mapped[str] = mapped_column(String(20), nullable=False)
+    level: Mapped[str] = mapped_column(String(20), nullable=False, default="sdlb")
+    image_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    image_source: Mapped[str] = mapped_column(String(20), nullable=False, default="api")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    comparison: Mapped[Optional["WordComparison"]] = relationship(
+        "WordComparison", back_populates="word", uselist=False
+    )
+
+    __table_args__ = (
+        Index("words_text_category_idx", "text", "category"),
+        Index("words_category_idx", "category"),
+    )
+
+
+class WordComparison(Base):
+    """Side-by-side comparison data for abstract words"""
+
+    __tablename__ = "word_comparisons"
+
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    word_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("words.id"), nullable=False
+    )
+    low_image_url: Mapped[str] = mapped_column(Text, nullable=False)
+    high_image_url: Mapped[str] = mapped_column(Text, nullable=False)
+    low_label: Mapped[str] = mapped_column(String(100), nullable=False)
+    high_label: Mapped[str] = mapped_column(String(100), nullable=False)
+    reference_word: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    word: Mapped["Word"] = relationship("Word", back_populates="comparison")
+
+
+class WordRequest(Base):
+    """Log of gestures with no matching word — used for admin content curation"""
+
+    __tablename__ = "word_requests"
+
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    gesture_input: Mapped[str] = mapped_column(Text, nullable=False)
+    suggested_word: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    session_id: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (Index("word_requests_created_at_idx", "created_at"),)
+
+
 # Export all models for easy importing
 __all__ = [
     "Base",
@@ -610,6 +679,10 @@ __all__ = [
     # Application management
     "AppSetting",
     "AdminQueue",
+    # Vocab models
+    "Word",
+    "WordComparison",
+    "WordRequest",
 ]
 
 # Type definitions for API compatibility (matching frontend types)
