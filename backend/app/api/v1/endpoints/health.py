@@ -6,7 +6,6 @@ import logging
 import time
 from typing import Any, Dict
 
-import redis
 from app.core.config import settings
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -36,7 +35,6 @@ class DetailedHealthResponse(BaseModel):
     checks: Dict[str, Any]
     environment: str
     database: Dict[str, Any]
-    redis: Dict[str, Any]
     external_services: Dict[str, Any]
 
 
@@ -48,7 +46,7 @@ async def health_check():
     return HealthResponse(
         status="healthy",
         timestamp=time.time(),
-        service="tunarasa-backend",
+        service="pensyarat-backend",
         checks={"api": "healthy", "startup": "complete"},
     )
 
@@ -60,10 +58,6 @@ async def detailed_health_check():
     """
     start_time = time.time()
     checks = {}
-
-    # Check Redis connection
-    redis_status = await _check_redis()
-    checks["redis"] = redis_status
 
     # Check database connection
     database_status = await _check_database()
@@ -83,40 +77,13 @@ async def detailed_health_check():
     return DetailedHealthResponse(
         status=overall_status,
         timestamp=time.time(),
-        service="tunarasa-backend",
+        service="pensyarat-backend",
         uptime=time.time() - start_time,
         checks=checks,
         environment=settings.ENVIRONMENT,
         database=checks.get("database", {}),
-        redis=checks.get("redis", {}),
         external_services=checks.get("external_services", {}),
     )
-
-
-async def _check_redis() -> Dict[str, Any]:
-    """Check Redis connection and performance"""
-    try:
-        redis_client = redis.from_url(settings.REDIS_URL)
-
-        # Test connection
-        start_time = time.time()
-        redis_client.ping()
-        response_time = time.time() - start_time
-
-        # Get basic info
-        info = redis_client.info()
-        memory_usage = info.get("used_memory_human", "unknown")
-
-        return {
-            "status": "healthy",
-            "response_time": response_time,
-            "memory_usage": memory_usage,
-            "connected_clients": info.get("connected_clients", 0),
-        }
-
-    except Exception as e:
-        logger.error(f"Redis health check failed: {e}")
-        return {"status": "unhealthy", "error": str(e)}
 
 
 async def _check_database() -> Dict[str, Any]:

@@ -1,7 +1,7 @@
 services:
   # Init service to fix shared volume permissions
   init-permissions:
-    container_name: tunarasa-init-permissions
+    container_name: pensyarat-init-permissions
     image: alpine:latest
     volumes:
       - shared_uploads:/app/uploads
@@ -15,11 +15,11 @@ services:
         ls -la /app/uploads/
       "
     networks:
-      - tunarasa-net
+      - pensyarat-net
 
   # Frontend Service (Next.js)
   frontend:
-    container_name: tunarasa-frontend
+    container_name: pensyarat-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -89,7 +89,6 @@ services:
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - REDIS_URL=${REDIS_URL}
 
       # API & Security Configuration
       - CORS_ORIGINS=${CORS_ORIGINS}
@@ -108,6 +107,13 @@ services:
       - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
       - GRAFANA_URL=${GRAFANA_URL}
       - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+
+      # Cloudflare R2 Storage
+      - CLOUDFLARE_R2_ACCOUNT_ID=${CLOUDFLARE_R2_ACCOUNT_ID}
+      - CLOUDFLARE_R2_ACCESS_KEY_ID=${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      - CLOUDFLARE_R2_SECRET_ACCESS_KEY=${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_R2_BUCKET_NAME=${CLOUDFLARE_R2_BUCKET_NAME}
+      - CLOUDFLARE_R2_PUBLIC_URL=${CLOUDFLARE_R2_PUBLIC_URL}
     ports:
       - "5000:3000"
     dns:
@@ -116,7 +122,7 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     networks:
-      - tunarasa-net
+      - pensyarat-net
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -132,7 +138,7 @@ services:
 
   # Backend Service (FastAPI)
   backend:
-    container_name: tunarasa-backend
+    container_name: pensyarat-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -197,7 +203,6 @@ services:
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - REDIS_URL=${REDIS_URL}
 
       # API & Security Configuration
       - CORS_ORIGINS=${CORS_ORIGINS}
@@ -216,11 +221,16 @@ services:
       - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
       - GRAFANA_URL=${GRAFANA_URL}
       - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+
+      # Cloudflare R2 Storage
+      - CLOUDFLARE_R2_ACCOUNT_ID=${CLOUDFLARE_R2_ACCOUNT_ID}
+      - CLOUDFLARE_R2_ACCESS_KEY_ID=${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      - CLOUDFLARE_R2_SECRET_ACCESS_KEY=${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_R2_BUCKET_NAME=${CLOUDFLARE_R2_BUCKET_NAME}
+      - CLOUDFLARE_R2_PUBLIC_URL=${CLOUDFLARE_R2_PUBLIC_URL}
     depends_on:
       init-permissions:
         condition: service_completed_successfully
-      redis:
-        condition: service_healthy
     ports:
       - "8000:8000"
     dns:
@@ -229,7 +239,7 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     networks:
-      - tunarasa-net
+      - pensyarat-net
     volumes:
       - ./backend:/app
       - ./assets:/app/assets
@@ -243,32 +253,9 @@ services:
       start_period: 60s
     restart: unless-stopped
 
-  # Redis Service (Caching & Sessions)
-  redis:
-    container_name: tunarasa-redis
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    dns:
-      - 1.1.1.1
-      - 1.0.0.1
-      - 8.8.8.8
-      - 8.8.4.4
-    volumes:
-      - redis_data_dev:/data
-    networks:
-      - tunarasa-net
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    restart: unless-stopped
-
   # Prometheus (Metrics Collection)
   prometheus:
-    container_name: tunarasa-prometheus
+    container_name: pensyarat-prometheus
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
@@ -283,7 +270,7 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     networks:
-      - tunarasa-net
+      - pensyarat-net
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -301,7 +288,7 @@ services:
 
   # Grafana (Advanced Monitoring Dashboard)
   grafana:
-    container_name: tunarasa-grafana
+    container_name: pensyarat-grafana
     image: grafana/grafana:latest
     env_file:
       - .env
@@ -328,7 +315,7 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     networks:
-      - tunarasa-net
+      - pensyarat-net
     volumes:
       - grafana_data_dev:/var/lib/grafana
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
@@ -342,8 +329,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  redis_data_dev:
-    driver: local
   prometheus_data_dev:
     driver: local
   grafana_data_dev:
@@ -352,6 +337,6 @@ volumes:
     driver: local
 
 networks:
-  tunarasa-net:
-    name: tunarasa-net
+  pensyarat-net:
+    name: pensyarat-net
     driver: bridge

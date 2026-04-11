@@ -52,7 +52,7 @@ export default function Tentang() {
       <section className="bg-gradient-to-br from-green-600 to-green-800 py-20 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="mb-6 text-4xl font-bold lg:text-5xl">Tentang Tanya Tangan AI</h1>
+            <h1 className="mb-6 text-4xl font-bold lg:text-5xl">Tentang PENSyarat AI</h1>
             <p className="mx-auto max-w-3xl text-xl text-green-100">
               Platform belajar inklusif untuk siswa Sekolah Luar Biasa tipe B (SLB-B / tunarungu) yang menggunakan
               teknologi AI dan bahasa isyarat SIBI untuk mendukung proses pembelajaran.
@@ -114,7 +114,7 @@ export default function Tentang() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-gray-900">Performa Sistem</h2>
-            <p className="text-lg text-gray-600">Statistik kinerja dan kemampuan platform Tanya Tangan AI</p>
+            <p className="text-lg text-gray-600">Statistik kinerja dan kemampuan platform PENSyarat AI</p>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -168,7 +168,7 @@ export default function Tentang() {
 
           <Card className="text-center">
             <CardContent className="p-8">
-              <h3 className="mb-4 text-2xl font-bold text-gray-900">Tanya Tangan AI Development Team</h3>
+              <h3 className="mb-4 text-2xl font-bold text-gray-900">PENSyarat AI Development Team</h3>
               <p className="mb-6 text-gray-600">
                 Tim multidisiplin yang terdiri dari developers, designers, dan accessibility specialists yang
                 berkomitmen untuk menciptakan teknologi inklusif.

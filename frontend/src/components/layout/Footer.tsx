@@ -4,8 +4,7 @@ import Link from 'next/link'
 
 const companyLinks = [
   { name: 'Beranda', href: '/' },
-  { name: 'Tentang', href: '/tentang' },
-  { name: 'Mata Pelajaran', href: '/layanan' },
+  { name: 'Vocabulary', href: '/vocab' },
   { name: 'Akses Khusus', href: '/akses-khusus' },
 ]
 
@@ -21,7 +20,7 @@ export function Footer() {
                 <span className="text-sm font-bold text-white">TT</span>
               </div>
               <span className="text-lg font-bold text-gray-900">
-                Tanya Tangan <span className="text-green-600">AI</span>
+                PENSyarat <span className="text-green-600">AI</span>
               </span>
             </Link>
             <p className="max-w-sm text-sm text-gray-600">
@@ -52,7 +51,7 @@ export function Footer() {
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                 </svg>
-                <span className="text-sm text-gray-600">admin@mail.tunarasa.my.id</span>
+                <span className="text-sm text-gray-600">admin@mail.pensyarat.my.id</span>
               </div>
               <p className="text-sm text-gray-600">
                 Dibuat dengan <span className="text-red-500">❤</span> untuk aksesibilitas yang lebih baik.
@@ -64,7 +63,7 @@ export function Footer() {
         {/* Bottom Section */}
         <div className="mt-8 border-t border-gray-200 pt-8">
           <div className="flex flex-col items-center justify-between md:flex-row">
-            <p className="text-sm text-gray-500">© 2025 Tanya Tangan AI</p>
+            <p className="text-sm text-gray-500">© 2025 PENSyarat AI</p>
           </div>
         </div>
       </div>

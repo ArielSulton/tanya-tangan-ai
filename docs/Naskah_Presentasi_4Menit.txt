@@ -1,5 +1,5 @@
 ================================================================================
-              NASKAH PRESENTASI TANYA TANGAN — 4 MENIT
+              NASKAH PRESENTASI PENSyarat AI — 4 MENIT
 ================================================================================
 
 
@@ -38,7 +38,7 @@ digital yang membantu.
 --------------------------------------------------------------------------------
 [SOLUSI — 1 menit]
 
-Maka saya kembangkan Tanya Tangan — platform pemahaman kosakata visual berbasis
+Maka saya kembangkan PENSyarat AI — platform pemahaman kosakata visual berbasis
 kecerdasan buatan dan pengenalan gestur bahasa isyarat SIBI untuk siswa SDLB-B.
 
 Cara kerjanya sederhana. Siswa membuka browser — tidak perlu instalasi apapun —
@@ -62,7 +62,7 @@ lalu menampilkan:
 --------------------------------------------------------------------------------
 [KEUNGGULAN & VALIDASI — 45 detik]
 
-Tanya Tangan adalah satu-satunya platform yang menggabungkan tiga kapabilitas
+PENSyarat AI adalah satu-satunya platform yang menggabungkan tiga kapabilitas
 sekaligus: input gestur SIBI real-time, visualisasi komparatif untuk kata
 abstrak, dan fallback AI — semuanya berbasis browser tanpa instalasi.
 
@@ -74,13 +74,13 @@ juga telah didaftarkan sebagai bentuk perlindungan inovasi.
 --------------------------------------------------------------------------------
 [DAMPAK & PENUTUP — 30 detik]
 
-Target kami: Tanya Tangan siap MVP pada Juni 2026, dan diimplementasikan secara
+Target kami: PENSyarat AI siap MVP pada Juni 2026, dan diimplementasikan secara
 pilot di tiga SLB-B pada Oktober 2026 — dimulai dari mitra di Surabaya.
 
 Setiap anak tunarungu berhak tidak hanya tahu kata-katanya, tapi benar-benar
 mengerti maknanya.
 
-Dengan Tanya Tangan, kami menjembatani itu — satu isyarat tangan, satu gambar,
+Dengan PENSyarat AI, kami menjembatani itu — satu isyarat tangan, satu gambar,
 satu pemahaman baru.
 
 Terima kasih.

@@ -72,7 +72,7 @@ class Settings(BaseSettings):
     FROM_EMAIL: Optional[str] = None
     FROM_NAME: Optional[str] = None
     ADMIN_EMAIL: Optional[str] = None
-    REDIS_URL: str
+    REDIS_URL: Optional[str] = None
 
     # API & Security Configuration
     CORS_ORIGINS: str  # Comma-separated string, parsed manually

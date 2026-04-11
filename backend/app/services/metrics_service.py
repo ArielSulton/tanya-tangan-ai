@@ -1,5 +1,5 @@
 """
-Prometheus metrics collection service for Tunarasa
+Prometheus metrics collection service for PENSyarat AI
 """
 
 import logging
@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 # Initialize metrics with collision handling
 try:
     # Define Prometheus metrics
-    tunarasa_http_requests_total = Counter(
-        "tunarasa_http_requests_total",
+    pensyarat_http_requests_total = Counter(
+        "pensyarat_http_requests_total",
         "Total HTTP requests",
         ["method", "endpoint", "status_code"],
     )
@@ -27,16 +27,16 @@ except ValueError as e:
         for collector in list(REGISTRY._collector_to_names.keys()):
             if (
                 hasattr(collector, "_name")
-                and collector._name == "tunarasa_http_requests_total"
+                and collector._name == "pensyarat_http_requests_total"
             ):
-                tunarasa_http_requests_total = collector
+                pensyarat_http_requests_total = collector
                 break
     else:
         raise
 
 try:
-    tunarasa_http_request_duration_seconds = Histogram(
-        "tunarasa_http_request_duration_seconds",
+    pensyarat_http_request_duration_seconds = Histogram(
+        "pensyarat_http_request_duration_seconds",
         "HTTP request duration in seconds",
         ["method", "endpoint"],
     )
@@ -46,16 +46,16 @@ except ValueError as e:
         for collector in list(REGISTRY._collector_to_names.keys()):
             if (
                 hasattr(collector, "_name")
-                and collector._name == "tunarasa_http_request_duration_seconds"
+                and collector._name == "pensyarat_http_request_duration_seconds"
             ):
-                tunarasa_http_request_duration_seconds = collector
+                pensyarat_http_request_duration_seconds = collector
                 break
     else:
         raise
 
 try:
-    tunarasa_active_sessions_total = Gauge(
-        "tunarasa_active_sessions_total", "Number of active user sessions"
+    pensyarat_active_sessions_total = Gauge(
+        "pensyarat_active_sessions_total", "Number of active user sessions"
     )
 except ValueError as e:
     if "already exists" in str(e):
@@ -65,16 +65,16 @@ except ValueError as e:
         for collector in list(REGISTRY._collector_to_names.keys()):
             if (
                 hasattr(collector, "_name")
-                and collector._name == "tunarasa_active_sessions_total"
+                and collector._name == "pensyarat_active_sessions_total"
             ):
-                tunarasa_active_sessions_total = collector
+                pensyarat_active_sessions_total = collector
                 break
     else:
         raise
 
 try:
-    tunarasa_gesture_recognitions_total = Counter(
-        "tunarasa_gesture_recognitions_total",
+    pensyarat_gesture_recognitions_total = Counter(
+        "pensyarat_gesture_recognitions_total",
         "Total gesture recognitions performed",
         ["gesture_type", "confidence_level"],
     )
@@ -86,16 +86,16 @@ except ValueError as e:
         for collector in list(REGISTRY._collector_to_names.keys()):
             if (
                 hasattr(collector, "_name")
-                and collector._name == "tunarasa_gesture_recognitions_total"
+                and collector._name == "pensyarat_gesture_recognitions_total"
             ):
-                tunarasa_gesture_recognitions_total = collector
+                pensyarat_gesture_recognitions_total = collector
                 break
     else:
         raise
 
 try:
-    tunarasa_gesture_recognition_accuracy = Gauge(
-        "tunarasa_gesture_recognition_accuracy", "Current gesture recognition accuracy"
+    pensyarat_gesture_recognition_accuracy = Gauge(
+        "pensyarat_gesture_recognition_accuracy", "Current gesture recognition accuracy"
     )
 except ValueError as e:
     if "already exists" in str(e):
@@ -105,16 +105,16 @@ except ValueError as e:
         for collector in list(REGISTRY._collector_to_names.keys()):
             if (
                 hasattr(collector, "_name")
-                and collector._name == "tunarasa_gesture_recognition_accuracy"
+                and collector._name == "pensyarat_gesture_recognition_accuracy"
             ):
-                tunarasa_gesture_recognition_accuracy = collector
+                pensyarat_gesture_recognition_accuracy = collector
                 break
     else:
         raise
 
 try:
-    tunarasa_ai_requests_total = Counter(
-        "tunarasa_ai_requests_total",
+    pensyarat_ai_requests_total = Counter(
+        "pensyarat_ai_requests_total",
         "Total AI requests processed",
         ["model", "request_type"],
     )
@@ -124,16 +124,16 @@ except ValueError as e:
         for collector in list(REGISTRY._collector_to_names.keys()):
             if (
                 hasattr(collector, "_name")
-                and collector._name == "tunarasa_ai_requests_total"
+                and collector._name == "pensyarat_ai_requests_total"
             ):
-                tunarasa_ai_requests_total = collector
+                pensyarat_ai_requests_total = collector
                 break
     else:
         raise
 
 try:
-    tunarasa_ai_request_errors_total = Counter(
-        "tunarasa_ai_request_errors_total",
+    pensyarat_ai_request_errors_total = Counter(
+        "pensyarat_ai_request_errors_total",
         "Total AI request errors",
         ["model", "error_type"],
     )
@@ -143,16 +143,16 @@ except ValueError as e:
         for collector in list(REGISTRY._collector_to_names.keys()):
             if (
                 hasattr(collector, "_name")
-                and collector._name == "tunarasa_ai_request_errors_total"
+                and collector._name == "pensyarat_ai_request_errors_total"
             ):
-                tunarasa_ai_request_errors_total = collector
+                pensyarat_ai_request_errors_total = collector
                 break
     else:
         raise
 
 try:
-    tunarasa_ai_response_confidence_avg = Gauge(
-        "tunarasa_ai_response_confidence_avg", "Average AI response confidence"
+    pensyarat_ai_response_confidence_avg = Gauge(
+        "pensyarat_ai_response_confidence_avg", "Average AI response confidence"
     )
 except ValueError as e:
     if "already exists" in str(e):
@@ -160,14 +160,14 @@ except ValueError as e:
         for collector in list(REGISTRY._collector_to_names.keys()):
             if (
                 hasattr(collector, "_name")
-                and collector._name == "tunarasa_ai_response_confidence_avg"
+                and collector._name == "pensyarat_ai_response_confidence_avg"
             ):
-                tunarasa_ai_response_confidence_avg = collector
+                pensyarat_ai_response_confidence_avg = collector
                 break
 
 try:
-    tunarasa_ai_response_time_seconds = Histogram(
-        "tunarasa_ai_response_time_seconds",
+    pensyarat_ai_response_time_seconds = Histogram(
+        "pensyarat_ai_response_time_seconds",
         "AI response time in seconds",
         ["model", "request_type"],
     )
@@ -176,16 +176,16 @@ except ValueError as e:
         logger.warning("AI response time metric already exists, retrieving existing")
 
 try:
-    tunarasa_qr_codes_generated_total = Counter(
-        "tunarasa_qr_codes_generated_total", "Total QR codes generated", ["qr_type"]
+    pensyarat_qr_codes_generated_total = Counter(
+        "pensyarat_qr_codes_generated_total", "Total QR codes generated", ["qr_type"]
     )
 except ValueError as e:
     if "already exists" in str(e):
         logger.warning("QR codes metric already exists, retrieving existing")
 
 try:
-    tunarasa_database_connections_active = Gauge(
-        "tunarasa_database_connections_active", "Number of active database connections"
+    pensyarat_database_connections_active = Gauge(
+        "pensyarat_database_connections_active", "Number of active database connections"
     )
 except ValueError as e:
     if "already exists" in str(e):
@@ -194,8 +194,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_deepeval_scores = Histogram(
-        "tunarasa_deepeval_scores", "DeepEval quality scores", ["metric_type"]
+    pensyarat_deepeval_scores = Histogram(
+        "pensyarat_deepeval_scores", "DeepEval quality scores", ["metric_type"]
     )
 except ValueError as e:
     if "already exists" in str(e):
@@ -203,8 +203,8 @@ except ValueError as e:
 
 # Additional metrics needed by dashboards
 try:
-    tunarasa_llm_quality_score = Gauge(
-        "tunarasa_llm_quality_score",
+    pensyarat_llm_quality_score = Gauge(
+        "pensyarat_llm_quality_score",
         "LLM response quality score",
         ["metric", "category"],
     )
@@ -213,8 +213,8 @@ except ValueError as e:
         logger.warning("LLM quality score metric already exists, retrieving existing")
 
 try:
-    tunarasa_llm_evaluations_total = Counter(
-        "tunarasa_llm_evaluations_total",
+    pensyarat_llm_evaluations_total = Counter(
+        "pensyarat_llm_evaluations_total",
         "Total LLM evaluations performed",
         ["category"],
     )
@@ -223,8 +223,8 @@ except ValueError as e:
         logger.warning("LLM evaluations metric already exists, retrieving existing")
 
 try:
-    tunarasa_system_status = Gauge(
-        "tunarasa_system_status", "System status indicator", ["component"]
+    pensyarat_system_status = Gauge(
+        "pensyarat_system_status", "System status indicator", ["component"]
     )
 except ValueError as e:
     if "already exists" in str(e):
@@ -232,8 +232,8 @@ except ValueError as e:
 
 # Business intelligence metrics
 try:
-    tunarasa_gesture_requests_total = Counter(
-        "tunarasa_gesture_requests_total",
+    pensyarat_gesture_requests_total = Counter(
+        "pensyarat_gesture_requests_total",
         "Total gesture requests",
         ["session_id", "language", "success"],
     )
@@ -242,8 +242,8 @@ except ValueError as e:
         logger.warning("Gesture requests metric already exists, retrieving existing")
 
 try:
-    tunarasa_session_duration_seconds = Histogram(
-        "tunarasa_session_duration_seconds",
+    pensyarat_session_duration_seconds = Histogram(
+        "pensyarat_session_duration_seconds",
         "Session duration in seconds",
         buckets=[30, 60, 120, 300, 600, 1800, 3600, 7200],
     )
@@ -252,8 +252,8 @@ except ValueError as e:
         logger.warning("Session duration metric already exists, retrieving existing")
 
 try:
-    tunarasa_questions_per_session = Histogram(
-        "tunarasa_questions_per_session",
+    pensyarat_questions_per_session = Histogram(
+        "pensyarat_questions_per_session",
         "Number of questions per session",
         buckets=[1, 2, 5, 10, 20, 50, 100],
     )
@@ -264,8 +264,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_questions_total = Counter(
-        "tunarasa_questions_total",
+    pensyarat_questions_total = Counter(
+        "pensyarat_questions_total",
         "Total questions asked",
         ["source", "question_category"],
     )
@@ -274,8 +274,8 @@ except ValueError as e:
         logger.warning("Questions total metric already exists, retrieving existing")
 
 try:
-    tunarasa_gesture_confidence_score = Histogram(
-        "tunarasa_gesture_confidence_score",
+    pensyarat_gesture_confidence_score = Histogram(
+        "pensyarat_gesture_confidence_score",
         "Gesture recognition confidence scores",
         buckets=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99],
     )
@@ -286,8 +286,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_ai_quality_score = Histogram(
-        "tunarasa_ai_quality_score",
+    pensyarat_ai_quality_score = Histogram(
+        "pensyarat_ai_quality_score",
         "AI quality score distribution",
         ["category"],
         buckets=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99],
@@ -298,16 +298,16 @@ except ValueError as e:
 
 # SLI/SLO metrics for service level monitoring
 try:
-    tunarasa_service_uptime_seconds = Counter(
-        "tunarasa_service_uptime_seconds", "Total service uptime in seconds"
+    pensyarat_service_uptime_seconds = Counter(
+        "pensyarat_service_uptime_seconds", "Total service uptime in seconds"
     )
 except ValueError as e:
     if "already exists" in str(e):
         logger.warning("Service uptime metric already exists, retrieving existing")
 
 try:
-    tunarasa_request_success_total = Counter(
-        "tunarasa_request_success_total",
+    pensyarat_request_success_total = Counter(
+        "pensyarat_request_success_total",
         "Total successful requests",
         ["endpoint", "method"],
     )
@@ -316,8 +316,8 @@ except ValueError as e:
         logger.warning("Request success metric already exists, retrieving existing")
 
 try:
-    tunarasa_request_error_total = Counter(
-        "tunarasa_request_error_total",
+    pensyarat_request_error_total = Counter(
+        "pensyarat_request_error_total",
         "Total failed requests",
         ["endpoint", "method", "error_code"],
     )
@@ -326,24 +326,24 @@ except ValueError as e:
         logger.warning("Request error metric already exists, retrieving existing")
 
 try:
-    tunarasa_sli_availability = Gauge(
-        "tunarasa_sli_availability", "Service availability SLI (0-1)"
+    pensyarat_sli_availability = Gauge(
+        "pensyarat_sli_availability", "Service availability SLI (0-1)"
     )
 except ValueError as e:
     if "already exists" in str(e):
         logger.warning("SLI availability metric already exists, retrieving existing")
 
 try:
-    tunarasa_sli_error_rate = Gauge(
-        "tunarasa_sli_error_rate", "Service error rate SLI (0-1)"
+    pensyarat_sli_error_rate = Gauge(
+        "pensyarat_sli_error_rate", "Service error rate SLI (0-1)"
     )
 except ValueError as e:
     if "already exists" in str(e):
         logger.warning("SLI error rate metric already exists, retrieving existing")
 
 try:
-    tunarasa_sli_latency = Histogram(
-        "tunarasa_sli_latency_seconds",
+    pensyarat_sli_latency = Histogram(
+        "pensyarat_sli_latency_seconds",
         "Service latency SLI in seconds",
         buckets=[0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0],
     )
@@ -352,41 +352,25 @@ except ValueError as e:
         logger.warning("SLI latency metric already exists, retrieving existing")
 
 try:
-    tunarasa_sli_throughput = Gauge(
-        "tunarasa_sli_throughput_rps", "Service throughput SLI in requests per second"
+    pensyarat_sli_throughput = Gauge(
+        "pensyarat_sli_throughput_rps", "Service throughput SLI in requests per second"
     )
 except ValueError as e:
     if "already exists" in str(e):
         logger.warning("SLI throughput metric already exists, retrieving existing")
 
 try:
-    tunarasa_db_connections_max = Gauge(
-        "tunarasa_db_connections_max", "Maximum database connections configured"
+    pensyarat_db_connections_max = Gauge(
+        "pensyarat_db_connections_max", "Maximum database connections configured"
     )
 except ValueError as e:
     if "already exists" in str(e):
         logger.warning("DB connections max metric already exists, retrieving existing")
 
-try:
-    tunarasa_redis_memory_used_bytes = Gauge(
-        "tunarasa_redis_memory_used_bytes", "Redis memory usage in bytes"
-    )
-except ValueError as e:
-    if "already exists" in str(e):
-        logger.warning("Redis memory used metric already exists, retrieving existing")
-
-try:
-    tunarasa_redis_memory_max_bytes = Gauge(
-        "tunarasa_redis_memory_max_bytes", "Redis maximum memory in bytes"
-    )
-except ValueError as e:
-    if "already exists" in str(e):
-        logger.warning("Redis memory max metric already exists, retrieving existing")
-
 # FAQ Clustering Metrics
 try:
-    tunarasa_faq_clustering_total = Counter(
-        "tunarasa_faq_clustering_total",
+    pensyarat_faq_clustering_total = Counter(
+        "pensyarat_faq_clustering_total",
         "Total FAQ clustering operations performed",
         ["institution_id", "data_source"],
     )
@@ -397,8 +381,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_faq_clustering_duration_seconds = Histogram(
-        "tunarasa_faq_clustering_duration_seconds",
+    pensyarat_faq_clustering_duration_seconds = Histogram(
+        "pensyarat_faq_clustering_duration_seconds",
         "FAQ clustering operation duration in seconds",
         ["institution_id", "data_source"],
     )
@@ -409,8 +393,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_faq_clusters_count = Gauge(
-        "tunarasa_faq_clusters_count",
+    pensyarat_faq_clusters_count = Gauge(
+        "pensyarat_faq_clusters_count",
         "Number of clusters generated per institution",
         ["institution_id"],
     )
@@ -419,8 +403,8 @@ except ValueError as e:
         logger.warning("FAQ clusters count metric already exists, retrieving existing")
 
 try:
-    tunarasa_faq_questions_per_cluster_avg = Gauge(
-        "tunarasa_faq_questions_per_cluster_avg",
+    pensyarat_faq_questions_per_cluster_avg = Gauge(
+        "pensyarat_faq_questions_per_cluster_avg",
         "Average questions per cluster per institution",
         ["institution_id"],
     )
@@ -431,8 +415,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_faq_clustering_silhouette_score = Gauge(
-        "tunarasa_faq_clustering_silhouette_score",
+    pensyarat_faq_clustering_silhouette_score = Gauge(
+        "pensyarat_faq_clustering_silhouette_score",
         "FAQ clustering quality silhouette score (0-1)",
         ["institution_id"],
     )
@@ -443,8 +427,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_faq_recommendations_served_total = Counter(
-        "tunarasa_faq_recommendations_served_total",
+    pensyarat_faq_recommendations_served_total = Counter(
+        "pensyarat_faq_recommendations_served_total",
         "Total FAQ recommendations served to users",
         ["institution_id", "cluster_id"],
     )
@@ -455,8 +439,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_faq_clustering_errors_total = Counter(
-        "tunarasa_faq_clustering_errors_total",
+    pensyarat_faq_clustering_errors_total = Counter(
+        "pensyarat_faq_clustering_errors_total",
         "Total FAQ clustering operation failures",
         ["institution_id", "error_type"],
     )
@@ -467,8 +451,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_faq_clustering_data_source = Counter(
-        "tunarasa_faq_clustering_data_source",
+    pensyarat_faq_clustering_data_source = Counter(
+        "pensyarat_faq_clustering_data_source",
         "FAQ clustering data source usage",
         ["institution_id", "source_type"],  # database, fallback
     )
@@ -481,16 +465,16 @@ except ValueError as e:
 # Note: Enhanced versions defined above - removing duplicates
 
 try:
-    tunarasa_rag_retrieval_total = Counter(
-        "tunarasa_rag_retrieval_total", "Total RAG retrievals attempted"
+    pensyarat_rag_retrieval_total = Counter(
+        "pensyarat_rag_retrieval_total", "Total RAG retrievals attempted"
     )
 except ValueError as e:
     if "already exists" in str(e):
         logger.warning("RAG retrieval total metric already exists, retrieving existing")
 
 try:
-    tunarasa_rag_retrieval_success_total = Counter(
-        "tunarasa_rag_retrieval_success_total", "Total successful RAG retrievals"
+    pensyarat_rag_retrieval_success_total = Counter(
+        "pensyarat_rag_retrieval_success_total", "Total successful RAG retrievals"
     )
 except ValueError as e:
     if "already exists" in str(e):
@@ -499,8 +483,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_rag_retrieval_latency_seconds = Histogram(
-        "tunarasa_rag_retrieval_latency_seconds", "RAG retrieval latency in seconds"
+    pensyarat_rag_retrieval_latency_seconds = Histogram(
+        "pensyarat_rag_retrieval_latency_seconds", "RAG retrieval latency in seconds"
     )
 except ValueError as e:
     if "already exists" in str(e):
@@ -509,8 +493,8 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_questions_total = Counter(
-        "tunarasa_questions_total",
+    pensyarat_questions_total = Counter(
+        "pensyarat_questions_total",
         "Total questions processed",
         ["source", "question_category"],
     )
@@ -519,8 +503,8 @@ except ValueError as e:
         logger.warning("Questions total metric already exists, retrieving existing")
 
 try:
-    tunarasa_questions_per_session = Histogram(
-        "tunarasa_questions_per_session", "Number of questions per user session"
+    pensyarat_questions_per_session = Histogram(
+        "pensyarat_questions_per_session", "Number of questions per user session"
     )
 except ValueError as e:
     if "already exists" in str(e):
@@ -529,26 +513,26 @@ except ValueError as e:
         )
 
 try:
-    tunarasa_user_sessions_total = Counter(
-        "tunarasa_user_sessions_total", "Total user sessions created"
+    pensyarat_user_sessions_total = Counter(
+        "pensyarat_user_sessions_total", "Total user sessions created"
     )
 except ValueError as e:
     if "already exists" in str(e):
         logger.warning("User sessions metric already exists, retrieving existing")
 
 try:
-    tunarasa_session_duration_seconds = Histogram(
-        "tunarasa_session_duration_seconds", "User session duration in seconds"
+    pensyarat_session_duration_seconds = Histogram(
+        "pensyarat_session_duration_seconds", "User session duration in seconds"
     )
 except ValueError as e:
     if "already exists" in str(e):
         logger.warning("Session duration metric already exists, retrieving existing")
 
 # Application info
-tunarasa_info = Info("tunarasa_info", "Application information")
+pensyarat_info = Info("pensyarat_info", "Application information")
 
 # Set application info
-tunarasa_info.info(
+pensyarat_info.info(
     {
         "version": "0.4.0",
         "environment": settings.ENVIRONMENT,
@@ -581,11 +565,9 @@ class MetricsService:
 
         # Initialize system status components
         self.update_system_status("deepeval_service", 1)
-        self.update_system_status("redis_cache", 1)
 
         # Initialize SLI/SLO infrastructure metrics with realistic values
         self.update_db_connections_max(100)  # Common pool size
-        self.update_redis_memory_max(1073741824)  # 1GB in bytes
 
         # Initialize SLI metrics with good starting values
         self.record_sli_availability(0.999)  # 99.9% availability
@@ -597,11 +579,11 @@ class MetricsService:
     ):
         """Record HTTP request metrics"""
         try:
-            tunarasa_http_requests_total.labels(
+            pensyarat_http_requests_total.labels(
                 method=method, endpoint=endpoint, status_code=str(status_code)
             ).inc()
 
-            tunarasa_http_request_duration_seconds.labels(
+            pensyarat_http_request_duration_seconds.labels(
                 method=method, endpoint=endpoint
             ).observe(duration)
 
@@ -611,7 +593,7 @@ class MetricsService:
     def update_active_sessions(self, count: int):
         """Update active sessions gauge"""
         try:
-            tunarasa_active_sessions_total.set(count)
+            pensyarat_active_sessions_total.set(count)
         except Exception as e:
             logger.error(f"Failed to update active sessions: {e}")
 
@@ -628,7 +610,7 @@ class MetricsService:
             else:
                 confidence_level = "low"
 
-            tunarasa_gesture_recognitions_total.labels(
+            pensyarat_gesture_recognitions_total.labels(
                 gesture_type=gesture_type, confidence_level=confidence_level
             ).inc()
 
@@ -642,7 +624,7 @@ class MetricsService:
                 avg_accuracy = sum(self.gesture_accuracy_window) / len(
                     self.gesture_accuracy_window
                 )
-                tunarasa_gesture_recognition_accuracy.set(avg_accuracy)
+                pensyarat_gesture_recognition_accuracy.set(avg_accuracy)
 
         except Exception as e:
             logger.error(f"Failed to record gesture metrics: {e}")
@@ -658,15 +640,15 @@ class MetricsService:
         """Record AI request metrics"""
         try:
             if error_type:
-                tunarasa_ai_request_errors_total.labels(
+                pensyarat_ai_request_errors_total.labels(
                     model=model, error_type=error_type
                 ).inc()
             else:
-                tunarasa_ai_requests_total.labels(
+                pensyarat_ai_requests_total.labels(
                     model=model, request_type=request_type
                 ).inc()
 
-                tunarasa_ai_response_time_seconds.labels(
+                pensyarat_ai_response_time_seconds.labels(
                     model=model, request_type=request_type
                 ).observe(duration)
 
@@ -680,7 +662,7 @@ class MetricsService:
                 avg_confidence = sum(self.ai_confidence_window) / len(
                     self.ai_confidence_window
                 )
-                tunarasa_ai_response_confidence_avg.set(avg_confidence)
+                pensyarat_ai_response_confidence_avg.set(avg_confidence)
 
         except Exception as e:
             logger.error(f"Failed to record AI metrics: {e}")
@@ -688,23 +670,23 @@ class MetricsService:
     def record_qr_generation(self, qr_type: str):
         """Record QR code generation"""
         try:
-            tunarasa_qr_codes_generated_total.labels(qr_type=qr_type).inc()
+            pensyarat_qr_codes_generated_total.labels(qr_type=qr_type).inc()
         except Exception as e:
             logger.error(f"Failed to record QR metrics: {e}")
 
     def update_database_connections(self, count: int):
         """Update database connections gauge"""
         try:
-            tunarasa_database_connections_active.set(count)
+            pensyarat_database_connections_active.set(count)
         except Exception as e:
             logger.error(f"Failed to update database metrics: {e}")
 
     def record_deepeval_score(self, metric_type: str, score: float):
         """Record DeepEval quality scores"""
         try:
-            tunarasa_deepeval_scores.labels(metric_type=metric_type).observe(score)
+            pensyarat_deepeval_scores.labels(metric_type=metric_type).observe(score)
             # Also record LLM evaluations count
-            tunarasa_llm_evaluations_total.labels(category="deepeval").inc()
+            pensyarat_llm_evaluations_total.labels(category="deepeval").inc()
         except Exception as e:
             logger.error(f"Failed to record DeepEval metrics: {e}")
 
@@ -713,18 +695,18 @@ class MetricsService:
     ):
         """Record LLM quality score with category"""
         try:
-            tunarasa_llm_quality_score.labels(metric=metric, category=category).set(
+            pensyarat_llm_quality_score.labels(metric=metric, category=category).set(
                 score
             )
             # Also increment evaluation counter
-            tunarasa_llm_evaluations_total.labels(category=category).inc()
+            pensyarat_llm_evaluations_total.labels(category=category).inc()
         except Exception as e:
             logger.error(f"Failed to record LLM quality score: {e}")
 
     def update_system_status(self, component: str, status: int):
         """Update system status (0=down, 1=up, 2=degraded)"""
         try:
-            tunarasa_system_status.labels(component=component).set(status)
+            pensyarat_system_status.labels(component=component).set(status)
         except Exception as e:
             logger.error(f"Failed to update system status: {e}")
 
@@ -734,7 +716,7 @@ class MetricsService:
         """Record gesture recognition request for business intelligence"""
         try:
             success_label = "true" if success else "false"
-            tunarasa_gesture_requests_total.labels(
+            pensyarat_gesture_requests_total.labels(
                 session_id=session_id[:8],  # Use first 8 chars for privacy
                 language=language,
                 success=success_label,
@@ -745,21 +727,21 @@ class MetricsService:
     def record_session_duration(self, duration_seconds: float):
         """Record session duration"""
         try:
-            tunarasa_session_duration_seconds.observe(duration_seconds)
+            pensyarat_session_duration_seconds.observe(duration_seconds)
         except Exception as e:
             logger.error(f"Failed to record session duration: {e}")
 
     def record_questions_per_session(self, question_count: int):
         """Record number of questions asked in a session"""
         try:
-            tunarasa_questions_per_session.observe(question_count)
+            pensyarat_questions_per_session.observe(question_count)
         except Exception as e:
             logger.error(f"Failed to record questions per session: {e}")
 
     def record_question(self, source: str = "general", category: str = "general"):
         """Record a question asked with source and category labels"""
         try:
-            tunarasa_questions_total.labels(
+            pensyarat_questions_total.labels(
                 source=source, question_category=category
             ).inc()
         except Exception as e:
@@ -768,7 +750,7 @@ class MetricsService:
     def record_gesture_confidence(self, confidence: float):
         """Record gesture recognition confidence score"""
         try:
-            tunarasa_gesture_confidence_score.observe(confidence)
+            pensyarat_gesture_confidence_score.observe(confidence)
         except Exception as e:
             logger.error(f"Failed to record gesture confidence: {e}")
 
@@ -777,7 +759,7 @@ class MetricsService:
     ):
         """Record AI quality score for histogram distribution"""
         try:
-            tunarasa_ai_quality_score.labels(category=category).observe(score)
+            pensyarat_ai_quality_score.labels(category=category).observe(score)
         except Exception as e:
             logger.error(f"Failed to record AI quality score distribution: {e}")
 
@@ -786,19 +768,19 @@ class MetricsService:
     def record_rag_retrieval(self, success: bool, latency: float):
         """Record RAG retrieval metrics"""
         try:
-            tunarasa_rag_retrieval_total.inc()
+            pensyarat_rag_retrieval_total.inc()
             if success:
-                tunarasa_rag_retrieval_success_total.inc()
-            tunarasa_rag_retrieval_latency_seconds.observe(latency)
+                pensyarat_rag_retrieval_success_total.inc()
+            pensyarat_rag_retrieval_latency_seconds.observe(latency)
         except Exception as e:
             logger.error(f"Failed to record RAG metrics: {e}")
 
     def record_session_metrics(self, duration: float, question_count: int):
         """Record session duration and questions per session"""
         try:
-            tunarasa_session_duration_seconds.observe(duration)
-            tunarasa_questions_per_session.observe(question_count)
-            tunarasa_user_sessions_total.inc()
+            pensyarat_session_duration_seconds.observe(duration)
+            pensyarat_questions_per_session.observe(question_count)
+            pensyarat_user_sessions_total.inc()
         except Exception as e:
             logger.error(f"Failed to record session metrics: {e}")
 
@@ -858,16 +840,16 @@ class MetricsService:
             return {
                 "uptime_seconds": uptime,
                 "active_sessions": safe_get_metric_value(
-                    tunarasa_active_sessions_total, 0
+                    pensyarat_active_sessions_total, 0
                 ),
                 "gesture_accuracy": safe_get_metric_value(
-                    tunarasa_gesture_recognition_accuracy, 0.0
+                    pensyarat_gesture_recognition_accuracy, 0.0
                 ),
                 "ai_confidence": safe_get_metric_value(
-                    tunarasa_ai_response_confidence_avg, 0.0
+                    pensyarat_ai_response_confidence_avg, 0.0
                 ),
                 "database_connections": safe_get_metric_value(
-                    tunarasa_database_connections_active, 0
+                    pensyarat_database_connections_active, 0
                 ),
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "metrics_status": "healthy",
@@ -889,7 +871,7 @@ class MetricsService:
     def record_request_success(self, endpoint: str, method: str):
         """Record successful request for SLI tracking"""
         try:
-            tunarasa_request_success_total.labels(
+            pensyarat_request_success_total.labels(
                 endpoint=endpoint, method=method
             ).inc()
         except Exception as e:
@@ -898,7 +880,7 @@ class MetricsService:
     def record_request_error(self, endpoint: str, method: str, error_code: str):
         """Record failed request for SLI tracking"""
         try:
-            tunarasa_request_error_total.labels(
+            pensyarat_request_error_total.labels(
                 endpoint=endpoint, method=method, error_code=error_code
             ).inc()
         except Exception as e:
@@ -907,51 +889,37 @@ class MetricsService:
     def record_sli_availability(self, availability: float):
         """Record service availability SLI (0.0-1.0)"""
         try:
-            tunarasa_sli_availability.set(availability)
+            pensyarat_sli_availability.set(availability)
         except Exception as e:
             logger.error(f"Failed to record SLI availability: {e}")
 
     def record_sli_error_rate(self, error_rate: float):
         """Record service error rate SLI (0.0-1.0)"""
         try:
-            tunarasa_sli_error_rate.set(error_rate)
+            pensyarat_sli_error_rate.set(error_rate)
         except Exception as e:
             logger.error(f"Failed to record SLI error rate: {e}")
 
     def record_sli_latency(self, latency_seconds: float):
         """Record service latency for SLI histogram"""
         try:
-            tunarasa_sli_latency.observe(latency_seconds)
+            pensyarat_sli_latency.observe(latency_seconds)
         except Exception as e:
             logger.error(f"Failed to record SLI latency: {e}")
 
     def record_sli_throughput(self, throughput_rps: float):
         """Record service throughput SLI in requests per second"""
         try:
-            tunarasa_sli_throughput.set(throughput_rps)
+            pensyarat_sli_throughput.set(throughput_rps)
         except Exception as e:
             logger.error(f"Failed to record SLI throughput: {e}")
 
     def update_db_connections_max(self, max_connections: int):
         """Update maximum database connections configuration"""
         try:
-            tunarasa_db_connections_max.set(max_connections)
+            pensyarat_db_connections_max.set(max_connections)
         except Exception as e:
             logger.error(f"Failed to update DB connections max: {e}")
-
-    def update_redis_memory_used(self, memory_bytes: int):
-        """Update Redis memory usage in bytes"""
-        try:
-            tunarasa_redis_memory_used_bytes.set(memory_bytes)
-        except Exception as e:
-            logger.error(f"Failed to update Redis memory used: {e}")
-
-    def update_redis_memory_max(self, max_memory_bytes: int):
-        """Update Redis maximum memory in bytes"""
-        try:
-            tunarasa_redis_memory_max_bytes.set(max_memory_bytes)
-        except Exception as e:
-            logger.error(f"Failed to update Redis memory max: {e}")
 
     # FAQ Clustering Metrics Methods
     def record_faq_clustering_operation(
@@ -964,21 +932,21 @@ class MetricsService:
         """Record FAQ clustering operation with duration and source tracking"""
         try:
             institution_str = str(institution_id)
-            tunarasa_faq_clustering_total.labels(
+            pensyarat_faq_clustering_total.labels(
                 institution_id=institution_str, data_source=data_source
             ).inc()
 
-            tunarasa_faq_clustering_duration_seconds.labels(
+            pensyarat_faq_clustering_duration_seconds.labels(
                 institution_id=institution_str, data_source=data_source
             ).observe(duration_seconds)
 
-            tunarasa_faq_clustering_data_source.labels(
+            pensyarat_faq_clustering_data_source.labels(
                 institution_id=institution_str, source_type=data_source
             ).inc()
 
             # Record error if operation failed
             if not success:
-                tunarasa_faq_clustering_errors_total.labels(
+                pensyarat_faq_clustering_errors_total.labels(
                     institution_id=institution_str, error_type="operation_failure"
                 ).inc()
 
@@ -989,7 +957,7 @@ class MetricsService:
         """Record FAQ clustering operation failure"""
         try:
             institution_str = str(institution_id)
-            tunarasa_faq_clustering_errors_total.labels(
+            pensyarat_faq_clustering_errors_total.labels(
                 institution_id=institution_str, error_type=error_type
             ).inc()
         except Exception as e:
@@ -1006,13 +974,13 @@ class MetricsService:
         try:
             institution_str = str(institution_id)
 
-            tunarasa_faq_clusters_count.labels(institution_id=institution_str).set(
+            pensyarat_faq_clusters_count.labels(institution_id=institution_str).set(
                 cluster_count
             )
-            tunarasa_faq_questions_per_cluster_avg.labels(
+            pensyarat_faq_questions_per_cluster_avg.labels(
                 institution_id=institution_str
             ).set(avg_questions_per_cluster)
-            tunarasa_faq_clustering_silhouette_score.labels(
+            pensyarat_faq_clustering_silhouette_score.labels(
                 institution_id=institution_str
             ).set(silhouette_score)
 
@@ -1024,7 +992,7 @@ class MetricsService:
         try:
             institution_str = str(institution_id)
             cluster_str = str(cluster_id)
-            tunarasa_faq_recommendations_served_total.labels(
+            pensyarat_faq_recommendations_served_total.labels(
                 institution_id=institution_str, cluster_id=cluster_str
             ).inc()
         except Exception as e:

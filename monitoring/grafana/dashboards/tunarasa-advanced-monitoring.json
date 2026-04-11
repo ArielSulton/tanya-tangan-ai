@@ -1,8 +1,8 @@
 {
   "id": null,
-  "title": "Tunarasa Advanced Monitoring Hub",
-  "description": "Comprehensive monitoring dashboard with modern visualizations, AI insights, and interactive navigation for the Tunarasa accessibility platform",
-  "tags": ["tunarasa", "ai", "monitoring", "accessibility", "llm", "gesture-recognition"],
+  "title": "PENSyarat AI Advanced Monitoring Hub",
+  "description": "Comprehensive monitoring dashboard with modern visualizations, AI insights, and interactive navigation for the PENSyarat AI accessibility platform",
+  "tags": ["pensyarat", "ai", "monitoring", "accessibility", "llm", "gesture-recognition"],
   "style": "dark",
   "timezone": "browser",
   "editable": true,
@@ -27,7 +27,7 @@
       "description": "Backend service status",
       "targets": [
         {
-          "expr": "up{job=\"tunarasa-backend\"}",
+          "expr": "up{job=\"pensyarat-backend\"}",
           "legendFormat": "Backend",
           "refId": "A"
         }
@@ -68,7 +68,7 @@
       "description": "Current active user sessions",
       "targets": [
         {
-          "expr": "sum(tunarasa_active_sessions_total) or vector(0)",
+          "expr": "sum(pensyarat_active_sessions_total) or vector(0)",
           "legendFormat": "Sessions",
           "refId": "A"
         }
@@ -106,7 +106,7 @@
       "description": "Average AI model quality score",
       "targets": [
         {
-          "expr": "avg(tunarasa_llm_quality_score) or vector(0.8)",
+          "expr": "avg(pensyarat_llm_quality_score) or vector(0.8)",
           "legendFormat": "Quality",
           "refId": "A"
         }
@@ -145,7 +145,7 @@
       "description": "HTTP requests per second",
       "targets": [
         {
-          "expr": "sum(rate(tunarasa_http_requests_total[5m])) or vector(0)",
+          "expr": "sum(rate(pensyarat_http_requests_total[5m])) or vector(0)",
           "legendFormat": "Requests",
           "refId": "A"
         }
@@ -183,22 +183,22 @@
       "description": "Dynamic performance visualization with threshold-based coloring",
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(tunarasa_http_request_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(pensyarat_http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "Response Time (P50)",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(tunarasa_http_request_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(pensyarat_http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "Response Time (P95)",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(tunarasa_http_request_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(pensyarat_http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "Response Time (P99)",
           "refId": "C"
         },
         {
-          "expr": "sum(rate(tunarasa_http_requests_total[5m]))",
+          "expr": "sum(rate(pensyarat_http_requests_total[5m]))",
           "legendFormat": "Request Rate",
           "refId": "D"
         }
@@ -262,12 +262,12 @@
       "description": "LLM quality metrics with anomaly detection and trend analysis",
       "targets": [
         {
-          "expr": "tunarasa_llm_quality_score{metric=\"average\"}",
+          "expr": "pensyarat_llm_quality_score{metric=\"average\"}",
           "legendFormat": "{{category}} Quality",
           "refId": "A"
         },
         {
-          "expr": "deriv(tunarasa_llm_quality_score{metric=\"average\"}[10m])",
+          "expr": "deriv(pensyarat_llm_quality_score{metric=\"average\"}[10m])",
           "legendFormat": "{{category}} Trend",
           "refId": "B"
         }
@@ -336,7 +336,7 @@
       "description": "Real-time user session analytics and conversion funnel",
       "targets": [
         {
-          "expr": "sum by (session_type, input_method) (tunarasa_user_sessions_total)",
+          "expr": "sum by (session_type, input_method) (pensyarat_user_sessions_total)",
           "legendFormat": "",
           "refId": "A",
           "format": "table",
@@ -407,8 +407,8 @@
         "showSearch": true,
         "showHeadings": true,
         "maxItems": 10,
-        "query": "tunarasa",
-        "tags": ["tunarasa"],
+        "query": "pensyarat",
+        "tags": ["pensyarat"],
         "recent": true,
         "starred": true,
         "headings": true,
@@ -438,7 +438,7 @@
           "value": "$__all"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(tunarasa_http_requests_total, endpoint)",
+        "definition": "label_values(pensyarat_http_requests_total, endpoint)",
         "hide": 0,
         "includeAll": true,
         "label": "Endpoint",
@@ -446,7 +446,7 @@
         "name": "endpoint",
         "options": [],
         "query": {
-          "query": "label_values(tunarasa_http_requests_total, endpoint)",
+          "query": "label_values(pensyarat_http_requests_total, endpoint)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,
@@ -464,7 +464,7 @@
           "value": "$__all"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(tunarasa_llm_quality_score, category)",
+        "definition": "label_values(pensyarat_llm_quality_score, category)",
         "hide": 0,
         "includeAll": true,
         "label": "AI Category",
@@ -472,7 +472,7 @@
         "name": "ai_category",
         "options": [],
         "query": {
-          "query": "label_values(tunarasa_llm_quality_score, category)",
+          "query": "label_values(pensyarat_llm_quality_score, category)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,
@@ -490,7 +490,7 @@
           "value": "$__all"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(tunarasa_gesture_recognitions_total, gesture_type)",
+        "definition": "label_values(pensyarat_gesture_recognitions_total, gesture_type)",
         "hide": 0,
         "includeAll": true,
         "label": "Gesture Type",
@@ -498,7 +498,7 @@
         "name": "gesture_type",
         "options": [],
         "query": {
-          "query": "label_values(tunarasa_gesture_recognitions_total, gesture_type)",
+          "query": "label_values(pensyarat_gesture_recognitions_total, gesture_type)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,
@@ -524,7 +524,7 @@
       {
         "datasource": "Prometheus",
         "enable": true,
-        "expr": "ALERTS{alertname=~\".*Tunarasa.*\", alertstate=\"firing\"}",
+        "expr": "ALERTS{alertname=~\".*PENSyarat AI.*\", alertstate=\"firing\"}",
         "iconColor": "red",
         "name": "System Alerts",
         "showIn": 0,
@@ -541,10 +541,10 @@
       "icon": "cloud",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["tunarasa"],
+      "tags": ["pensyarat"],
       "targetBlank": false,
-      "title": "Tunarasa Dashboards",
-      "tooltip": "Navigate to other Tunarasa monitoring dashboards",
+      "title": "PENSyarat AI Dashboards",
+      "tooltip": "Navigate to other PENSyarat AI monitoring dashboards",
       "type": "dashboards",
       "url": ""
     },
@@ -555,7 +555,7 @@
       "title": "Monitoring Documentation",
       "tooltip": "View monitoring setup and configuration guide",
       "type": "link",
-      "url": "https://github.com/ArielSulton/tunarasa/README.md"
+      "url": "https://github.com/ArielSulton/pensyarat/README.md"
     }
   ]
 }

@@ -1,5 +1,5 @@
 """
-Database models for Tunarasa application (New 6-table schema)
+Database models for PENSyarat AI application (New 6-table schema)
 """
 
 from .conversation import Conversation, ConversationCreate, ConversationUpdate

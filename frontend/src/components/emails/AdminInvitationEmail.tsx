@@ -45,7 +45,7 @@ export function AdminInvitationEmail({
         }}
       >
         <div style={{ fontSize: '48px', marginBottom: '10px' }}>🤝</div>
-        <h1 style={{ margin: '0 0 10px 0', fontSize: '28px', fontWeight: 'bold' }}>Welcome to Tanya Tangan AI</h1>
+        <h1 style={{ margin: '0 0 10px 0', fontSize: '28px', fontWeight: 'bold' }}>Welcome to PENSyarat AI</h1>
         <p style={{ margin: '0', fontSize: '18px', opacity: '0.9' }}>You&apos;ve been invited to join our admin team</p>
       </div>
 
@@ -61,7 +61,7 @@ export function AdminInvitationEmail({
         <p style={{ fontSize: '16px', marginBottom: '20px' }}>Hello,</p>
 
         <p style={{ fontSize: '16px', marginBottom: '25px' }}>
-          <strong>{invitedByName}</strong> ({invitedByEmail}) has invited you to join the Tanya Tangan AI administration
+          <strong>{invitedByName}</strong> ({invitedByEmail}) has invited you to join the PENSyarat AI administration
           team as a{' '}
           <span
             style={{
@@ -106,7 +106,7 @@ export function AdminInvitationEmail({
         )}
 
         <p style={{ fontSize: '16px', marginBottom: '25px' }}>
-          Tanya Tangan AI is an innovative sign language recognition system that helps bridge communication gaps for the
+          PENSyarat AI is an innovative sign language recognition system that helps bridge communication gaps for the
           hearing-impaired community. As an admin, you&apos;ll help monitor and improve our system to serve users
           better.
         </p>
@@ -227,7 +227,7 @@ export function AdminInvitationEmail({
             color: '#374151',
           }}
         >
-          © 2025 Tanya Tangan AI Team
+          © 2025 PENSyarat AI Team
         </p>
         <p
           style={{

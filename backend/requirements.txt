@@ -43,7 +43,6 @@ deepeval
 # Utilities
 python-dotenv
 httpx
-redis
 qrcode[pil]
 Pillow
 aiofiles

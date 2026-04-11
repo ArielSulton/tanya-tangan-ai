@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-import redis
 from app.core.config import settings
 from fastapi import HTTPException, Request, status
 from pydantic import BaseModel, field_validator
@@ -142,32 +141,13 @@ class AdminValidationService:
     """Comprehensive admin validation service"""
 
     def __init__(self):
-        self.redis_client = None
         self._blocked_keywords = set()
         self._validation_cache = {}
-        self._initialize_redis()
         self._load_blocked_keywords()
-
-    def _initialize_redis(self):
-        """Initialize Redis connection for caching"""
-        try:
-            self.redis_client = redis.from_url(settings.REDIS_URL)
-            self.redis_client.ping()
-            logger.info("Redis connected for admin validation service")
-        except Exception as e:
-            logger.warning(f"Redis connection failed: {e}")
-            self.redis_client = None
 
     def _load_blocked_keywords(self):
         """Load blocked keywords from configuration"""
         try:
-            # Load from Redis cache if available
-            if self.redis_client:
-                cached_keywords = self.redis_client.get("admin:blocked_keywords")
-                if cached_keywords:
-                    self._blocked_keywords = set(json.loads(cached_keywords))
-                    return
-
             # Default blocked keywords for Indonesian government services
             default_keywords = {
                 "spam",
@@ -474,64 +454,7 @@ class AdminValidationService:
         results = []
 
         try:
-            if not self.redis_client:
-                return results
-
-            # Get client identifier
-            client_ip = request.client.host if request.client else "unknown"
-            user = getattr(request.state, "user", None)
-            client_id = f"admin:{user.get('id') if user else client_ip}"
-
-            # Check rate limit
-            current_time = int(time.time())
-            window = 60  # 1 minute window
-            max_requests = 100  # Max requests per window
-
-            # Use sliding window rate limiting
-            pipe = self.redis_client.pipeline()
-            key = f"rate_limit:{client_id}"
-
-            # Remove old entries
-            pipe.zremrangebyscore(key, 0, current_time - window)
-            # Add current request
-            pipe.zadd(key, {str(current_time): current_time})
-            # Count requests in window
-            pipe.zcard(key)
-            # Set expiry
-            pipe.expire(key, window)
-
-            responses = pipe.execute()
-            request_count = responses[2]
-
-            if request_count > max_requests:
-                results.append(
-                    ValidationResult(
-                        category=ValidationCategory.SYSTEM,
-                        level=ValidationLevel.ERROR,
-                        message=f"Rate limit exceeded: {request_count}/{max_requests}",
-                        score=0.0,
-                        details={
-                            "request_count": request_count,
-                            "limit": max_requests,
-                            "window": window,
-                            "client_id": client_id,
-                        },
-                    )
-                )
-            elif request_count > max_requests * 0.8:
-                results.append(
-                    ValidationResult(
-                        category=ValidationCategory.SYSTEM,
-                        level=ValidationLevel.WARNING,
-                        message=f"Approaching rate limit: {request_count}/{max_requests}",
-                        score=0.7,
-                        details={
-                            "request_count": request_count,
-                            "limit": max_requests,
-                            "client_id": client_id,
-                        },
-                    )
-                )
+            pass
 
         except Exception as e:
             logger.error(f"Rate limit validation failed: {e}")
@@ -646,14 +569,6 @@ class AdminValidationService:
                 self._blocked_keywords = set(keyword_list)
             else:
                 self._blocked_keywords = set()
-
-            # Cache in Redis
-            if self.redis_client:
-                self.redis_client.setex(
-                    "admin:blocked_keywords",
-                    86400,  # 24 hours
-                    json.dumps(list(self._blocked_keywords)),
-                )
 
             logger.info(
                 f"Updated blocked keywords: {len(self._blocked_keywords)} keywords"

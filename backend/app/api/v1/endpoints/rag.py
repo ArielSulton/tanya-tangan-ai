@@ -9,7 +9,6 @@ import tempfile
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-import redis
 from app.core.config import settings
 from app.services.document_manager import DocumentManager, get_document_manager
 from app.services.evaluation_service import evaluation_service
@@ -23,17 +22,8 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Redis client for conversation caching
-redis_client = None
+# In-memory conversation cache
 conversation_cache = {}
-
-# Initialize Redis connection
-try:
-    redis_client = redis.from_url(settings.REDIS_URL)
-    redis_client.ping()
-    logger.info("Connected to Redis for RAG conversation caching")
-except Exception as e:
-    logger.warning(f"Redis connection failed for RAG, using memory cache: {e}")
 
 
 class DocumentUploadResponse(BaseModel):
@@ -193,22 +183,7 @@ async def cache_conversation(
         "timestamp": timestamp.isoformat(),
     }
 
-    if redis_client:
-        try:
-            # Store individual conversation (sync operations)
-            key = f"rag_conversation:{conversation_id}"
-            redis_client.setex(key, 86400, json.dumps(conversation))
-
-            # Add to session history
-            session_key = f"rag_session_conversations:{session_id}"
-            redis_client.lpush(session_key, conversation_id)
-            redis_client.expire(session_key, 86400)
-
-        except Exception as e:
-            logger.error(f"Failed to cache RAG conversation: {e}")
-            cache_conversation_memory(session_id, conversation)
-    else:
-        cache_conversation_memory(session_id, conversation)
+    cache_conversation_memory(session_id, conversation)
 
 
 def cache_conversation_memory(session_id: str, conversation: Dict):
@@ -221,26 +196,7 @@ def cache_conversation_memory(session_id: str, conversation: Dict):
 async def get_conversation_history_data(session_id: str) -> ConversationHistory:
     """Get conversation history for session"""
     try:
-        conversations = []
-
-        if redis_client:
-            try:
-                # Get conversation IDs from Redis
-                session_key = f"rag_session_conversations:{session_id}"
-                conversation_ids = await redis_client.lrange(session_key, 0, -1)
-
-                # Get individual conversations
-                for conv_id in conversation_ids:
-                    conv_key = f"rag_conversation:{conv_id.decode()}"
-                    conv_data = await redis_client.get(conv_key)
-                    if conv_data:
-                        conversations.append(json.loads(conv_data))
-
-            except Exception as e:
-                logger.error(f"Failed to get RAG conversation history from Redis: {e}")
-                conversations = conversation_cache.get(session_id, [])
-        else:
-            conversations = conversation_cache.get(session_id, [])
+        conversations = conversation_cache.get(session_id, [])
 
         # Calculate session duration
         session_duration = 0.0
@@ -792,26 +748,6 @@ async def clear_rag_conversation_history(session_id: str):
     Clear RAG conversation history for session
     """
     try:
-        # Clear from Redis
-        if redis_client:
-            try:
-                session_key = f"rag_session_conversations:{session_id}"
-                conversation_ids = await redis_client.lrange(session_key, 0, -1)
-
-                # Delete individual conversations
-                for conv_id in conversation_ids:
-                    conv_key = f"rag_conversation:{conv_id.decode()}"
-                    await redis_client.delete(conv_key)
-
-                # Delete session history
-                await redis_client.delete(session_key)
-
-            except Exception as e:
-                logger.error(
-                    f"Failed to clear RAG conversation history from Redis: {e}"
-                )
-
-        # Clear from memory cache
         if session_id in conversation_cache:
             del conversation_cache[session_id]
 

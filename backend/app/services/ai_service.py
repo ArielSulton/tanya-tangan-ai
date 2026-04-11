@@ -63,8 +63,6 @@ class AIService:
             length_function=len,
             separators=["\n\n", "\n", " ", ""],
         )
-        self.redis_client = None
-
         # Initialize services
         self._initialize_services()
 
@@ -197,16 +195,6 @@ class AIService:
                 logger.error("Pinecone API key required for vector store")
                 raise ValueError("PINECONE_API_KEY not found in settings")
 
-            # Initialize Redis for caching
-            try:
-                import redis
-
-                self.redis_client = redis.from_url(settings.REDIS_URL)
-                self.redis_client.ping()
-                logger.info("Redis connected for AI service caching")
-            except Exception as e:
-                logger.warning(f"Redis connection failed: {e}")
-
             logger.info("AI Service initialized successfully")
 
         except Exception as e:
@@ -336,34 +324,6 @@ Berikan jawaban yang lengkap dan informatif dalam bahasa Indonesia. Jika informa
             return (
                 "Maaf, terjadi kesalahan dalam menghasilkan jawaban. Silakan coba lagi."
             )
-
-    async def _get_cached_response(self, cache_key: str) -> Optional[Dict[str, Any]]:
-        """Get cached response from Redis"""
-
-        if not self.redis_client:
-            return None
-
-        try:
-            cached_data = await self.redis_client.get(cache_key)
-            if cached_data:
-                return json.loads(cached_data)
-        except Exception as e:
-            logger.error(f"Cache retrieval failed: {e}")
-
-        return None
-
-    async def _cache_response(self, cache_key: str, response: Dict[str, Any]):
-        """Cache response in Redis"""
-
-        if not self.redis_client:
-            return
-
-        try:
-            await self.redis_client.setex(
-                cache_key, 3600, json.dumps(response, default=str)  # 1 hour cache
-            )
-        except Exception as e:
-            logger.error(f"Cache storage failed: {e}")
 
     async def add_document_to_vectorstore(
         self, document_path: str, document_id: str

@@ -150,8 +150,8 @@ export default function NotePage() {
             </div>
           </div>
           <p className="text-sm text-gray-600">
-            Catatan dari percakapan Anda dengan sistem Tanya Tangan AI. Dokumen ini berisi informasi dari sesi
-            komunikasi Anda.
+            Catatan dari percakapan Anda dengan sistem PENSyarat AI. Dokumen ini berisi informasi dari sesi komunikasi
+            Anda.
           </p>
         </CardHeader>
 

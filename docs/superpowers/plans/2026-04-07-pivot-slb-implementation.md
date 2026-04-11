@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Pivot Tanya Tangan AI dari platform layanan publik ke asisten belajar SLB-B dengan mengganti konteks "institution" → "mata pelajaran + jenjang" tanpa mengubah core RAG/CV logic.
+**Goal:** Pivot PENSyarat AI dari platform layanan publik ke asisten belajar SLB-B dengan mengganti konteks "institution" → "mata pelajaran + jenjang" tanpa mengubah core RAG/CV logic.
 
 **Architecture:** Tambah field `jenjang` dan `mata_pelajaran` ke tabel `institutions` (nama tabel DB tetap untuk menghindari mass FK migration). Rename semua code references dari `institution` ke `subject`. Update system prompt LLM dan Pinecone metadata keys. Rebuild UI selector dengan langkah jenjang baru.
 

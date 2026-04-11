@@ -92,9 +92,9 @@ export async function POST(request: NextRequest) {
 
     // Send email via Resend
     const { data, error } = await getResend().emails.send({
-      from: 'Tanya Tangan AI Admin <admin@mail.tunarasa.my.id>',
+      from: 'PENSyarat AI Admin <admin@mail.pensyarat.my.id>',
       to: [email],
-      subject: 'Invitation to Join Tanya Tangan AI Admin Team',
+      subject: 'Invitation to Join PENSyarat AI Admin Team',
       react: AdminInvitationEmail({
         invitedByName: authUser.full_name ?? authUser.first_name ?? 'Admin',
         invitedByEmail: authUser.email ?? '',
@@ -189,7 +189,7 @@ function generateFallbackHTML({
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Tanya Tangan AI Admin Invitation</title>
+        <title>PENSyarat AI Admin Invitation</title>
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
@@ -202,18 +202,18 @@ function generateFallbackHTML({
       </head>
       <body>
         <div class="header">
-          <h1>🤝 Welcome to Tanya Tangan AI</h1>
+          <h1>🤝 Welcome to PENSyarat AI</h1>
           <p>You've been invited to join our admin team</p>
         </div>
 
         <div class="content">
           <p>Hello,</p>
 
-          <p><strong>${invitedByName}</strong> has invited you to join the Tanya Tangan AI administration team as an <span class="role-badge">${role.toUpperCase()}</span>.</p>
+          <p><strong>${invitedByName}</strong> has invited you to join the PENSyarat AI administration team as an <span class="role-badge">${role.toUpperCase()}</span>.</p>
 
           ${customMessage ? `<div class="custom-message"><strong>Personal Message:</strong><br>"${customMessage}"</div>` : ''}
 
-          <p>Tanya Tangan AI is a sign language recognition system that helps bridge communication gaps for the hearing-impaired community. As an admin, you'll help monitor and improve our system to serve users better.</p>
+          <p>PENSyarat AI is a sign language recognition system that helps bridge communication gaps for the hearing-impaired community. As an admin, you'll help monitor and improve our system to serve users better.</p>
 
           <p>Click the button below to accept your invitation and set up your account:</p>
 
@@ -234,7 +234,7 @@ function generateFallbackHTML({
         </div>
 
         <div class="footer">
-          <p>© 2025 Tanya Tangan AI Team. Made with ❤️ for accessible communication.</p>
+          <p>© 2025 PENSyarat AI Team. Made with ❤️ for accessible communication.</p>
           <p>If you have any questions, please contact our support team.</p>
         </div>
       </body>

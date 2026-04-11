@@ -34,18 +34,18 @@ export function AdminInvitationSystem() {
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([
     {
       id: '1',
-      email: 'admin2@tunarasa.com',
+      email: 'admin2@pensyarat.com',
       role: 'admin',
-      invitedBy: 'superadmin@tunarasa.com',
+      invitedBy: 'superadmin@pensyarat.com',
       invitedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       status: 'pending',
       expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
     },
     {
       id: '2',
-      email: 'admin3@tunarasa.com',
+      email: 'admin3@pensyarat.com',
       role: 'admin',
-      invitedBy: 'superadmin@tunarasa.com',
+      invitedBy: 'superadmin@pensyarat.com',
       invitedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
       status: 'accepted',
       expiresAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
@@ -83,7 +83,7 @@ export function AdminInvitationSystem() {
         id: result.invitationId ?? Date.now().toString(),
         email: inviteEmail,
         role: inviteRole,
-        invitedBy: 'current-user@tunarasa.com', // Get from user context
+        invitedBy: 'current-user@pensyarat.com', // Get from user context
         invitedAt: new Date(),
         status: 'pending',
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
@@ -198,7 +198,7 @@ export function AdminInvitationSystem() {
                 <Input
                   id="invite-email"
                   type="email"
-                  placeholder="admin@mail.tunarasa.my.id"
+                  placeholder="admin@mail.pensyarat.my.id"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                 />
@@ -327,15 +327,15 @@ export function AdminInvitationSystem() {
           <CardContent>
             <div className="rounded-lg border bg-white p-6 shadow-sm">
               <div className="mb-4 border-b pb-4">
-                <h3 className="text-lg font-semibold">Tanya Tangan AI Admin Invitation</h3>
-                <p className="text-sm text-gray-600">You&apos;ve been invited to join the Tanya Tangan AI admin team</p>
+                <h3 className="text-lg font-semibold">PENSyarat AI Admin Invitation</h3>
+                <p className="text-sm text-gray-600">You&apos;ve been invited to join the PENSyarat AI admin team</p>
               </div>
 
               <div className="space-y-4 text-sm">
                 <p>Hello,</p>
                 <p>
-                  You have been invited to join the Tanya Tangan AI administration team as an{' '}
-                  <strong>{inviteRole}</strong>.
+                  You have been invited to join the PENSyarat AI administration team as an <strong>{inviteRole}</strong>
+                  .
                 </p>
                 {customMessage && (
                   <div className="rounded-lg bg-blue-50 p-3">

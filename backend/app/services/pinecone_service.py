@@ -1,8 +1,8 @@
 """
-Comprehensive Pinecone Vector Database Service for Tunarasa RAG System
+Comprehensive Pinecone Vector Database Service for PENSyarat AI RAG System
 
 This service provides complete document management, ingestion, and retrieval capabilities
-for the Tunarasa knowledge base using Pinecone vector database.
+for the PENSyarat AI knowledge base using Pinecone vector database.
 
 Features:
 - Document ingestion pipeline with chunking and embeddings

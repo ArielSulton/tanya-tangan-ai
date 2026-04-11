@@ -68,13 +68,13 @@ def _clean_title_from_database(raw_title: str) -> str:
 
         # Fallback if still looks malformed or too short
         if len(cleaned) < 5:
-            return "Ringkasan Percakapan Tunarasa"
+            return "Ringkasan Percakapan PENSyarat AI"
 
         return cleaned
 
     except Exception as e:
         logger.error(f"Failed to clean title from database: {e}")
-        return "Ringkasan Percakapan Tunarasa"
+        return "Ringkasan Percakapan PENSyarat AI"
 
 
 def _add_proper_spacing(text: str) -> str:
@@ -207,7 +207,7 @@ async def generate_conversation_summary(
 
         # Additional cleanup for title in case LLM returns malformed response
         if not title or len(title.strip()) < 5:
-            title = "Ringkasan Percakapan Tunarasa"
+            title = "Ringkasan Percakapan PENSyarat AI"
             logger.warning(f"Title was too short or empty, using fallback: {title}")
 
         # Create summary document
@@ -338,7 +338,7 @@ async def download_summary(
         raw_title = (
             note.title
             if isinstance(note.title, str)
-            else (str(note.title) if note.title else "Ringkasan Percakapan Tunarasa")
+            else (str(note.title) if note.title else "Ringkasan Percakapan PENSyarat AI")
         )
 
         # Clean the title to handle malformed JSON array responses

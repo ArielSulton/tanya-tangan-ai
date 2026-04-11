@@ -92,7 +92,6 @@ services:
         - FROM_EMAIL
         - FROM_NAME
         - ADMIN_EMAIL
-        - REDIS_URL
 
         # API & Security Configuration
         - CORS_ORIGINS
@@ -111,6 +110,13 @@ services:
         - GRAFANA_DOMAIN
         - GRAFANA_URL
         - NEXT_PUBLIC_GRAFANA_URL
+
+        # Cloudflare R2 Storage
+        - CLOUDFLARE_R2_ACCOUNT_ID
+        - CLOUDFLARE_R2_ACCESS_KEY_ID
+        - CLOUDFLARE_R2_SECRET_ACCESS_KEY
+        - CLOUDFLARE_R2_BUCKET_NAME
+        - CLOUDFLARE_R2_PUBLIC_URL
     env_file:
       - .env
     environment:
@@ -172,7 +178,6 @@ services:
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - REDIS_URL=${REDIS_URL}
 
       # API & Security Configuration
       - CORS_ORIGINS=${CORS_ORIGINS}
@@ -192,6 +197,13 @@ services:
       - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
       - GRAFANA_URL=${GRAFANA_URL}
       - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+
+      # Cloudflare R2 Storage
+      - CLOUDFLARE_R2_ACCOUNT_ID=${CLOUDFLARE_R2_ACCOUNT_ID}
+      - CLOUDFLARE_R2_ACCESS_KEY_ID=${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      - CLOUDFLARE_R2_SECRET_ACCESS_KEY=${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_R2_BUCKET_NAME=${CLOUDFLARE_R2_BUCKET_NAME}
+      - CLOUDFLARE_R2_PUBLIC_URL=${CLOUDFLARE_R2_PUBLIC_URL}
     depends_on:
       init-permissions:
         condition: service_completed_successfully
@@ -208,11 +220,11 @@ services:
       - dokploy-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.tunarasa-frontend.rule=Host(`tunarasa.my.id`)"
-      - "traefik.http.routers.tunarasa-frontend.entrypoints=websecure"
-      - "traefik.http.routers.tunarasa-frontend.tls.certResolver=letsencrypt"
-      - "traefik.http.routers.tunarasa-frontend.service=tunarasa-frontend"
-      - "traefik.http.services.tunarasa-frontend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.pensyarat-frontend.rule=Host(`pensyarat.my.id`)"
+      - "traefik.http.routers.pensyarat-frontend.entrypoints=websecure"
+      - "traefik.http.routers.pensyarat-frontend.tls.certResolver=letsencrypt"
+      - "traefik.http.routers.pensyarat-frontend.service=pensyarat-frontend"
+      - "traefik.http.services.pensyarat-frontend.loadbalancer.server.port=3000"
       - "traefik.docker.network=dokploy-network"
     volumes:
       - shared_uploads:/app/uploads
@@ -290,7 +302,6 @@ services:
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - REDIS_URL=${REDIS_URL}
 
       # API & Security Configuration
       - CORS_ORIGINS=${CORS_ORIGINS}
@@ -310,11 +321,16 @@ services:
       - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
       - GRAFANA_URL=${GRAFANA_URL}
       - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+
+      # Cloudflare R2 Storage
+      - CLOUDFLARE_R2_ACCOUNT_ID=${CLOUDFLARE_R2_ACCOUNT_ID}
+      - CLOUDFLARE_R2_ACCESS_KEY_ID=${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      - CLOUDFLARE_R2_SECRET_ACCESS_KEY=${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_R2_BUCKET_NAME=${CLOUDFLARE_R2_BUCKET_NAME}
+      - CLOUDFLARE_R2_PUBLIC_URL=${CLOUDFLARE_R2_PUBLIC_URL}
     depends_on:
       init-permissions:
         condition: service_completed_successfully
-      redis:
-        condition: service_healthy
     ports:
       - 8000
     dns:
@@ -326,11 +342,11 @@ services:
       - dokploy-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.tunarasa-backend.rule=Host(`api.tunarasa.my.id`)"
-      - "traefik.http.routers.tunarasa-backend.entrypoints=websecure"
-      - "traefik.http.routers.tunarasa-backend.tls.certResolver=letsencrypt"
-      - "traefik.http.routers.tunarasa-backend.service=tunarasa-backend"
-      - "traefik.http.services.tunarasa-backend.loadbalancer.server.port=8000"
+      - "traefik.http.routers.pensyarat-backend.rule=Host(`api.pensyarat.my.id`)"
+      - "traefik.http.routers.pensyarat-backend.entrypoints=websecure"
+      - "traefik.http.routers.pensyarat-backend.tls.certResolver=letsencrypt"
+      - "traefik.http.routers.pensyarat-backend.service=pensyarat-backend"
+      - "traefik.http.services.pensyarat-backend.loadbalancer.server.port=8000"
       - "traefik.docker.network=dokploy-network"
     volumes:
       - ./assets:/app/assets
@@ -341,28 +357,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-    restart: unless-stopped
-
-  # Redis Service (Caching & Sessions)
-  redis:
-    image: redis:7-alpine
-    ports:
-      - 6379
-    dns:
-      - 1.1.1.1
-      - 1.0.0.1
-      - 8.8.8.8
-      - 8.8.4.4
-    volumes:
-      - redis_data_prod:/data
-    networks:
-      - dokploy-network
-    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
     restart: unless-stopped
 
   # Prometheus (Metrics Collection)
@@ -379,11 +373,11 @@ services:
       - dokploy-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.tunarasa-prometheus.rule=Host(`prom.tunarasa.my.id`)"
-      - "traefik.http.routers.tunarasa-prometheus.tls=true"
-      - "traefik.http.routers.tunarasa-prometheus.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.tunarasa-prometheus.service=tunarasa-prometheus"
-      - "traefik.http.services.tunarasa-prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.routers.pensyarat-prometheus.rule=Host(`prom.pensyarat.my.id`)"
+      - "traefik.http.routers.pensyarat-prometheus.tls=true"
+      - "traefik.http.routers.pensyarat-prometheus.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.pensyarat-prometheus.service=pensyarat-prometheus"
+      - "traefik.http.services.pensyarat-prometheus.loadbalancer.server.port=9090"
       - "traefik.docker.network=dokploy-network"
     volumes:
       - ./monitoring/prometheus/configs/prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
@@ -436,11 +430,11 @@ services:
       - dokploy-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.tunarasa-grafana.rule=Host(`grafana.tunarasa.my.id`)"
-      - "traefik.http.routers.tunarasa-grafana.entrypoints=websecure"
-      - "traefik.http.routers.tunarasa-grafana.tls.certResolver=letsencrypt"
-      - "traefik.http.routers.tunarasa-grafana.service=tunarasa-grafana"
-      - "traefik.http.services.tunarasa-grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.pensyarat-grafana.rule=Host(`grafana.pensyarat.my.id`)"
+      - "traefik.http.routers.pensyarat-grafana.entrypoints=websecure"
+      - "traefik.http.routers.pensyarat-grafana.tls.certResolver=letsencrypt"
+      - "traefik.http.routers.pensyarat-grafana.service=pensyarat-grafana"
+      - "traefik.http.services.pensyarat-grafana.loadbalancer.server.port=3000"
       - "traefik.docker.network=dokploy-network"
     volumes:
       - grafana_data_prod:/var/lib/grafana
@@ -455,8 +449,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  redis_data_prod:
-    driver: local
   prometheus_data_prod:
     driver: local
   grafana_data_prod:
@@ -572,8 +564,6 @@ secrets:
     environment: FROM_NAME
   ADMIN_EMAIL:
     environment: ADMIN_EMAIL
-  REDIS_URL:
-    environment: REDIS_URL
 
   # API & Security Configuration
   CORS_ORIGINS:
@@ -606,3 +596,15 @@ secrets:
     environment: GRAFANA_URL
   NEXT_PUBLIC_GRAFANA_URL:
     environment: NEXT_PUBLIC_GRAFANA_URL
+
+  # Cloudflare R2 Storage
+  CLOUDFLARE_R2_ACCOUNT_ID:
+    environment: CLOUDFLARE_R2_ACCOUNT_ID
+  CLOUDFLARE_R2_ACCESS_KEY_ID:
+    environment: CLOUDFLARE_R2_ACCESS_KEY_ID
+  CLOUDFLARE_R2_SECRET_ACCESS_KEY:
+    environment: CLOUDFLARE_R2_SECRET_ACCESS_KEY
+  CLOUDFLARE_R2_BUCKET_NAME:
+    environment: CLOUDFLARE_R2_BUCKET_NAME
+  CLOUDFLARE_R2_PUBLIC_URL:
+    environment: CLOUDFLARE_R2_PUBLIC_URL

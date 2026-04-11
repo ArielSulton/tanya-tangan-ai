@@ -149,7 +149,7 @@ export function QALogsViewer({
   const getGrafanaLinks = () => {
     const baseParams = `&from=now-${dateRange}&to=now`
     return {
-      overview: `${grafanaBaseUrl}/d/tunarasa-overview/tunarasa-overview${baseParams}`,
+      overview: `${grafanaBaseUrl}/d/pensyarat-overview/pensyarat-overview${baseParams}`,
       llmMetrics: `${grafanaBaseUrl}/d/llm-metrics/llm-performance${baseParams}`,
       conversationAnalytics: `${grafanaBaseUrl}/d/conversation-analytics/conversation-analytics${baseParams}`,
       deepevalDashboard: `${grafanaBaseUrl}/d/deepeval-monitoring/deepeval-llm-evaluation${baseParams}`,

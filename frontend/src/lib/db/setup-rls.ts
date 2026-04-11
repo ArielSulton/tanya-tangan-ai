@@ -2,7 +2,7 @@
  * Database RLS Policy Setup Utility
  *
  * This file provides utilities to set up Row Level Security policies
- * for the Tanya Tangan AI application database.
+ * for the PENSyarat AI application database.
  */
 
 import { sql } from 'drizzle-orm'

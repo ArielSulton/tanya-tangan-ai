@@ -136,7 +136,14 @@ RUN --mount=type=secret,id=NODE_ENV,env=NODE_ENV \
     --mount=type=secret,id=GRAFANA_ADMIN_PASSWORD,env=GRAFANA_ADMIN_PASSWORD \
     --mount=type=secret,id=GRAFANA_DOMAIN,env=GRAFANA_DOMAIN \
     --mount=type=secret,id=GRAFANA_URL,env=GRAFANA_URL \
-    --mount=type=secret,id=NEXT_PUBLIC_GRAFANA_URL,env=NEXT_PUBLIC_GRAFANA_URL
+    --mount=type=secret,id=NEXT_PUBLIC_GRAFANA_URL,env=NEXT_PUBLIC_GRAFANA_URL \
+
+    # Cloudflare R2 Storage
+    --mount=type=secret,id=CLOUDFLARE_R2_ACCOUNT_ID,env=CLOUDFLARE_R2_ACCOUNT_ID \
+    --mount=type=secret,id=CLOUDFLARE_R2_ACCESS_KEY_ID,env=CLOUDFLARE_R2_ACCESS_KEY_ID \
+    --mount=type=secret,id=CLOUDFLARE_R2_SECRET_ACCESS_KEY,env=CLOUDFLARE_R2_SECRET_ACCESS_KEY \
+    --mount=type=secret,id=CLOUDFLARE_R2_BUCKET_NAME,env=CLOUDFLARE_R2_BUCKET_NAME \
+    --mount=type=secret,id=CLOUDFLARE_R2_PUBLIC_URL,env=CLOUDFLARE_R2_PUBLIC_URL
 
 # Build the application
 RUN bun run build

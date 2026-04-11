@@ -1,5 +1,5 @@
 """
-Tunarasa FastAPI Backend
+PENSyarat AI FastAPI Backend
 Main application entry point for the sign language recognition platform.
 """
 
@@ -31,7 +31,7 @@ def create_application() -> FastAPI:
     """Create and configure FastAPI application"""
 
     app = FastAPI(
-        title="Tunarasa API",
+        title="PENSyarat API",
         description="Sign Language Recognition and AI-Powered Q&A Platform",
         version="1.0.0",
         docs_url="/api/v1/docs" if settings.ENVIRONMENT == "development" else None,
@@ -133,7 +133,7 @@ def create_application() -> FastAPI:
 
         return {
             "status": "healthy" if db_health["status"] == "healthy" else "degraded",
-            "service": "tunarasa-backend",
+            "service": "pesnsyarat-backend",
             "database": db_health,
         }
 

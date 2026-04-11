@@ -8,7 +8,7 @@
                            PROGRAM DIPLOMA
 
 
-         Tanya Tangan: Platform Asisten Belajar Adaptif Berbasis
+         PENSyarat AI: Platform Asisten Belajar Adaptif Berbasis
        Kecerdasan Buatan dan Pengenalan Gestur Bahasa Isyarat SIBI
                 untuk Siswa Tunarungu di SLB-B
 
@@ -27,7 +27,7 @@
                          LEMBAR PENGESAHAN                                    i
 ================================================================================
 
-Judul            : Tanya Tangan: Platform Asisten Belajar Adaptif Berbasis
+Judul            : PENSyarat AI: Platform Asisten Belajar Adaptif Berbasis
                    Kecerdasan Buatan dan Pengenalan Gestur Bahasa Isyarat
                    SIBI untuk Siswa Tunarungu di SLB-B
 Bidang           : IPA (Alam dan Formal)
@@ -68,7 +68,7 @@ NIDN. [NIDN]                                     NRP. [NRP]
 
         Puji syukur penulis haturkan kepada Tuhan Yang Maha Esa atas segala rahmat dan
 karunia-Nya sehingga penulis dapat menyelesaikan Naskah Produk Inovatif yang berjudul
-"Tanya Tangan: Platform Asisten Belajar Adaptif Berbasis Kecerdasan Buatan dan
+"PENSyarat AI: Platform Asisten Belajar Adaptif Berbasis Kecerdasan Buatan dan
 Pengenalan Gestur Bahasa Isyarat SIBI untuk Siswa Tunarungu di SLB-B". Penyusunan
 naskah ini merupakan bagian dari rangkaian keikutsertaan dalam Pemilihan Mahasiswa
 Berprestasi (Pilmapres) Program Diploma Tahun 2026.
@@ -84,11 +84,11 @@ Berprestasi (Pilmapres) Program Diploma Tahun 2026.
 4. Seluruh guru dan tenaga pendidik SLB-B yang telah bersedia berbagi pengalaman dan
    memberikan masukan berharga dalam proses identifikasi masalah dan validasi produk.
 5. Rekan-rekan mahasiswa yang telah memberikan semangat dan dukungan selama proses
-   pengembangan Tanya Tangan.
+   pengembangan PENSyarat AI.
 
         Penulis menyadari bahwa naskah ini masih jauh dari kesempurnaan. Oleh karena
 itu, penulis mengharapkan kritik dan saran yang membangun demi penyempurnaan karya ini.
-Semoga platform Tanya Tangan dapat memberikan manfaat nyata bagi peningkatan kualitas
+Semoga platform PENSyarat AI dapat memberikan manfaat nyata bagi peningkatan kualitas
 pendidikan siswa tunarungu di Indonesia.
 
                                                 [KOTA], [TANGGAL] [BULAN] 2026
@@ -119,7 +119,7 @@ BAB 2. RUMUSAN TARGET PEMBANGUNAN ..................................... 4
   2.4 Analisis Sumber Daya ............................................. 6
 BAB 3. VISUALISASI DAN KELAYAKAN PRODUK ............................... 7
   3.1 Desain Visualisasi Gagasan ....................................... 7
-  3.2 Kelayakan Teknis Tanya Tangan .................................... 8
+  3.2 Kelayakan Teknis PENSyarat AI .................................... 8
   3.3 Proyeksi Jangka Panjang Implementasi ............................. 9
 BAB 4. PENUTUP ......................................................... 10
 DAFTAR PUSTAKA ......................................................... 10
@@ -127,11 +127,11 @@ LAMPIRAN ............................................................... 11
   Lampiran 1. Jadwal Kegiatan .......................................... 11
   Lampiran 2. Struktur Organisasi ...................................... 11
   Lampiran 3. Anggaran Biaya ........................................... 12
-  Lampiran 4. Business Model Canvas Tanya Tangan ....................... 13
-  Lampiran 5. Tampilan Produk Tanya Tangan ............................. 13
-  Lampiran 6. Letter of Interest Mitra Tanya Tangan .................... 14
+  Lampiran 4. Business Model Canvas PENSyarat AI ....................... 13
+  Lampiran 5. Tampilan Produk PENSyarat AI ............................. 13
+  Lampiran 6. Letter of Interest Mitra PENSyarat AI .................... 14
   Lampiran 7. Dokumentasi Wawancara Guru dan Siswa SLB-B ............... 14
-  Lampiran 8. Dokumen Teknis Tanya Tangan .............................. 15
+  Lampiran 8. Dokumen Teknis PENSyarat AI .............................. 15
   Lampiran 9. Hasil Uji Periksa Similaritas Naskah dan HAKI ............ 15
 
 ================================================================================
@@ -140,10 +140,10 @@ LAMPIRAN ............................................................... 11
                          DAFTAR GAMBAR                                        iv
 ================================================================================
 
-Gambar 1  Alur Kerja Sistem Tanya Tangan ............................... 3
-Gambar 2  Prioritization Matrix Tanya Tangan ........................... 5
+Gambar 1  Alur Kerja Sistem PENSyarat AI ............................... 3
+Gambar 2  Prioritization Matrix PENSyarat AI ........................... 5
 Gambar 3  Grafik Akurasi Pengenalan Gestur SIBI per Kondisi Pengujian .. 8
-Gambar 4  Proyeksi Jangka Panjang Tanya Tangan ......................... 9
+Gambar 4  Proyeksi Jangka Panjang PENSyarat AI ......................... 9
 
 
                           DAFTAR TABEL
@@ -151,7 +151,7 @@ Gambar 4  Proyeksi Jangka Panjang Tanya Tangan ......................... 9
 
 Tabel 1  Analisis Solusi ............................................... 2
 Tabel 2  Key Difference Matrix ......................................... 3
-Tabel 3  Affinity Diagram Tanya Tangan ................................. 4
+Tabel 3  Affinity Diagram PENSyarat AI ................................. 4
 Tabel 4  Target Pembangunan dengan Indikator SMART ..................... 5
 Tabel 5  Desain Visualisasi Gagasan (SaHaBaT) .......................... 7
 Tabel 6  Hasil Pengujian Akurasi Pengenalan Gestur SIBI ................ 8
@@ -208,7 +208,7 @@ pertanyaan siswa tunarungu melalui gestur bahasa isyarat SIBI dan menjawabnya
 berdasarkan kurikulum mata pelajaran yang relevan.
 
         Berdasarkan fakta-fakta di atas, penulis mengembangkan platform digital bernama
-Tanya Tangan. Platform ini mengintegrasikan pengenalan gestur SIBI berbasis browser
+PENSyarat AI. Platform ini mengintegrasikan pengenalan gestur SIBI berbasis browser
 dengan mesin tanya-jawab AI berbasis kurikulum per mata pelajaran dan jenjang pendidikan
 (SDLB, SMPLB, SMALB), sehingga siswa tunarungu dapat belajar secara mandiri kapan saja
 dan di mana saja tanpa ketergantungan penuh pada ketersediaan guru.
@@ -286,9 +286,9 @@ Tabel 1. Analisis Solusi
 +----------+--------------------------------+------------------------------------------+
 
         Berdasarkan analisis tersebut, dikembangkan solusi platform web bernama Tanya
-Tangan. Gambar 1 menampilkan alur kerja sistem Tanya Tangan secara keseluruhan.
+Tangan. Gambar 1 menampilkan alur kerja sistem PENSyarat AI secara keseluruhan.
 
-Gambar 1. Alur Kerja Sistem Tanya Tangan
+Gambar 1. Alur Kerja Sistem PENSyarat AI
 
   [Siswa Tunarungu]
         |
@@ -317,7 +317,7 @@ Gambar 1. Alur Kerja Sistem Tanya Tangan
 
         Analisis dilakukan menggunakan Key Difference Matrix dan Business Model Canvas
 (BMC). Pada tahap Key Difference Matrix, dilakukan identifikasi terhadap solusi-solusi
-yang saat ini ada di pasar dan diperbandingkan dengan Tanya Tangan berdasarkan aspek
+yang saat ini ada di pasar dan diperbandingkan dengan PENSyarat AI berdasarkan aspek
 keunggulan kritis, sebagaimana disajikan pada Tabel 2.
 
 Tabel 2. Key Difference Matrix
@@ -336,7 +336,7 @@ Tabel 2. Key Difference Matrix
 +----------------------------------+---------+-----------+----------+----------+-------+
 Keterangan: v = Ada | x = Tidak Ada | ~ = Sebagian
 
-        Berdasarkan Key Difference Matrix, Tanya Tangan unggul karena merupakan
+        Berdasarkan Key Difference Matrix, PENSyarat AI unggul karena merupakan
 satu-satunya platform yang menggabungkan tiga kapabilitas kritis secara bersamaan:
 (1) pengenalan gestur SIBI real-time berbasis browser, (2) jawaban AI berbasis kurikulum
 SLB-B per mata pelajaran dan jenjang, serta (3) manajemen konten yang dapat diperbarui
@@ -347,13 +347,13 @@ dan B2B (Business-to-Business) melalui kemitraan dengan dinas pendidikan dan SLB
 
 1.5 Manfaat Solusi
 
-1. Bagi Siswa Tunarungu: Tanya Tangan menyediakan akses belajar mandiri yang inklusif,
+1. Bagi Siswa Tunarungu: PENSyarat AI menyediakan akses belajar mandiri yang inklusif,
    memungkinkan siswa untuk mengeksplorasi materi pelajaran kapan saja melalui bahasa
    isyarat SIBI yang sudah mereka kuasai, tanpa ketergantungan penuh pada guru.
 2. Bagi Guru dan SLB-B: Platform ini membantu guru dalam menyediakan konten pembelajaran
    digital yang dapat diperbarui secara mandiri, serta mengurangi beban pertanyaan
    berulang dari siswa di luar jam pembelajaran.
-3. Bagi Pemerintah: Tanya Tangan mendukung implementasi pendidikan inklusif dan
+3. Bagi Pemerintah: PENSyarat AI mendukung implementasi pendidikan inklusif dan
    transformasi digital pendidikan sebagaimana diamanatkan Permendikbud Nomor 70 Tahun
    2009 dan Undang-Undang Nomor 8 Tahun 2016, serta selaras dengan Sustainable
    Development Goals (SDGs) Poin 4 (Pendidikan Berkualitas) dan Poin 10 (Berkurangnya
@@ -366,12 +366,12 @@ dan B2B (Business-to-Business) melalui kemitraan dengan dinas pendidikan dan SLB
 
 2.1 Tujuan Pembangunan
 
-        Tujuan pembangunan Tanya Tangan dirumuskan melalui tahap Idea Development dan
+        Tujuan pembangunan PENSyarat AI dirumuskan melalui tahap Idea Development dan
 Affinity Diagram untuk mengelompokkan kebutuhan pengguna terhadap solusi yang tepat.
 Tabel 3 menunjukkan keterkaitan antara kebutuhan (goals) pengguna dan fitur solusi
 yang dikembangkan.
 
-Tabel 3. Affinity Diagram Tanya Tangan
+Tabel 3. Affinity Diagram PENSyarat AI
 +----------------------------------------------------+------------------------------------+
 | Goals Pengguna                                     | Solusi                             |
 +----------------------------------------------------+------------------------------------+
@@ -398,7 +398,7 @@ Tabel 3. Affinity Diagram Tanya Tangan
 (Gambar 2). Fitur bernilai tinggi (high value) dan upaya rendah (low effort)
 diprioritaskan sebagai Minimum Viable Product (MVP).
 
-Gambar 2. Prioritization Matrix Tanya Tangan
+Gambar 2. Prioritization Matrix PENSyarat AI
 
              HIGH VALUE
                  |
@@ -425,7 +425,7 @@ Tabel 4. Target Pembangunan dengan Indikator SMART
 +----+-------------+------------------------------------------------------------+
 | No | Parameter   | Indikator                                                  |
 +----+-------------+------------------------------------------------------------+
-|  1 | Specific    | Produk yang dikembangkan adalah Tanya Tangan, platform     |
+|  1 | Specific    | Produk yang dikembangkan adalah PENSyarat AI, platform     |
 |    |             | asisten belajar berbasis AI untuk siswa tunarungu SLB-B.   |
 |    |             | Fitur utama: (1) pengenalan gestur SIBI real-time via      |
 |    |             | kamera browser, (2) mesin tanya-jawab RAG berbasis         |
@@ -433,7 +433,7 @@ Tabel 4. Target Pembangunan dengan Indikator SMART
 |    |             | SMALB), (3) dashboard admin untuk manajemen konten, dan    |
 |    |             | (4) antarmuka publik berbasis web.                         |
 +----+-------------+------------------------------------------------------------+
-|  2 | Measurable  | Tanya Tangan mencapai MVP dengan: akurasi pengenalan       |
+|  2 | Measurable  | PENSyarat AI mencapai MVP dengan: akurasi pengenalan       |
 |    |             | gestur SIBI >=85%, relevansi jawaban AI >=80% berdasarkan  |
 |    |             | metrik ROUGE-L, dan dapat diakses oleh minimal 3 SLB-B    |
 |    |             | pilot dengan setidaknya 5 mata pelajaran per jenjang.      |
@@ -443,13 +443,13 @@ Tabel 4. Target Pembangunan dengan Indikator SMART
 |    |             | Intelektual (HAKI) telah dilakukan sebagai bentuk          |
 |    |             | perlindungan terhadap inovasi ini.                         |
 +----+-------------+------------------------------------------------------------+
-|  4 | Realistic   | Pengembangan Tanya Tangan memanfaatkan teknologi           |
+|  4 | Realistic   | Pengembangan PENSyarat AI memanfaatkan teknologi           |
 |    |             | open-source (MediaPipe, TensorFlow.js, LangChain, LLaMA    |
 |    |             | 3.3) yang tersedia tanpa biaya lisensi tinggi dan dapat    |
 |    |             | diimplementasikan di lingkungan SLB-B dengan infrastruktur |
 |    |             | internet standar.                                          |
 +----+-------------+------------------------------------------------------------+
-|  5 | Time-bound  | Tanya Tangan diharapkan mencapai MVP pada bulan Juni 2026  |
+|  5 | Time-bound  | PENSyarat AI diharapkan mencapai MVP pada bulan Juni 2026  |
 |    |             | dan diimplementasikan secara pilot di 3 SLB-B pada bulan   |
 |    |             | Oktober 2026.                                              |
 +----+-------------+------------------------------------------------------------+
@@ -457,8 +457,8 @@ Tabel 4. Target Pembangunan dengan Indikator SMART
 
 2.2 Strategi Pencapaian Target
 
-a) Strategi Pengembangan Produk Tanya Tangan
-        Pengembangan Tanya Tangan dilakukan secara iteratif melalui siklus build-
+a) Strategi Pengembangan Produk PENSyarat AI
+        Pengembangan PENSyarat AI dilakukan secara iteratif melalui siklus build-
 measure-learn. Setiap iterasi mencakup pengembangan fitur, pengujian langsung bersama
 siswa dan guru SLB-B, serta penyempurnaan berdasarkan umpan balik. Pendekatan ini
 memastikan bahwa setiap fitur yang dikembangkan relevan, dapat digunakan secara efektif
@@ -466,7 +466,7 @@ oleh pengguna target, dan memenuhi standar aksesibilitas yang dibutuhkan.
 
 b) Strategi Implementasi dan Penyebaran
         1. Pendekatan melalui Dinas Pendidikan: Berkoordinasi dengan Dinas Pendidikan
-           setempat dan Kemendikbudristek untuk program pilot implementasi Tanya Tangan
+           setempat dan Kemendikbudristek untuk program pilot implementasi PENSyarat AI
            di SLB-B yang memiliki infrastruktur internet memadai.
         2. Pendekatan langsung ke SLB-B: Melakukan uji coba dan pelatihan kepada guru
            sebagai administrator konten dan pendamping siswa dalam penggunaan platform.
@@ -478,9 +478,9 @@ b) Strategi Implementasi dan Penyebaran
 2.3 Rencana Kegiatan
 
 a) Tahap dan Langkah Kegiatan
-        Adapun tahapan dalam kegiatan program implementasi Tanya Tangan adalah sebagai
+        Adapun tahapan dalam kegiatan program implementasi PENSyarat AI adalah sebagai
 berikut:
-        1. Penyelesaian MVP Tanya Tangan: Finalisasi prototipe dengan seluruh fitur
+        1. Penyelesaian MVP PENSyarat AI: Finalisasi prototipe dengan seluruh fitur
            inti berdasarkan strategi pengembangan iteratif, mencapai target akurasi
            gestur >=85%.
         2. Pengujian dan Validasi Produk: Melakukan uji coba langsung di lingkungan
@@ -503,7 +503,7 @@ dapat dilihat pada Lampiran 1.
 2.4 Analisis Sumber Daya
 
 a) Manusia
-        Dalam pengimplementasian Tanya Tangan dibutuhkan lima peran utama dengan
+        Dalam pengimplementasian PENSyarat AI dibutuhkan lima peran utama dengan
 deskripsi tugas sebagai berikut:
         1. CEO (Chief Executive Officer): Mengkoordinasikan tim dan mengambil
            keputusan strategis agar pengembangan selaras dengan visi misi platform.
@@ -518,7 +518,7 @@ deskripsi tugas sebagai berikut:
         Struktur organisasi lebih lanjut dapat dilihat pada Lampiran 2.
 
 b) Rencana Anggaran Dana
-        Rencana anggaran yang dibutuhkan untuk merealisasikan Tanya Tangan:
+        Rencana anggaran yang dibutuhkan untuk merealisasikan PENSyarat AI:
         - Cost of Capital   sebesar Rp  8.700.000
         - Cost of Operational sebesar Rp 20.000.000
         - Cost of Maintenance sebesar Rp  4.500.000
@@ -526,7 +526,7 @@ b) Rencana Anggaran Dana
         Detail rancangan anggaran dapat dilihat pada Lampiran 3.
 
 c) Sumber Pendanaan
-        Tanya Tangan menerapkan dua sumber pendapatan utama: (1) kerja sama program
+        PENSyarat AI menerapkan dua sumber pendapatan utama: (1) kerja sama program
 dengan dinas pendidikan dan SLB-B, dan (2) hibah penelitian dan kompetisi inovasi.
 Potensi sumber pendanaan jangka panjang meliputi kerja sama program CSR perusahaan
 teknologi serta dukungan dari Kemendikbudristek melalui program digitalisasi pendidikan
@@ -539,7 +539,7 @@ inklusif.
 
 3.1 Desain Visualisasi Gagasan
 
-        Desain Visualisasi Gagasan Tanya Tangan menggunakan kerangka SaHaBaT (Sasaran,
+        Desain Visualisasi Gagasan PENSyarat AI menggunakan kerangka SaHaBaT (Sasaran,
 Hambatan, Bantuan, dan Tindakan) yang merangkum solusi secara ringkas dan terarah,
 sebagaimana disajikan pada Tabel 5.
 
@@ -593,7 +593,7 @@ Tabel 5. Desain Visualisasi Gagasan (SaHaBaT)
 |                    | (c) Potensi pendanaan dari hibah penelitian, kompetisi   |
 |                    | inovasi, dan program CSR perusahaan teknologi.          |
 +--------------------+----------------------------------------------------------+
-| Tindakan           | (a) Penyelesaian MVP Tanya Tangan dengan fitur inti.     |
+| Tindakan           | (a) Penyelesaian MVP PENSyarat AI dengan fitur inti.     |
 |                    | (b) Pilot implementasi di 3 SLB-B.                       |
 |                    | (c) Pelatihan guru sebagai administrator konten.         |
 |                    | (d) Penyempurnaan model berdasarkan data penggunaan      |
@@ -601,10 +601,10 @@ Tabel 5. Desain Visualisasi Gagasan (SaHaBaT)
 +--------------------+----------------------------------------------------------+
 
 
-3.2 Kelayakan Teknis Tanya Tangan
+3.2 Kelayakan Teknis PENSyarat AI
 
         Pengujian dilakukan secara fungsional untuk memastikan bahwa setiap komponen
-dan keseluruhan sistem pada platform Tanya Tangan berfungsi sesuai yang diharapkan,
+dan keseluruhan sistem pada platform PENSyarat AI berfungsi sesuai yang diharapkan,
 meliputi: pengujian akurasi pengenalan gestur SIBI, pengujian relevansi jawaban RAG AI,
 dan pengujian fungsionalitas sistem.
 
@@ -656,7 +656,7 @@ Gambar 3. Grafik Akurasi Pengenalan Gestur SIBI per Kondisi Pengujian
 
         Pengujian relevansi dilakukan dengan menyiapkan 25 pasang pertanyaan-jawaban
 referensi berdasarkan materi tiga mata pelajaran (Matematika, Ilmu Pengetahuan Alam,
-dan Bahasa Indonesia) untuk jenjang SMPLB. Jawaban sistem Tanya Tangan dievaluasi
+dan Bahasa Indonesia) untuk jenjang SMPLB. Jawaban sistem PENSyarat AI dievaluasi
 menggunakan metrik ROUGE-L Score dan penilaian manual oleh dua guru SLB-B yang
 berpengalaman. Hasil pengujian disajikan pada Tabel 7.
 
@@ -704,7 +704,7 @@ Tabel 8. Hasil Pengujian Fungsionalitas Sistem
 |     | ukuran layar                     | semua perangkat           |        |
 +-----+----------------------------------+---------------------------+--------+
 
-        Seluruh fitur utama Tanya Tangan terbukti berfungsi sesuai spesifikasi. Sistem
+        Seluruh fitur utama PENSyarat AI terbukti berfungsi sesuai spesifikasi. Sistem
 mampu memproses input gestur SIBI dalam waktu rata-rata 1,7 detik dan menghasilkan
 jawaban RAG dalam waktu rata-rata 3,8 detik. Responsivitas ini menjadikan pengalaman
 belajar terasa naturalistik dan tidak membebani siswa dalam proses tanya-jawab.
@@ -712,14 +712,14 @@ belajar terasa naturalistik dan tidak membebani siswa dalam proses tanya-jawab.
 
 3.3 Proyeksi Jangka Panjang Implementasi
 
-        Proyeksi jangka panjang Tanya Tangan dimulai dari fase pengembangan dan
+        Proyeksi jangka panjang PENSyarat AI dimulai dari fase pengembangan dan
 pengujian prototipe yang tengah berjalan (2025-2026). Pada tahun kedua (2027), Tanya
 Tangan akan memasuki fase pilot di tiga SLB-B dan diluncurkan secara resmi. Pada
-tahun ketiga dan seterusnya (2028+), diharapkan Tanya Tangan dapat diimplementasikan
+tahun ketiga dan seterusnya (2028+), diharapkan PENSyarat AI dapat diimplementasikan
 secara bertahap di seluruh SLB-B di Indonesia melalui sinergi dengan pemerintah dan
 mitra swasta.
 
-Gambar 4. Proyeksi Jangka Panjang Tanya Tangan
+Gambar 4. Proyeksi Jangka Panjang PENSyarat AI
 
   [2025-2026]          [2027]               [2028+]
   IDEA & BUILD   -->   LAUNCH         -->   GROWTH
@@ -727,12 +727,12 @@ Gambar 4. Proyeksi Jangka Panjang Tanya Tangan
   dan pengujian        peluncuran resmi,    seluruh SLB-B
   prototipe MVP        pelatihan guru       Indonesia
 
-        Penerapan Tanya Tangan selaras dengan Sustainable Development Goals (SDGs),
+        Penerapan PENSyarat AI selaras dengan Sustainable Development Goals (SDGs),
 khususnya Poin 4 (Quality Education) dan Poin 10 (Reduced Inequalities). Inovasi ini
 mendorong pemerataan akses pendidikan berkualitas bagi lebih dari 72.000 siswa
 tunarungu yang selama ini menghadapi keterbatasan sistemik. Untuk mewujudkan visi
-Tanya Tangan, dibutuhkan sinergi dari berbagai pihak berikut:
-        1. Pemerintah: Mendukung implementasi Tanya Tangan melalui program digitalisasi
+PENSyarat AI, dibutuhkan sinergi dari berbagai pihak berikut:
+        1. Pemerintah: Mendukung implementasi PENSyarat AI melalui program digitalisasi
            pendidikan inklusif dan pengadaan infrastruktur internet di SLB-B.
         2. SLB-B dan Guru: Mitra utama dalam penerapan, uji coba, pengelolaan konten
            kurikulum, dan pendampingan siswa dalam penggunaan platform.
@@ -748,22 +748,22 @@ Tanya Tangan, dibutuhkan sinergi dari berbagai pihak berikut:
                          BAB 4. PENUTUP                                       10
 ================================================================================
 
-        Tanya Tangan hadir sebagai inovasi platform digital yang menjawab kebutuhan
+        PENSyarat AI hadir sebagai inovasi platform digital yang menjawab kebutuhan
 mendesak lebih dari 72.000 siswa tunarungu di SLB-B Indonesia: sebuah asisten belajar
 yang memahami bahasa isyarat mereka. Dengan mengintegrasikan pengenalan gestur SIBI
 berbasis browser (MediaPipe + TensorFlow.js) dan mesin tanya-jawab AI berbasis
-kurikulum (RAG dengan LangChain, LLaMA 3.3, dan Pinecone), Tanya Tangan memungkinkan
+kurikulum (RAG dengan LangChain, LLaMA 3.3, dan Pinecone), PENSyarat AI memungkinkan
 siswa tunarungu belajar secara mandiri, interaktif, dan sesuai kurikulum sekolah
 mereka—tanpa memerlukan perangkat khusus maupun instalasi aplikasi.
 
         Hasil pengujian menunjukkan bahwa sistem telah memenuhi target yang ditetapkan:
 akurasi pengenalan gestur SIBI rata-rata 85,92% dan relevansi jawaban AI rata-rata
 84,7%. Seluruh fitur utama terbukti berfungsi sesuai spesifikasi dengan responsivitas
-yang mendukung pengalaman belajar yang nyaman. Dukungan terhadap Tanya Tangan
+yang mendukung pengalaman belajar yang nyaman. Dukungan terhadap PENSyarat AI
 ditunjukkan melalui Letter of Interest dari mitra SLB-B yang menyatakan ketertarikan
 terhadap implementasi platform ini (Lampiran 6).
 
-        Tanya Tangan selaras dengan tema Pilmapres Produk Inovatif Poin F (Penguatan
+        PENSyarat AI selaras dengan tema Pilmapres Produk Inovatif Poin F (Penguatan
 pendidikan, sains dan teknologi, atau digitalisasi) dan Poin G (Penguatan kesetaraan
 gender dan perlindungan hak penyandang disabilitas), serta berkontribusi nyata pada
 pencapaian SDGs 4 dan 10 di Indonesia.
@@ -903,7 +903,7 @@ Lain-lain
 TOTAL KESELURUHAN ANGGARAN: Rp 33.500.000
 
 
-Lampiran 4. Business Model Canvas Tanya Tangan
+Lampiran 4. Business Model Canvas PENSyarat AI
 --------------------------------------------------------------------------------
 
 +---------------------+--------------------+--------------------+
@@ -951,7 +951,7 @@ Lampiran 4. Business Model Canvas Tanya Tangan
 +---------------------------------+---------------------------------+
 
 
-Lampiran 5. Tampilan Produk Tanya Tangan
+Lampiran 5. Tampilan Produk PENSyarat AI
 --------------------------------------------------------------------------------
 
 [Tampilan 1: Halaman Beranda / Pemilihan Jenjang]
@@ -966,7 +966,7 @@ Tagline: "Belajar Mandiri Lewat Bahasa Isyarat"
   - Jumlah dokumen kurikulum tersedia
   - Tombol "Mulai" untuk membuka sesi
 
-[Tampilan 3: Halaman Komunikasi / Tanya Tangan]
+[Tampilan 3: Halaman Komunikasi / PENSyarat AI]
 - Area kamera browser untuk input gestur SIBI real-time
 - Live preview landmark tangan dari MediaPipe (21 titik)
 - Area teks hasil konversi gestur
@@ -980,10 +980,10 @@ Tagline: "Belajar Mandiri Lewat Bahasa Isyarat"
 - Status pemrosesan dokumen (pending/processing/completed)
 - Statistik penggunaan per mata pelajaran
 
-Link Demo Tanya Tangan: [URL DEMO PRODUK]
+Link Demo PENSyarat AI: [URL DEMO PRODUK]
 
 
-Lampiran 6. Letter of Interest Mitra Tanya Tangan
+Lampiran 6. Letter of Interest Mitra PENSyarat AI
 --------------------------------------------------------------------------------
 
                          SURAT REKOMENDASI
@@ -994,7 +994,7 @@ Yang bertanda tangan di bawah ini:
   Alamat    : [ALAMAT LENGKAP SLB-B]
 
 Dengan ini menyatakan ketertarikan dan dukungan kami terhadap pengembangan dan
-implementasi platform Tanya Tangan sebagai media belajar mandiri berbasis kecerdasan
+implementasi platform PENSyarat AI sebagai media belajar mandiri berbasis kecerdasan
 buatan dan pengenalan gestur bahasa isyarat SIBI untuk siswa tunarungu di SLB-B kami.
 
 Kami bersedia menjadi mitra pilot dalam:
@@ -1002,7 +1002,7 @@ Kami bersedia menjadi mitra pilot dalam:
   2. Penyediaan dokumen kurikulum untuk konten RAG AI.
   3. Pemberian umpan balik untuk pengembangan produk.
 
-Kami yakin bahwa Tanya Tangan dapat memberikan manfaat nyata bagi kemandirian belajar
+Kami yakin bahwa PENSyarat AI dapat memberikan manfaat nyata bagi kemandirian belajar
 siswa tunarungu di sekolah kami dan membantu guru dalam menyediakan media pembelajaran
 yang inklusif dan berbasis teknologi.
 
@@ -1026,7 +1026,7 @@ SLB-B [NAMA SEKOLAH] mengenai tantangan pembelajaran mandiri siswa tunarungu
 dan ekspektasi terhadap media digital berbasis bahasa isyarat.
 
 [Foto 2: Sesi Demonstrasi Prototype bersama Siswa]
-Dokumentasi demonstrasi prototype Tanya Tangan bersama siswa SMPLB di
+Dokumentasi demonstrasi prototype PENSyarat AI bersama siswa SMPLB di
 SLB-B [NAMA SEKOLAH], menunjukkan antusiasme siswa dalam menggunakan
 fitur input gestur SIBI secara langsung.
 
@@ -1041,11 +1041,11 @@ Ringkasan Temuan Wawancara:
     demonstrasi singkat penggunaan dashboard.
 
 
-Lampiran 8. Dokumen Teknis Tanya Tangan
+Lampiran 8. Dokumen Teknis PENSyarat AI
 --------------------------------------------------------------------------------
 
 DOKUMEN TEKNIS PRODUK
-TANYA TANGAN: Platform Asisten Belajar Berbasis AI dan Pengenalan Gestur SIBI
+PENSyarat AI: Platform Asisten Belajar Berbasis AI dan Pengenalan Gestur SIBI
 
 Arsitektur Sistem:
   - Frontend  : Next.js 15 (App Router, Turbopack) + TensorFlow.js + MediaPipe Hands
@@ -1093,7 +1093,7 @@ Hasil Uji Similaritas (Turnitin / iThenticate):
 
 Bukti Pendaftaran / Sertifikat Hak Kekayaan Intelektual (HAKI):
   - Jenis Kekayaan Intelektual : Hak Cipta Program Komputer
-  - Judul                      : Tanya Tangan - Platform Asisten Belajar Berbasis
+  - Judul                      : PENSyarat AI - Platform Asisten Belajar Berbasis
                                  Kecerdasan Buatan dan Pengenalan Gestur Bahasa
                                  Isyarat SIBI untuk Siswa Tunarungu di SLB-B
   - Pemilik                    : [NAMA LENGKAP]

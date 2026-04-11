@@ -1,5 +1,5 @@
 """
-Document Management Service for Tunarasa RAG System
+Document Management Service for PENSyarat AI RAG System
 
 This service provides high-level document management operations that integrate
 the Pinecone vector service with the existing LangChain service for complete

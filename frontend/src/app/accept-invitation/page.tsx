@@ -200,7 +200,7 @@ function AcceptInvitationContent() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
-            <CardTitle className="text-green-900">Selamat Datang di Tanya Tangan AI!</CardTitle>
+            <CardTitle className="text-green-900">Selamat Datang di PENSyarat AI!</CardTitle>
             <CardDescription className="text-green-700">
               Akun admin Anda telah berhasil dibuat. Anda akan diarahkan ke halaman masuk sebentar lagi.
             </CardDescription>
@@ -270,7 +270,7 @@ function AcceptInvitationContent() {
             </div>
             <CardTitle>Terima Undangan Admin</CardTitle>
             <CardDescription>
-              Lengkapi pengaturan akun Anda untuk bergabung dengan tim admin Tanya Tangan AI
+              Lengkapi pengaturan akun Anda untuk bergabung dengan tim admin PENSyarat AI
             </CardDescription>
           </CardHeader>
 
@@ -398,7 +398,7 @@ function AcceptInvitationContent() {
             </form>
 
             <div className="text-center text-xs text-gray-500">
-              Dengan menerima undangan ini, Anda setuju untuk bergabung dengan tim admin Tanya Tangan AI dan mengikuti
+              Dengan menerima undangan ini, Anda setuju untuk bergabung dengan tim admin PENSyarat AI dan mengikuti
               kebijakan keamanan dan privasi kami.
             </div>
           </CardContent>

@@ -1,6 +1,6 @@
-# Tanya Tangan - Platform Asisten Belajar Adaptif untuk Siswa Tunarungu
+# PENSyarat AI - Platform Asisten Belajar Adaptif untuk Siswa Tunarungu
 
-**Tanya Tangan** adalah platform asisten belajar berbasis AI yang dirancang khusus untuk siswa tunarungu di SLB-B (Sekolah Luar Biasa tipe B). Platform ini mengintegrasikan pengenalan gestur bahasa isyarat SIBI berbasis browser dengan mesin tanya-jawab AI berbasis kurikulum per mata pelajaran dan jenjang pendidikan (SDLB, SMPLB, SMALB).
+**PENSyarat AI** adalah platform asisten belajar berbasis AI yang dirancang khusus untuk siswa tunarungu di SLB-B (Sekolah Luar Biasa tipe B). Platform ini mengintegrasikan pengenalan gestur bahasa isyarat SIBI berbasis browser dengan mesin tanya-jawab AI berbasis kurikulum per mata pelajaran dan jenjang pendidikan (SDLB, SMPLB, SMALB).
 
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-65%25-blue.svg)
@@ -39,7 +39,7 @@ Browser → Pilih Jenjang & Mapel → Gesture Recognition (MediaPipe/TF.js)
 
 ```
 ┌───────────────────────────────────────────────────┐
-│                  TANYA TANGAN                     │
+│                  PENSyarat AI                     │
 ├───────────────────────────────────────────────────┤
 │  Frontend (Next.js 15)                            │
 │  • Subject Selector (jenjang → mapel)             │
@@ -90,7 +90,7 @@ Browser → Pilih Jenjang & Mapel → Gesture Recognition (MediaPipe/TF.js)
 ## Struktur Proyek
 
 ```
-tanyatangan/
+pensyarat/
 ├── backend/                        # FastAPI Application
 │   ├── app/
 │   │   ├── api/v1/endpoints/       # Endpoints: rag, gesture, admin, subjects, faq, session, monitoring

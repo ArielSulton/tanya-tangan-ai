@@ -1,8 +1,8 @@
 """
-Test Pinecone Vector Database Service for Tunarasa
+Test Pinecone Vector Database Service for PENSyarat AI
 
 This test demonstrates and validates the Pinecone service functionality
-for document ingestion, search, and management in the Tunarasa RAG system.
+for document ingestion, search, and management in the PENSyarat AI RAG system.
 """
 
 import os
@@ -24,9 +24,9 @@ else:
             "NODE_ENV": "test",
             "ENVIRONMENT": "test",
             "DEBUG": "true",
-            "SITE_NAME": "Tunarasa",
+            "SITE_NAME": "PENSyarat AI",
             "API_V1_STR": "/api/v1",
-            "PROJECT_NAME": "Tunarasa",
+            "PROJECT_NAME": "PENSyarat AI",
             "DATABASE_URL": "sqlite:///test.db",
             "DB_POOL_SIZE": "5",
             "DB_MAX_OVERFLOW": "10",

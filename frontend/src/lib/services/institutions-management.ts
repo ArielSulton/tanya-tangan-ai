@@ -82,7 +82,7 @@ export async function seedDefaultInstitutions(): Promise<void> {
       // Create a system user for seeding purposes
       const systemUser = {
         supabaseUserId: crypto.randomUUID(),
-        email: 'system@tunarasa.local',
+        email: 'system@pensyarat.local',
         firstName: 'System',
         lastName: 'Administrator',
         fullName: 'System Administrator',

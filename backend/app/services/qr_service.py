@@ -223,7 +223,7 @@ class QRCodeService:
         )
 
         text_summary = f"""
-RINGKASAN PERCAKAPAN TUNARASA
+RINGKASAN PERCAKAPAN PENSyarat AI
 =============================
 
 Judul: {title_text}
@@ -233,8 +233,8 @@ Total Pesan: {len(messages)}
 {summary}
 
 ---
-Dibuat oleh Tunarasa - Platform Bahasa Isyarat Indonesia
-https://tunarasa.my.id
+Dibuat oleh PENSyarat AI - Platform Bahasa Isyarat Indonesia
+https://pensyarat.my.id
 """
 
         return text_summary
@@ -256,9 +256,9 @@ https://tunarasa.my.id
                 "generated_at": datetime.now(timezone.utc).isoformat(),
             },
             "platform": {
-                "name": "Tunarasa",
+                "name": "PENSyarat AI",
                 "description": "Platform Bahasa Isyarat Indonesia",
-                "url": "https://tunarasa.my.id",
+                "url": "https://pensyarat.my.id",
             },
         }
 
@@ -288,7 +288,7 @@ https://tunarasa.my.id
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{title} - Tunarasa</title>
+        <title>{title} - PENSyarat AI</title>
         <style>
             /* General styles */
             body {{
@@ -378,8 +378,8 @@ https://tunarasa.my.id
 
         <!-- Footer -->
         <div class="footer">
-            <p>Dibuat oleh <strong>Tunarasa</strong> - Platform Bahasa Isyarat Indonesia</p>
-            <p><a href="https://tunarasa.my.id" target="_blank">https://tunarasa.my.id</a></p>
+            <p>Dibuat oleh <strong>PENSyarat AI</strong> - Platform Bahasa Isyarat Indonesia</p>
+            <p><a href="https://pensyarat.my.id" target="_blank">https://pensyarat.my.id</a></p>
         </div>
     </body>
     </html>
@@ -395,10 +395,10 @@ https://tunarasa.my.id
         # Current Y position (starting from top)
         y_position = height - 2 * cm
 
-        # Main header - Tunarasa branding
+        # Main header - PENSyarat AI branding
         c.setFont("Helvetica-Bold", 18)
         c.setFillColor(colors.black)
-        c.drawCentredString(width / 2, y_position, "RINGKASAN PERCAKAPAN TUNARASA")
+        c.drawCentredString(width / 2, y_position, "RINGKASAN PERCAKAPAN PENSyarat AI")
         y_position -= 0.8 * cm
 
         # Subtitle separator
@@ -418,7 +418,7 @@ https://tunarasa.my.id
         y_position -= 1.5 * cm
 
         # Content title (if different from main title)
-        if title and title != "Ringkasan Percakapan Tunarasa":
+        if title and title != "Ringkasan Percakapan PENSyarat AI":
             c.setFont("Helvetica-Bold", 14)
             c.setFillColor(colors.black)
             # Wrap title if too long

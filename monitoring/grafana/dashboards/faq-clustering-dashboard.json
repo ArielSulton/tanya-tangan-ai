@@ -103,7 +103,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "rate(tunarasa_faq_clustering_total[5m])",
+          "expr": "rate(pensyarat_faq_clustering_total[5m])",
           "interval": "",
           "legendFormat": "Institution {{institution_id}} - {{data_source}}",
           "refId": "A"
@@ -193,7 +193,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "tunarasa_faq_clusters_count",
+          "expr": "pensyarat_faq_clusters_count",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -205,7 +205,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "tunarasa_faq_questions_per_cluster_avg",
+          "expr": "pensyarat_faq_questions_per_cluster_avg",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -217,7 +217,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "tunarasa_faq_clustering_silhouette_score",
+          "expr": "pensyarat_faq_clustering_silhouette_score",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -313,7 +313,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(tunarasa_faq_clustering_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(pensyarat_faq_clustering_duration_seconds_bucket[5m])) by (le))",
           "interval": "",
           "legendFormat": "95th Percentile",
           "refId": "A"
@@ -381,7 +381,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(rate(tunarasa_faq_clustering_errors_total[5m]))",
+          "expr": "sum(rate(pensyarat_faq_clustering_errors_total[5m]))",
           "interval": "",
           "legendFormat": "Error Rate",
           "refId": "A"
@@ -471,7 +471,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "tunarasa_faq_clustering_silhouette_score",
+          "expr": "pensyarat_faq_clustering_silhouette_score",
           "interval": "",
           "legendFormat": "Institution {{institution_id}}",
           "refId": "A"
@@ -559,7 +559,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "rate(tunarasa_faq_recommendations_served_total[5m])",
+          "expr": "rate(pensyarat_faq_recommendations_served_total[5m])",
           "interval": "",
           "legendFormat": "Institution {{institution_id}} - Cluster {{cluster_id}}",
           "refId": "A"
@@ -647,7 +647,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "tunarasa_faq_questions_per_cluster_avg",
+          "expr": "pensyarat_faq_questions_per_cluster_avg",
           "interval": "",
           "legendFormat": "Institution {{institution_id}}",
           "refId": "A"
@@ -661,7 +661,7 @@
   "schemaVersion": 27,
   "style": "dark",
   "tags": [
-    "tunarasa",
+    "pensyarat",
     "faq",
     "clustering",
     "ai"
@@ -694,7 +694,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Tunarasa FAQ Clustering Dashboard",
+  "title": "PENSyarat AI FAQ Clustering Dashboard",
   "uid": "faq_clustering",
   "version": 1
 }

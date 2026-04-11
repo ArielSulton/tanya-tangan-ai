@@ -17,7 +17,7 @@ export function AdminLayout({
   children,
   requireSuperAdmin = false,
   title = 'Admin Dashboard',
-  description = 'Administrative interface for Tanya Tangan AI system',
+  description = 'Administrative interface for PENSyarat AI system',
 }: AdminLayoutProps) {
   return (
     <AdminOnly requireSuperAdmin={requireSuperAdmin}>

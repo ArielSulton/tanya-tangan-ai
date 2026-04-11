@@ -16,41 +16,56 @@ const techStack = [
 
 const features = [
   {
-    title: 'Penerjemah Bahasa Isyarat',
-    description: 'Mengubah bahasa isyarat menjadi teks digital dengan Computer Vision.',
+    title: 'Pengenalan Gestur SIBI Real-time',
+    description:
+      'Siswa memasukkan kata melalui gestur bahasa isyarat SIBI via kamera browser—tanpa instalasi. MediaPipe Hands mengenali 21 landmark tangan secara langsung.',
     icon: '/assets/tech/penerjemah.png',
     bgColor: 'bg-orange-50',
   },
   {
-    title: 'Chatbot Materi Pelajaran SLB-B',
-    description: 'Memberikan penjelasan materi otomatis melalui chatbot berbasis large language model.',
-    icon: '/assets/tech/langchain_llama.png',
+    title: 'Visualisasi Kata Konkret',
+    description:
+      'Untuk kata benda seperti "kucing", "apel", atau "pohon", platform menampilkan foto objek nyata beserta label kata agar makna tersampaikan secara visual.',
+    icon: '/assets/tech/notes.png',
     bgColor: 'bg-green-50',
   },
   {
-    title: 'Speech-to-Text Sebagai Feedback Komunikasi',
-    description: 'Mengubah suara menjadi teks untuk memudahkan komunikasi modal.',
-    icon: '/assets/tech/notes.png',
+    title: 'Komparasi Visual Kata Abstrak',
+    description:
+      'Untuk kata keterangan seperti "sedikit", "agak", "sangat", dan "terlalu", platform menampilkan gambar berdampingan yang merepresentasikan derajat makna secara konkret.',
+    icon: '/assets/tech/sistem_rekomendasi.png',
     bgColor: 'bg-purple-50',
   },
   {
-    title: 'Sistem Rekomendasi Chatbot',
-    description: 'Evaluasi kinerja platform menggunakan similarity embedding.',
-    icon: '/assets/tech/sistem_rekomendasi.png',
+    title: 'AI Fallback (LLaMA 3.3)',
+    description:
+      'Jika kata belum tersedia di basis data, sistem menggunakan LLaMA 3.3 via ChatGroq untuk memberikan saran kata terdekat dan penjelasan singkat kontekstual.',
+    icon: '/assets/tech/langchain_llama.png',
     bgColor: 'bg-emerald-50',
   },
   {
-    title: 'Ringkasan Percakapan Otomatis',
-    description: 'Membuat catatan percakapan otomatis dalam format PDF dan QR.',
+    title: 'Kategori Kosakata Terstruktur',
+    description:
+      'Kosakata dikelompokkan dalam lima kategori: Hewan, Benda, Alam, Perasaan, dan Kata Keterangan—sesuai materi Bahasa Indonesia Kurikulum Merdeka SDLB-B.',
     icon: '/assets/tech/ringkasan.png',
     bgColor: 'bg-pink-50',
   },
   {
-    title: 'Dashboard Admin & Super Admin',
-    description: 'Monitoring dan evaluasi kinerja chatbot serta pengguna secara real-time.',
+    title: 'Dashboard Admin Guru',
+    description:
+      'Guru dapat menambah, memperbarui, dan mengelola kosakata beserta gambar secara mandiri. Sistem juga mencatat kata yang sering dicari untuk prioritas pengembangan konten.',
     icon: '/assets/tech/dashboard_feature.png',
     bgColor: 'bg-indigo-50',
   },
+]
+
+const differentiators = [
+  { label: 'Input Gestur SIBI Real-time', have: true },
+  { label: 'Visual Konkret: Gambar Objek', have: true },
+  { label: 'Visual Abstrak: Komparasi Berdampingan', have: true },
+  { label: 'Berbasis Browser (tanpa install)', have: true },
+  { label: 'AI Fallback untuk Kata Baru', have: true },
+  { label: 'Konten Diperbarui Guru', have: true },
 ]
 
 export default function Beranda() {
@@ -60,36 +75,34 @@ export default function Beranda() {
       <section className="bg-gradient-to-br from-green-50 to-green-100 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center">
-            {/* Hero Text */}
             <div className="max-w-3xl space-y-6">
+              <div className="inline-flex items-center rounded-full bg-green-100 px-4 py-1 text-sm font-medium text-green-700 ring-1 ring-green-200">
+                Produk Inovatif · Pilmapres 2026
+              </div>
               <h1 className="text-4xl leading-tight font-bold text-gray-900 lg:text-5xl">
-                Platform belajar inklusif untuk siswa{' '}
+                Platform Pemahaman Kosakata Visual untuk Siswa{' '}
                 <span className="text-green-600" style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}>
-                  SLB-B
+                  SDLB-B
                 </span>{' '}
-                tunarungu
+                Tunarungu
               </h1>
               <p className="mx-auto max-w-xl text-lg text-gray-600">
-                Mendukung proses belajar mengajar di Sekolah Luar Biasa tipe B melalui bahasa isyarat SIBI dan AI
-                berbasis materi kurikulum.
+                Siswa memasukkan kata melalui gestur bahasa isyarat SIBI, lalu platform menampilkan gambar visual
+                maknanya—dari kata konkret hingga kata keterangan abstrak—dengan AI sebagai fallback.
               </p>
-              {/* Feature Badges */}
               <div className="flex flex-wrap justify-center gap-3">
                 <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-medium text-orange-800 shadow-sm">
                   🤲 SIBI Support
                 </div>
-                <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-800 shadow-sm">
-                  🎤 Speech-to-Text
-                </div>
-                <div className="rounded-full bg-green-100 px-4 py-2 text-sm font-medium text-green-800 shadow-sm">
-                  🤖 RAG Materi SLB-B
+                <div className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800 shadow-sm">
+                  📸 Berbasis Browser
                 </div>
                 <div className="flex items-center space-x-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm">
                   <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-green-500"></div>
                   <span>System Online</span>
                 </div>
               </div>
-              <Link href="/layanan">
+              <Link href="/vocab">
                 <Button size="lg" className="rounded-full bg-green-600 px-8 py-3 text-lg text-white hover:bg-green-700">
                   Mulai Belajar →
                 </Button>
@@ -99,17 +112,67 @@ export default function Beranda() {
         </div>
       </section>
 
-      {/* Tech Stack Section */}
+      {/* Statistics Section */}
       <section className="bg-white py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-gray-900">
-              Pilar{' '}
+              Mengapa{' '}
               <span className="text-green-600" style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}>
-                Teknologi
+                kosakata visual
               </span>{' '}
-              Sebagai Dapur Pacu
+              penting bagi siswa tunarungu?
             </h2>
+            <p className="mx-auto max-w-2xl text-gray-600">
+              Siswa tunarungu tidak memiliki akses terhadap <em>incidental learning</em>—kemampuan menyerap kosakata
+              secara pasif dari percakapan sehari-hari. Akibatnya, kesenjangan kosakata melebar signifikan di usia 8–9
+              tahun.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <Card className="border-0 bg-green-50 text-center">
+              <CardContent className="p-8">
+                <div className="mb-2 text-5xl font-bold text-green-700">162.806</div>
+                <p className="text-gray-700">
+                  Siswa SLB di Indonesia tahun ajaran 2024/2025{' '}
+                  <span className="text-xs text-gray-500">(Kemendikdasmen, 2025)</span>
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-0 bg-orange-50 text-center">
+              <CardContent className="p-8">
+                <div className="mb-2 text-5xl font-bold text-orange-700">Persentil 19</div>
+                <p className="text-gray-700">
+                  Rata-rata kemampuan kosakata siswa tunarungu, vs persentil 65 siswa mendengar{' '}
+                  <span className="text-xs text-gray-500">(Sarchet dkk., 2014)</span>
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-0 bg-blue-50 text-center">
+              <CardContent className="p-8">
+                <div className="mb-2 text-5xl font-bold text-blue-700">923 ribu</div>
+                <p className="text-gray-700">
+                  Penduduk Indonesia yang mengalami kesulitan mendengar berat{' '}
+                  <span className="text-xs text-gray-500">(BPS, 2024)</span>
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Tech Stack Section */}
+      <section className="bg-gray-50 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+              Dibangun dengan{' '}
+              <span className="text-green-600" style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}>
+                teknologi open-source
+              </span>
+            </h2>
+            <p className="text-gray-600">Tanpa biaya lisensi—memanfaatkan ekosistem AI dan web modern.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-8">
@@ -133,139 +196,31 @@ export default function Beranda() {
         </div>
       </section>
 
-      {/* Statistics Section */}
-      <section className="bg-green-50 py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">
-              Kenapa teknologi pendidikan inklusif{' '}
-              <span className="text-green-600" style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}>
-                penting
-              </span>{' '}
-              untuk siswa tunarungu?
-            </h2>
-          </div>
-
-          <div className="mx-auto max-w-6xl">
-            {/* Mobile Layout */}
-            <div className="grid grid-cols-1 gap-8 md:hidden">
-              {/* Left Stats */}
-              <div className="text-center">
-                <div className="mb-2 text-4xl font-bold text-gray-900">313 ribu</div>
-                <p className="text-base text-gray-700">Total penyandang disabilitas pendengaran Indonesia 2023</p>
-              </div>
-
-              {/* Center Image */}
-              <div className="relative text-center">
-                <Image
-                  src="/assets/tech/persentase.png"
-                  alt="Statistics Infographic"
-                  width={400}
-                  height={300}
-                  className="mx-auto h-auto w-full max-w-xs"
-                />
-                <p className="mt-4 text-xs text-gray-600">
-                  Hasil survei &quot;aksebilitas penyandang disabilitas pendengaran&quot; di Indonesia
-                </p>
-              </div>
-
-              {/* Right Stats */}
-              <div className="text-center">
-                <div className="mb-2 text-4xl font-bold text-gray-900">43.0%</div>
-                <p className="text-base text-gray-700">
-                  Fasilitas penyandang disabilitas pendengaran masih belum terlayani
-                </p>
-              </div>
-            </div>
-
-            {/* Tablet Layout */}
-            <div className="hidden md:flex md:flex-col md:items-center md:gap-8 lg:hidden">
-              {/* Stats Row */}
-              <div className="flex flex-col items-center gap-8 md:flex-row md:gap-16">
-                {/* Left Stats */}
-                <div className="text-center">
-                  <div className="mb-2 text-5xl font-bold text-gray-900">313 ribu</div>
-                  <p className="text-lg text-gray-700">Total penyandang disabilitas pendengaran Indonesia 2023</p>
-                </div>
-
-                {/* Right Stats */}
-                <div className="text-center">
-                  <div className="mb-2 text-5xl font-bold text-gray-900">43.0%</div>
-                  <p className="text-lg text-gray-700">
-                    Fasilitas penyandang disabilitas pendengaran masih belum terlayani
-                  </p>
-                </div>
-              </div>
-
-              {/* Center Image */}
-              <div className="relative text-center">
-                <Image
-                  src="/assets/tech/persentase.png"
-                  alt="Statistics Infographic"
-                  width={400}
-                  height={300}
-                  className="mx-auto h-auto w-full max-w-sm"
-                />
-                <p className="mt-4 text-sm text-gray-600">
-                  Hasil survei &quot;aksebilitas penyandang disabilitas pendengaran&quot; di Indonesia
-                </p>
-              </div>
-            </div>
-
-            {/* Desktop Layout - Centered Flex */}
-            <div className="hidden lg:flex lg:items-center lg:justify-center lg:gap-12">
-              {/* Left Stats */}
-              <div className="text-center">
-                <div className="mb-2 text-6xl font-bold text-gray-900">313 ribu</div>
-                <p className="text-lg text-gray-700">Total penyandang disabilitas pendengaran Indonesia 2023</p>
-              </div>
-
-              {/* Center Image */}
-              <div className="relative flex-shrink-0 text-center">
-                <Image
-                  src="/assets/tech/persentase.png"
-                  alt="Statistics Infographic"
-                  width={400}
-                  height={300}
-                  className="mx-auto h-auto w-full max-w-sm"
-                />
-                <p className="mt-4 text-sm text-gray-600">
-                  Hasil survei &quot;aksebilitas penyandang disabilitas pendengaran&quot; di Indonesia
-                </p>
-              </div>
-
-              {/* Right Stats */}
-              <div className="text-center">
-                <div className="mb-2 text-6xl font-bold text-gray-900">43.0%</div>
-                <p className="text-lg text-gray-700">
-                  Fasilitas penyandang disabilitas pendengaran masih belum terlayani
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features Section */}
       <section className="bg-white py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-gray-900">
-              Bagaimana Tanya Tangan AI membantu penyandang{' '}
+              Bagaimana{' '}
               <span className="text-green-600" style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}>
-                disabilitas berkomunikasi di layanan publik?
-              </span>
+                PENSyarat AI
+              </span>{' '}
+              bekerja?
             </h2>
+            <p className="mx-auto max-w-2xl text-gray-600">
+              Siswa mengisyaratkan kata dalam SIBI → sistem mengenali → menampilkan visual makna. Untuk kata yang belum
+              tersedia, AI memberikan penjelasan kontekstual sekaligus mencatat untuk pengembangan konten berikutnya.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
               <Card key={index} className={`${feature.bgColor} border-0 transition-shadow hover:shadow-lg`}>
                 <CardContent className="p-8 text-center">
-                  <div className="relative mx-auto mb-6 h-64 w-64">
+                  <div className="relative mx-auto mb-6 h-48 w-48">
                     <Image src={feature.icon} alt={feature.title} fill className="object-contain" />
                   </div>
-                  <h3 className="mb-4 text-xl font-bold text-gray-900">{feature.title}</h3>
+                  <h3 className="mb-3 text-xl font-bold text-gray-900">{feature.title}</h3>
                   <p className="leading-relaxed text-gray-600">{feature.description}</p>
                 </CardContent>
               </Card>
@@ -274,18 +229,49 @@ export default function Beranda() {
         </div>
       </section>
 
+      {/* Differentiators Section */}
+      <section className="bg-green-50 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+              Satu-satunya platform yang menggabungkan{' '}
+              <span className="text-green-600" style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}>
+                tiga kapabilitas kritis
+              </span>
+            </h2>
+            <p className="mx-auto max-w-2xl text-gray-600">
+              Tidak ada platform serupa yang secara bersamaan mendukung input gestur SIBI real-time, visualisasi kata
+              abstrak melalui komparasi, dan AI fallback untuk kata baru—semuanya berbasis browser tanpa instalasi.
+            </p>
+          </div>
+
+          <div className="mx-auto max-w-xl">
+            <ul className="space-y-4">
+              {differentiators.map((item, index) => (
+                <li key={index} className="flex items-center gap-3 rounded-xl bg-white px-6 py-4 shadow-sm">
+                  <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-700">
+                    ✓
+                  </span>
+                  <span className="font-medium text-gray-800">{item.label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-white py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Card className="border-0 bg-gradient-to-r from-green-600 to-green-700 shadow-xl">
             <CardContent className="p-12 text-center">
-              <h2 className="mb-4 text-3xl font-bold text-white">Siap untuk berkomunikasi tanpa batas?</h2>
+              <h2 className="mb-4 text-3xl font-bold text-white">Siap mencoba PENSyarat AI?</h2>
               <p className="mb-8 text-lg text-green-100">
-                Bergabunglah dengan ribuan pengguna yang telah merasakan kemudahan berkomunikasi dengan Tanya Tangan AI
+                Akses langsung dari browser—tidak perlu instalasi, cukup kamera standar laptop atau smartphone.
               </p>
-              <Link href="/layanan">
+              <Link href="/vocab">
                 <Button size="lg" variant="secondary" className="rounded-full px-8 py-3 text-lg">
-                  Mulai Sekarang →
+                  Mulai Belajar →
                 </Button>
               </Link>
             </CardContent>

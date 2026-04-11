@@ -1,5 +1,5 @@
 ================================================================================
-TANYA TANGAN AI — DESAIN PIVOT KE PLATFORM SLB-B
+PENSyarat AI — DESAIN PIVOT KE PLATFORM SLB-B
 ================================================================================
 Tanggal   : 2026-04-07
 Versi     : 1.0
@@ -11,7 +11,7 @@ Pendekatan: B — Context-Enriched Pivot (Mata Pelajaran + Jenjang)
 1. OVERVIEW & TUJUAN PIVOT
 ================================================================================
 
-Platform Tanya Tangan AI dialihkan fungsinya dari platform aksesibilitas
+Platform PENSyarat AI dialihkan fungsinya dari platform aksesibilitas
 layanan publik untuk tuna rungu di ruang publik, menjadi asisten belajar
 cerdas yang dikhususkan untuk siswa Sekolah Luar Biasa tipe B (SLB-B /
 Tunarungu).

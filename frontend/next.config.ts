@@ -62,15 +62,15 @@ const nextConfig: NextConfig = {
       // Production domain patterns
       {
         protocol: 'https',
-        hostname: 'tunarasa.my.id',
+        hostname: 'pensyarat.my.id',
       },
       {
         protocol: 'https',
-        hostname: 'api.tunarasa.my.id',
+        hostname: 'api.pensyarat.my.id',
       },
       {
         protocol: 'https',
-        hostname: 'grafana.tunarasa.my.id',
+        hostname: 'grafana.pensyarat.my.id',
       },
     ],
     dangerouslyAllowSVG: true,
@@ -111,8 +111,8 @@ const nextConfig: NextConfig = {
         '127.0.0.1:3000',
         '127.0.0.1:5000',
         // Production origins
-        'tunarasa.my.id',
-        'api.tunarasa.my.id',
+        'pensyarat.my.id',
+        'api.pensyarat.my.id',
       ],
     },
   },

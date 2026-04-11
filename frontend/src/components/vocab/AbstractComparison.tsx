@@ -11,6 +11,7 @@ interface AbstractComparisonProps {
   lowLabel: string
   highLabel: string
   category: string
+  referenceWord?: string
 }
 
 const CATEGORY_PLACEHOLDERS: Record<string, string> = {
@@ -53,16 +54,27 @@ export function AbstractComparison({
   lowLabel,
   highLabel,
   category,
+  referenceWord,
 }: AbstractComparisonProps) {
+  const isKataKeterangan = category === 'kata_keterangan'
+
   return (
     <Card className="mx-auto w-full max-w-md">
       <CardContent className="flex flex-col items-center gap-4 p-6">
         <h2 className="text-3xl font-bold tracking-wide text-gray-900 uppercase">{word}</h2>
+        {isKataKeterangan && referenceWord && (
+          <p className="text-sm text-gray-500">
+            memodifikasi: <span className="font-semibold text-purple-600">{referenceWord}</span>
+          </p>
+        )}
         <div className="flex w-full items-center justify-around gap-4">
           <ComparisonImage src={lowImageUrl} alt={lowLabel} label={lowLabel} category={category} />
-          <span className="text-2xl font-bold text-gray-400">vs</span>
+          <span className="text-2xl font-bold text-gray-400">↔</span>
           <ComparisonImage src={highImageUrl} alt={highLabel} label={highLabel} category={category} />
         </div>
+        {isKataKeterangan && (
+          <p className="text-center text-xs text-gray-400">Geser intensitas dari rendah ke tinggi</p>
+        )}
       </CardContent>
     </Card>
   )

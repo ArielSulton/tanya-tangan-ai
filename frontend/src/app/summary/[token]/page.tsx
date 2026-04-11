@@ -155,7 +155,7 @@ export default function SummaryPage() {
             </div>
           </div>
           <p className="text-sm text-gray-600">
-            Ringkasan percakapan Anda dengan sistem Tanya Tangan AI. Dokumen ini berisi informasi penting dari sesi
+            Ringkasan percakapan Anda dengan sistem PENSyarat AI. Dokumen ini berisi informasi penting dari sesi
             komunikasi Anda.
           </p>
         </CardHeader>

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
@@ -11,14 +12,9 @@ const navigationItems = [
     id: 'beranda',
   },
   {
-    name: 'Tentang',
-    href: '/tentang',
-    id: 'tentang',
-  },
-  {
-    name: 'Mata Pelajaran',
-    href: '/layanan',
-    id: 'layanan',
+    name: 'Vocabulary',
+    href: '/vocab',
+    id: 'vocabulary',
   },
   {
     name: 'Akses Khusus',
@@ -36,11 +32,16 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-600 shadow-sm">
-              <span className="text-sm font-bold text-white">TT</span>
-            </div>
+            <Image
+              src="/assets/branding/pensyarat_meta.png"
+              alt="PENSyarat AI Logo"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-xl shadow-sm object-contain"
+              priority
+            />
             <span className="text-lg font-bold text-gray-900">
-              Tanya Tangan <span className="text-green-600">AI</span>
+              PENSyarat <span className="text-green-600">AI</span>
             </span>
           </Link>
 

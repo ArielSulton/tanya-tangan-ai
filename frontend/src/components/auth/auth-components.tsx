@@ -85,7 +85,7 @@ function AuthSignInContent() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Masuk</CardTitle>
-            <CardDescription>Masuk ke akun admin Tanya Tangan AI Anda</CardDescription>
+            <CardDescription>Masuk ke akun admin PENSyarat AI Anda</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={(e) => void handleSignIn(e)} className="space-y-4">
@@ -224,7 +224,7 @@ function AuthSignUpContent() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle>Daftar</CardTitle>
-            <CardDescription>Buat akun admin Tanya Tangan AI Anda</CardDescription>
+            <CardDescription>Buat akun admin PENSyarat AI Anda</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={(e) => void handleSignUp(e)} className="space-y-4">

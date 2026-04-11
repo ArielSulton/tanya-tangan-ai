@@ -153,7 +153,7 @@ export default function VocabKategoriPage() {
         <div className="mb-6 flex flex-col items-center gap-2">
           <button
             onClick={toggleManualInput}
-            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-indigo-600 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-indigo-600"
           >
             <Keyboard className="h-3.5 w-3.5" />
             {showManualInput ? 'Tutup input teks' : 'Ketik kata langsung'}
@@ -202,13 +202,12 @@ export default function VocabKategoriPage() {
               lowLabel={result.word.comparison.low_label}
               highLabel={result.word.comparison.high_label}
               category={result.word.category}
+              referenceWord={result.word.comparison.reference_word}
             />
           )}
 
           {result.state === 'found' && result.word.word_type === 'abstrak' && !result.word.comparison && (
-            <div className="text-center text-sm text-gray-500 p-4">
-              Data visual untuk kata ini belum tersedia.
-            </div>
+            <div className="p-4 text-center text-sm text-gray-500">Data visual untuk kata ini belum tersedia.</div>
           )}
 
           {result.state === 'fallback' && (

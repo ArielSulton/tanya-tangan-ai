@@ -18,7 +18,7 @@ export const mockUsers = {
   superAdmin: {
     userId: 1,
     supabaseUserId: 'super-admin-id',
-    email: 'superadmin@tunarasa.com',
+    email: 'superadmin@pensyarat.com',
     firstName: 'Super',
     lastName: 'Admin',
     fullName: 'Super Admin',
@@ -33,7 +33,7 @@ export const mockUsers = {
   admin: {
     userId: 2,
     supabaseUserId: 'admin-id',
-    email: 'admin@tunarasa.com',
+    email: 'admin@pensyarat.com',
     firstName: 'Admin',
     lastName: 'User',
     fullName: 'Admin User',
@@ -63,7 +63,7 @@ export const mockUsers = {
   inactiveAdmin: {
     userId: 4,
     supabaseUserId: 'inactive-admin-id',
-    email: 'inactive@tunarasa.com',
+    email: 'inactive@pensyarat.com',
     firstName: 'Inactive',
     lastName: 'Admin',
     fullName: 'Inactive Admin',

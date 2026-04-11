@@ -1,5 +1,5 @@
 """
-Monitoring and metrics endpoints for Tunarasa
+Monitoring and metrics endpoints for PENSyarat AI
 Provides Prometheus metrics and DeepEval monitoring data
 """
 

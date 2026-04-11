@@ -1,5 +1,5 @@
 """
-Enhanced LangChain Service with ChatGroq Integration for Tunarasa
+Enhanced LangChain Service with ChatGroq Integration for PENSyarat AI
 Provides comprehensive question answering with RAG capabilities, conversation memory, and advanced features.
 """
 
@@ -12,7 +12,6 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 import pinecone
-import redis
 from app.core.config import settings
 from app.core.database import get_db_session
 from app.db.models import Institution
@@ -176,7 +175,6 @@ class EnhancedLangChainService:
         self.vectorstore = None
         self.retriever = None
         self.conversation_memory = {}
-        self.redis_client = None
         self.text_splitter = None
         self.conversation_contexts = {}
 
@@ -185,7 +183,6 @@ class EnhancedLangChainService:
         self._initialize_embeddings()
         self._initialize_vectorstore()
         self._initialize_retriever()
-        self._initialize_redis()
         self._initialize_text_splitter()
 
         # Prompt templates
@@ -319,17 +316,6 @@ class EnhancedLangChainService:
             logger.error(f"Failed to initialize retriever: {e}")
             logger.warning("Continuing without retriever - direct LLM responses only")
             self.retriever = None
-
-    def _initialize_redis(self):
-        """Initialize Redis for conversation caching"""
-        try:
-            self.redis_client = redis.from_url(settings.REDIS_URL)
-            self.redis_client.ping()
-            logger.info("Redis connected for conversation caching")
-
-        except Exception as e:
-            logger.warning(f"Redis connection failed: {e}")
-            self.redis_client = None
 
     def _initialize_text_splitter(self):
         """Initialize text splitter for document processing"""
@@ -477,9 +463,6 @@ class EnhancedLangChainService:
                 response_quality=conversation_context.response_quality,
             )
 
-            # Cache the response
-            await self._cache_response(conversation_id, enhanced_response)
-
             logger.info(
                 f"Question processed successfully: "
                 f"retrieval={retrieval_time:.2f}s, "
@@ -624,9 +607,6 @@ class EnhancedLangChainService:
                 )
 
             self.conversation_memory[session_id] = memory
-
-            # Try to load from cache
-            await self._load_memory_from_cache(session_id, memory)
 
         return self.conversation_memory[session_id]
 
@@ -881,79 +861,11 @@ class EnhancedLangChainService:
             # Add to memory
             memory.save_context({"input": question}, {"output": answer})
 
-            # Cache updated memory
-            await self._cache_memory(context.session_id, memory)
-
             # Update context timestamp
             context.updated_at = datetime.now(timezone.utc)
 
         except Exception as e:
             logger.error(f"Failed to update conversation memory: {e}")
-
-    async def _cache_response(self, conversation_id: str, response: EnhancedResponse):
-        """Cache response for future reference"""
-
-        if not self.redis_client:
-            return
-
-        try:
-            cache_key = f"langchain_response:{conversation_id}"
-            response_data = response.to_dict()
-
-            await asyncio.to_thread(
-                self.redis_client.setex,
-                cache_key,
-                3600,  # 1 hour cache
-                json.dumps(response_data, default=str),
-            )
-
-        except Exception as e:
-            logger.error(f"Failed to cache response: {e}")
-
-    async def _cache_memory(self, session_id: str, memory: BaseMemory):
-        """Cache conversation memory"""
-
-        if not self.redis_client:
-            return
-
-        try:
-            cache_key = f"langchain_memory:{session_id}"
-            memory_data = memory.load_memory_variables({})
-
-            await asyncio.to_thread(
-                self.redis_client.setex,
-                cache_key,
-                86400,  # 24 hour cache
-                json.dumps(memory_data, default=str),
-            )
-
-        except Exception as e:
-            logger.error(f"Failed to cache memory: {e}")
-
-    async def _load_memory_from_cache(self, session_id: str, memory: BaseMemory):
-        """Load conversation memory from cache"""
-
-        if not self.redis_client:
-            return
-
-        try:
-            cache_key = f"langchain_memory:{session_id}"
-            cached_data = await asyncio.to_thread(self.redis_client.get, cache_key)
-
-            if cached_data:
-                memory_data = json.loads(cached_data)
-                messages = memory_data.get("history", [])
-
-                # Reconstruct conversation in memory
-                for i in range(0, len(messages) - 1, 2):
-                    if i + 1 < len(messages):
-                        user_msg = messages[i]
-                        ai_msg = messages[i + 1]
-
-                        memory.save_context({"input": user_msg}, {"output": ai_msg})
-
-        except Exception as e:
-            logger.error(f"Failed to load memory from cache: {e}")
 
     def _get_error_message(self, language: str) -> str:
         """Get error message in appropriate language"""
@@ -1062,11 +974,6 @@ class EnhancedLangChainService:
             # Remove from memory
             if session_id in self.conversation_memory:
                 del self.conversation_memory[session_id]
-
-            # Remove from cache
-            if self.redis_client:
-                cache_key = f"langchain_memory:{session_id}"
-                await asyncio.to_thread(self.redis_client.delete, cache_key)
 
             logger.info(f"Cleared conversation memory for session: {session_id}")
             return True
@@ -1375,13 +1282,13 @@ class EnhancedLangChainService:
 
             # Fallback if still looks malformed or too short
             if len(cleaned) < 5:
-                return "Ringkasan Percakapan Tunarasa"
+                return "Ringkasan Percakapan PENSyarat AI"
 
             return cleaned
 
         except Exception as e:
             logger.error(f"Failed to clean title response: {e}")
-            return "Ringkasan Percakapan Tunarasa"
+            return "Ringkasan Percakapan PENSyarat AI"
 
     def _add_proper_spacing(self, text: str) -> str:
         """

@@ -250,12 +250,12 @@ function getSuperadminEmails(): string[] {
             .split(',')
             .map((e) => e.trim().toLowerCase())
             .filter(Boolean)
-        : ['superadmin@tunarasa.my.id', 'arielsulton26@gmail.com']
+        : ['superadmin@pensyarat.my.id', 'arielsulton26@gmail.com']
 
       console.log('🔧 [Role Management] Superadmin emails loaded:', cachedSuperadminEmails)
     } catch (error) {
       console.error('❌ [Role Management] Error parsing superadmin emails:', error)
-      cachedSuperadminEmails = ['superadmin@tunarasa.my.id', 'arielsulton26@gmail.com']
+      cachedSuperadminEmails = ['superadmin@pensyarat.my.id', 'arielsulton26@gmail.com']
     }
   }
   return cachedSuperadminEmails || []
@@ -273,11 +273,11 @@ function getAdminEmails(): string[] {
             .split(',')
             .map((e) => e.trim().toLowerCase())
             .filter(Boolean)
-        : ['admin@tunarasa.my.id', 'superadmin@tunarasa.my.id', 'arielsulton26@gmail.com']
+        : ['admin@pensyarat.my.id', 'superadmin@pensyarat.my.id', 'arielsulton26@gmail.com']
       console.log('🔧 [Role Management] Admin emails loaded:', cachedAdminEmails)
     } catch (error) {
       console.error('❌ [Role Management] Error parsing admin emails:', error)
-      cachedAdminEmails = ['admin@tunarasa.my.id', 'superadmin@tunarasa.my.id', 'arielsulton26@gmail.com']
+      cachedAdminEmails = ['admin@pensyarat.my.id', 'superadmin@pensyarat.my.id', 'arielsulton26@gmail.com']
     }
   }
   return cachedAdminEmails || []

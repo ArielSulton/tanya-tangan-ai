@@ -35,7 +35,7 @@ export default function Layanan() {
               </span>
             </h1>
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-gray-600">
-              Pilih jenjang dan mata pelajaran yang ingin kamu pelajari. Tanya Tangan AI siap membantu belajarmu
+              Pilih jenjang dan mata pelajaran yang ingin kamu pelajari. PENSyarat AI siap membantu belajarmu
               menggunakan bahasa isyarat SIBI.
             </p>
           </div>

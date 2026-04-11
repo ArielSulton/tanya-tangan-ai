@@ -12,7 +12,6 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-import redis
 from app.core.config import settings
 from deepeval.metrics import (
     AnswerRelevancyMetric,
@@ -158,22 +157,10 @@ class DeepEvalMonitoringService:
     """Comprehensive LLM monitoring service using DeepEval"""
 
     def __init__(self):
-        self.redis_client = None
         self.model = CustomDeepEvalLLM()
         self.evaluation_history = []
         self.performance_metrics = {}
-        self._initialize_redis()
         self._initialize_metrics()
-
-    def _initialize_redis(self):
-        """Initialize Redis connection for caching evaluation results"""
-        try:
-            self.redis_client = redis.from_url(settings.REDIS_URL)
-            self.redis_client.ping()
-            logger.info("Redis connected for DeepEval monitoring service")
-        except Exception as e:
-            logger.warning(f"Redis connection failed: {e}")
-            self.redis_client = None
 
     def _initialize_metrics(self):
         """Initialize DeepEval metrics with proper thresholds"""
@@ -241,9 +228,6 @@ class DeepEvalMonitoringService:
         accuracy_result = await self._evaluate_accuracy(conversation)
         if accuracy_result:
             results.append(accuracy_result)
-
-        # Cache results
-        await self._cache_evaluation_results(conversation.conversation_id, results)
 
         # Update performance metrics
         await self._update_performance_metrics(results)
@@ -424,32 +408,6 @@ class DeepEvalMonitoringService:
 
         return messages.get(category, f"{category.value}: {score:.2f} [{status}]")
 
-    async def _cache_evaluation_results(
-        self, conversation_id: str, results: List[EvaluationResult]
-    ):
-        """Cache evaluation results in Redis"""
-
-        if not self.redis_client:
-            return
-
-        try:
-            cache_key = f"deepeval:conversation:{conversation_id}"
-            cache_data = {
-                "conversation_id": conversation_id,
-                "results": [result.to_dict() for result in results],
-                "cached_at": datetime.now(timezone.utc).isoformat(),
-            }
-
-            # Cache for 7 days
-            await asyncio.to_thread(
-                self.redis_client.setex,
-                cache_key,
-                7 * 24 * 3600,
-                json.dumps(cache_data, default=str),
-            )
-
-        except Exception as e:
-            logger.error(f"Failed to cache evaluation results: {e}")
 
     async def _update_performance_metrics(self, results: List[EvaluationResult]):
         """Update aggregated performance metrics"""
@@ -484,15 +442,6 @@ class DeepEvalMonitoringService:
                     [s for s in scores if s >= result.threshold]
                 ) / len(scores)
                 metrics["last_updated"] = current_time
-
-            # Cache aggregated metrics
-            if self.redis_client:
-                await asyncio.to_thread(
-                    self.redis_client.setex,
-                    "deepeval:performance_metrics",
-                    3600,  # 1 hour
-                    json.dumps(self.performance_metrics, default=str),
-                )
 
         except Exception as e:
             logger.error(f"Failed to update performance metrics: {e}")
@@ -577,22 +526,7 @@ class DeepEvalMonitoringService:
         self, conversation_id: str
     ) -> Optional[Dict[str, Any]]:
         """Get cached evaluation for specific conversation"""
-
-        if not self.redis_client:
-            return None
-
-        try:
-            cache_key = f"deepeval:conversation:{conversation_id}"
-            cached_data = await asyncio.to_thread(self.redis_client.get, cache_key)
-
-            if cached_data:
-                return json.loads(cached_data)
-
-            return None
-
-        except Exception as e:
-            logger.error(f"Failed to get conversation evaluation: {e}")
-            return None
+        return None
 
     async def generate_quality_report(self) -> Dict[str, Any]:
         """Generate comprehensive quality report"""

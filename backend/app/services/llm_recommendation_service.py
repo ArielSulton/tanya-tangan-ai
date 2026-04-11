@@ -12,7 +12,6 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-import redis
 from app.core.config import settings
 
 # Sklearn untuk cosine similarity
@@ -303,23 +302,11 @@ class LLMRecommendationService:
 
     def __init__(self):
         self.analyzer = LLMQualityAnalyzer()
-        self.redis_client = None
         self.qa_history = []
         self.recommendations_cache = {}
-        self._initialize_redis()
 
         # Template rekomendasi
         self.recommendation_templates = self._load_recommendation_templates()
-
-    def _initialize_redis(self):
-        """Initialize Redis connection"""
-        try:
-            self.redis_client = redis.from_url(settings.REDIS_URL)
-            self.redis_client.ping()
-            logger.info("Redis connected for LLM recommendation service")
-        except Exception as e:
-            logger.warning(f"Redis connection failed: {e}")
-            self.redis_client = None
 
     def _load_recommendation_templates(self) -> Dict[str, Dict]:
         """Load template rekomendasi"""
@@ -403,8 +390,6 @@ class LLMRecommendationService:
             # Generate rekomendasi berdasarkan pola
             recommendations = await self._generate_recommendations(quality_analyses)
 
-            # Cache hasil
-            await self._cache_recommendations(recommendations)
 
             return recommendations
 
@@ -707,30 +692,6 @@ class LLMRecommendationService:
             examples=examples,
             implementation_effort="medium",
         )
-
-    async def _cache_recommendations(self, recommendations: List[LLMRecommendation]):
-        """Cache rekomendasi ke Redis"""
-        if not self.redis_client:
-            return
-
-        try:
-            cache_key = f"llm_recommendations:{datetime.now(timezone.utc).strftime('%Y%m%d_%H')}"
-            cache_data = {
-                "recommendations": [r.to_dict() for r in recommendations],
-                "generated_at": datetime.now(timezone.utc).isoformat(),
-                "total_recommendations": len(recommendations),
-            }
-
-            # Cache for 2 hours
-            await asyncio.to_thread(
-                self.redis_client.setex,
-                cache_key,
-                2 * 3600,
-                json.dumps(cache_data, default=str),
-            )
-
-        except Exception as e:
-            logger.error(f"Failed to cache recommendations: {e}")
 
     async def get_recommendations_summary(self, hours: int = 24) -> Dict[str, Any]:
         """Dapatkan ringkasan rekomendasi"""

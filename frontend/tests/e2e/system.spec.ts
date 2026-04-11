@@ -1,5 +1,5 @@
 /**
- * Comprehensive End-to-End System Tests for Tunarasa
+ * Comprehensive End-to-End System Tests for PENSyarat AI
  * Tests full system integration including frontend, backend, and gesture recognition
  */
 
@@ -10,7 +10,7 @@ const FRONTEND_URL = 'http://localhost:3000'
 const BACKEND_URL = 'http://localhost:8000'
 const TEST_TIMEOUT = 30000
 
-test.describe('Tunarasa System Integration Tests', () => {
+test.describe('PENSyarat AI System Integration Tests', () => {
   test.setTimeout(TEST_TIMEOUT)
 
   test.beforeEach(async ({ page }) => {
@@ -23,8 +23,8 @@ test.describe('Tunarasa System Integration Tests', () => {
 
   test('Frontend loads successfully with correct layout', async ({ page }) => {
     // Check page title and main heading
-    await expect(page).toHaveTitle(/Tunarasa/)
-    await expect(page.locator('h1')).toContainText('Tunarasa')
+    await expect(page).toHaveTitle(/PENSyarat AI/)
+    await expect(page.locator('h1')).toContainText('PENSyarat AI')
 
     // Verify main components are present
     await expect(page.locator('text=A-Z Sign Language Recognition')).toBeVisible()
@@ -51,7 +51,7 @@ test.describe('Tunarasa System Integration Tests', () => {
 
     const healthData = await healthResponse.json()
     expect(healthData.status).toBe('healthy')
-    expect(healthData.service).toBe('tunarasa-backend')
+    expect(healthData.service).toBe('pensyarat-backend')
   })
 
   test('Backend API endpoints respond correctly', async ({ request }) => {

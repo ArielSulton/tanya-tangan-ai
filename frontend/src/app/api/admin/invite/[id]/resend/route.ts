@@ -65,9 +65,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Send email via Resend
     const { data, error } = await getResend().emails.send({
-      from: 'Tanya Tangan AI Admin <admin@mail.tunarasa.my.id>',
+      from: 'PENSyarat AI Admin <admin@mail.pensyarat.my.id>',
       to: [invitation.email],
-      subject: 'Reminder: Invitation to Join Tanya Tangan AI Admin Team',
+      subject: 'Reminder: Invitation to Join PENSyarat AI Admin Team',
       react: AdminInvitationEmail({
         invitedByName: invitation.inviterName ?? authUser.full_name ?? 'Admin',
         invitedByEmail: invitation.inviterEmail ?? authUser.email ?? '',

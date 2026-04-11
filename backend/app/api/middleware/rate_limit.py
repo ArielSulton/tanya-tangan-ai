@@ -4,9 +4,8 @@ Rate limiting middleware for API protection
 
 import logging
 import time
-from typing import Dict, Optional
+from typing import Dict
 
-import redis
 from app.core.config import settings
 from fastapi import Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -20,20 +19,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     Rate limiting middleware to prevent abuse
     """
 
-    def __init__(self, app, redis_client: Optional[redis.Redis] = None):
+    def __init__(self, app):
         super().__init__(app)
-        self.redis_client = redis_client
         self.memory_store: Dict[str, Dict[str, int]] = {}
-
-        # Try to connect to Redis
-        if not self.redis_client:
-            try:
-                self.redis_client = redis.from_url(settings.REDIS_URL)
-                self.redis_client.ping()  # Test connection
-                logger.info("Connected to Redis for rate limiting")
-            except Exception as e:
-                logger.warning(f"Redis connection failed, using memory store: {e}")
-                self.redis_client = None
 
     async def dispatch(self, request: Request, call_next):
         """
@@ -88,14 +76,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Different limits for different endpoints
         limit = self._get_endpoint_limit(path)
 
-        if self.redis_client:
-            return await self._check_redis_rate_limit(
-                client_id, current_time, window_start, limit
-            )
-        else:
-            return self._check_memory_rate_limit(
-                client_id, current_time, window_start, limit
-            )
+        return self._check_memory_rate_limit(
+            client_id, current_time, window_start, limit
+        )
 
     def _get_endpoint_limit(self, path: str) -> int:
         """
@@ -114,39 +97,6 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return settings.RATE_LIMIT_REQUESTS // 4
 
         return settings.RATE_LIMIT_REQUESTS
-
-    async def _check_redis_rate_limit(
-        self, client_id: str, current_time: int, window_start: int, limit: int
-    ) -> bool:
-        """
-        Check rate limit using Redis
-        """
-        try:
-            pipe = self.redis_client.pipeline()
-
-            # Remove old entries
-            pipe.zremrangebyscore(client_id, 0, window_start)
-
-            # Add current request
-            pipe.zadd(client_id, {str(current_time): current_time})
-
-            # Get request count
-            pipe.zcard(client_id)
-
-            # Set expiration
-            pipe.expire(client_id, settings.RATE_LIMIT_WINDOW)
-
-            results = pipe.execute()
-            request_count = results[2]
-
-            return request_count <= limit
-
-        except Exception as e:
-            logger.error(f"Redis rate limit check failed: {e}")
-            # Fall back to memory store
-            return self._check_memory_rate_limit(
-                client_id, current_time, window_start, limit
-            )
 
     def _check_memory_rate_limit(
         self, client_id: str, current_time: int, window_start: int, limit: int

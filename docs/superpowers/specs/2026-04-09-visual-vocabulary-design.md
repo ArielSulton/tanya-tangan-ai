@@ -1,7 +1,7 @@
 # Visual Vocabulary Platform — Design Spec
 
 **Date**: 2026-04-09
-**Project**: Tanya Tangan
+**Project**: PENSyarat AI
 **Scope**: Pivot dari RAG chatbot → platform pemahaman kosakata visual untuk siswa SDLB-B
 **Approach**: Opsi C — Reframe + Reuse (pivot konsep, reuse infrastruktur)
 

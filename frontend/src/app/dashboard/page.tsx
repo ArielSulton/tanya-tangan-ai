@@ -36,11 +36,9 @@ import {
   Bot,
   User,
   Clock,
-  Building,
   FileText,
   Edit,
   Plus,
-  Upload,
   Trash2,
 } from 'lucide-react'
 import { useUserRole } from '@/components/auth/SuperAdminOnly'
@@ -128,43 +126,32 @@ interface QALogsResponse {
   }
 }
 
-interface Institution {
-  institutionId: number
-  name: string
-  slug: string
-  description?: string
-  logoUrl?: string
-  contactInfo?: {
-    phone?: string
-    email?: string
-    address?: string
-    website?: string
-  }
-  isActive: boolean
-  createdBy: number
+interface VocabWord {
+  id: string
+  text: string
+  category: string
+  type: 'konkret' | 'abstrak'
+  level: string
+  imageUrl: string | null
+  imageSource: string
   createdAt: string | Date
-  updatedAt: string | Date
-  _count?: {
-    ragFiles: number
-    conversations: number
-  }
+  comparison?: {
+    id: string
+    lowImageUrl: string
+    highImageUrl: string
+    lowLabel: string
+    highLabel: string
+    referenceWord: string
+  } | null
 }
 
-interface RagFile {
-  ragFileId: number
-  institutionId: number
-  fileName: string
-  fileType: 'pdf' | 'txt'
-  filePath: string
-  fileSize?: number
-  description?: string
-  processingStatus: 'pending' | 'processing' | 'completed' | 'failed'
-  pineconeNamespace?: string
-  isActive: boolean
-  createdBy: number
-  createdAt: string | Date
-  updatedAt: string | Date
-}
+const VOCAB_CATEGORIES = [
+  { value: 'hewan', label: 'Hewan' },
+  { value: 'benda', label: 'Benda' },
+  { value: 'alam', label: 'Alam' },
+  { value: 'perasaan', label: 'Perasaan' },
+  { value: 'kata_keterangan', label: 'Kata Keterangan' },
+]
 
 // Component that uses auth hooks - only rendered client-side
 function DashboardAuthContent() {
@@ -213,7 +200,6 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
   const [customMessage, setCustomMessage] = useState('')
   const [isInviting, setIsInviting] = useState(false)
   const [invitationStatus, setInvitationStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const [_institutionStatus, setInstitutionStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [statusMessage, setStatusMessage] = useState('')
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
 
@@ -243,36 +229,33 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
   })
   const [showQaLogs, setShowQaLogs] = useState(false)
 
-  // Institution and RAG file management state
-  const [institutions, setInstitutions] = useState<Institution[]>([])
-  const [_ragFiles, setRagFiles] = useState<RagFile[]>([])
-  const [selectedInstitution, setSelectedInstitution] = useState<Institution | null>(null)
-  const [institutionLoading, setInstitutionLoading] = useState(false)
-  const [showInstitutions, setShowInstitutions] = useState(false)
-  const [showRagFiles, setShowRagFiles] = useState(false)
-  const [institutionDialogOpen, setInstitutionDialogOpen] = useState(false)
-  const [_ragFileDialogOpen, _setRagFileDialogOpen] = useState(false)
+  // Vocab word management state
+  const [vocabWords, setVocabWords] = useState<VocabWord[]>([])
+  const [wordLoading, setWordLoading] = useState(false)
+  const [showWords, setShowWords] = useState(false)
+  const [wordDialogOpen, setWordDialogOpen] = useState(false)
+  const [editingWord, setEditingWord] = useState<VocabWord | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [fileDescription, setFileDescription] = useState('')
 
-  // Institution / Subject form state (SLB-B mata pelajaran)
-  const [institutionName, setInstitutionName] = useState('')
-  const [institutionSlug, setInstitutionSlug] = useState('')
-  const [institutionDescription, setInstitutionDescription] = useState('')
-  const [institutionJenjang, setInstitutionJenjang] = useState<'SDLB' | 'SMPLB' | 'SMALB' | ''>('')
-  const [institutionMataPelajaran, setInstitutionMataPelajaran] = useState('')
-  const [editingInstitution, setEditingInstitution] = useState<Institution | null>(null)
+  // Word form state
+  const [wordText, setWordText] = useState('')
+  const [wordCategory, setWordCategory] = useState('')
+  const [wordType, setWordType] = useState<'konkret' | 'abstrak' | ''>('')
+  const [wordImageFile, setWordImageFile] = useState<File | null>(null)
+  const [wordImagePreview, setWordImagePreview] = useState<string | null>(null)
+  const [wordImageUrl, setWordImageUrl] = useState<string>('')
+  const [wordCategoryFilter, setWordCategoryFilter] = useState('')
 
-  // Institution RAG file upload state (for create/edit)
-  const [institutionRagFile, setInstitutionRagFile] = useState<File | null>(null)
-  const [institutionRagDescription, setInstitutionRagDescription] = useState('')
-
-  // RAG file replacement state
-  const [editingRagFile, setEditingRagFile] = useState<RagFile | null>(null)
-  const [replaceRagDialogOpen, setReplaceRagDialogOpen] = useState(false)
-  const [newRagFile, setNewRagFile] = useState<File | null>(null)
-  const [newRagDescription, setNewRagDescription] = useState('')
+  // Abstrak comparison state
+  const [compLowFile, setCompLowFile] = useState<File | null>(null)
+  const [compLowPreview, setCompLowPreview] = useState<string | null>(null)
+  const [compLowUrl, setCompLowUrl] = useState('')
+  const [compLowLabel, setCompLowLabel] = useState('')
+  const [compHighFile, setCompHighFile] = useState<File | null>(null)
+  const [compHighPreview, setCompHighPreview] = useState<string | null>(null)
+  const [compHighUrl, setCompHighUrl] = useState('')
+  const [compHighLabel, setCompHighLabel] = useState('')
+  const [compReferenceWord, setCompReferenceWord] = useState('')
 
   // Fetch admin users and invitations
   const fetchAdminData = useCallback(async () => {
@@ -344,163 +327,163 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
     [qaLogsFilters],
   )
 
-  // Fetch subjects (mata pelajaran)
-  const fetchInstitutions = useCallback(async () => {
+  // Fetch vocab words
+  const fetchVocabWords = useCallback(async (category?: string) => {
     try {
-      setInstitutionLoading(true)
-      const response = await fetch('/api/admin/subjects')
+      setWordLoading(true)
+      const params = new URLSearchParams({ limit: '100' })
+      if (category) params.set('category', category)
+      const response = await fetch(`/api/admin/vocab?${params.toString()}`)
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data) {
-          console.log('🏢 Institutions data:', data.data.institutions)
-          setInstitutions(data.data.subjects ?? data.data.institutions ?? [])
+          setVocabWords(data.data.words ?? [])
         }
       }
     } catch (error) {
-      console.error('Error fetching institutions:', error)
+      console.error('Error fetching vocab words:', error)
     } finally {
-      setInstitutionLoading(false)
+      setWordLoading(false)
     }
   }, [])
 
-  // Fetch RAG files for selected institution
-  const fetchRagFiles = useCallback(async (institutionId: number) => {
-    try {
-      setInstitutionLoading(true)
-      const response = await fetch(`/api/admin/subjects/${institutionId}/rag-files`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && data.data) {
-          setRagFiles(data.data.ragFiles ?? [])
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching RAG files:', error)
-    } finally {
-      setInstitutionLoading(false)
-    }
-  }, [])
+  // Upload image to R2
+  const uploadVocabImage = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await fetch('/api/admin/vocab/upload-image', { method: 'POST', body: formData })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.error ?? 'Upload failed')
+    return json.data.url as string
+  }
 
-  // Create or update institution with optional RAG file
-  const handleSaveInstitution = async () => {
-    if (!institutionName.trim() || !institutionSlug.trim()) return
+  // Reset word form
+  const resetWordForm = () => {
+    setWordText('')
+    setWordCategory('')
+    setWordType('')
+    setWordImageFile(null)
+    setWordImagePreview(null)
+    setWordImageUrl('')
+    setCompLowFile(null)
+    setCompLowPreview(null)
+    setCompLowUrl('')
+    setCompLowLabel('')
+    setCompHighFile(null)
+    setCompHighPreview(null)
+    setCompHighUrl('')
+    setCompHighLabel('')
+    setCompReferenceWord('')
+    setEditingWord(null)
+  }
+
+  // Create or update vocab word
+  const handleSaveWord = async () => {
+    if (!wordText.trim() || !wordCategory || !wordType) return
 
     try {
       setIsInviting(true)
-      const method = editingInstitution ? 'PUT' : 'POST'
-      const url = editingInstitution ? `/api/admin/subjects/${editingInstitution.institutionId}` : '/api/admin/subjects'
+      setUploading(true)
 
-      // First, create/update the subject (mata pelajaran)
+      let finalImageUrl = wordImageUrl
+      let finalLowUrl = compLowUrl
+      let finalHighUrl = compHighUrl
+
+      // Upload images if new files were selected
+      if (wordType === 'konkret' && wordImageFile) {
+        finalImageUrl = await uploadVocabImage(wordImageFile)
+      }
+      if (wordType === 'abstrak') {
+        if (compLowFile) finalLowUrl = await uploadVocabImage(compLowFile)
+        if (compHighFile) finalHighUrl = await uploadVocabImage(compHighFile)
+      }
+
+      const body: Record<string, unknown> = {
+        text: wordText.trim(),
+        category: wordCategory,
+        type: wordType,
+        imageUrl: wordType === 'konkret' ? finalImageUrl || null : null,
+      }
+
+      if (wordType === 'abstrak' && finalLowUrl && finalHighUrl) {
+        body.comparison = {
+          lowImageUrl: finalLowUrl,
+          highImageUrl: finalHighUrl,
+          lowLabel: compLowLabel,
+          highLabel: compHighLabel,
+          referenceWord: compReferenceWord,
+        }
+      }
+
+      const method = editingWord ? 'PUT' : 'POST'
+      const url = editingWord ? `/api/admin/vocab/${editingWord.id}` : '/api/admin/vocab'
+
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: institutionName,
-          slug: institutionSlug,
-          jenjang: institutionJenjang || undefined,
-          mataPelajaran: institutionMataPelajaran || undefined,
-          description: institutionDescription || undefined,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error ?? `Failed to ${editingInstitution ? 'update' : 'create'} institution`)
+        throw new Error(errorData.error ?? 'Operasi gagal')
       }
 
-      const institutionResult = await response.json()
-      console.log('🏢 Institution response:', institutionResult)
-      const institutionId = editingInstitution?.institutionId ?? institutionResult.data?.institution?.institutionId
-
-      console.log('📋 Institution ID:', institutionId)
-      console.log('📁 RAG file to upload:', !!institutionRagFile)
-      console.log('✏️ Is editing institution:', !!editingInstitution)
-
-      // If there's a RAG file to upload and we have the institution ID
-      if (institutionRagFile && institutionId && !editingInstitution) {
-        try {
-          console.log('🔄 Uploading RAG file for institution:', institutionId)
-
-          // Upload file first
-          const formData = new FormData()
-          formData.append('file', institutionRagFile)
-          formData.append('institutionId', institutionId.toString())
-          formData.append('description', institutionRagDescription)
-
-          const uploadResponse = await fetch('/api/admin/upload-rag-file', {
-            method: 'POST',
-            body: formData,
-          })
-
-          const uploadResult = await uploadResponse.json()
-
-          if (!uploadResponse.ok) {
-            throw new Error(uploadResult.error ?? 'Failed to upload RAG file')
-          }
-
-          console.log('✅ File uploaded successfully:', uploadResult.data.fileName)
-
-          // Create RAG file record
-          const createRagResponse = await fetch(`/api/admin/institutions/${institutionId}/rag-files`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              fileName: uploadResult.data.fileName,
-              fileType: uploadResult.data.fileType,
-              filePath: uploadResult.data.filePath,
-              fileSize: uploadResult.data.fileSize,
-              description: institutionRagDescription,
-            }),
-          })
-
-          const createRagResult = await createRagResponse.json()
-
-          if (!createRagResponse.ok) {
-            throw new Error(createRagResult.error ?? 'Failed to create RAG file record')
-          }
-
-          console.log('✅ RAG file record created successfully:', createRagResult.data)
-
-          setStatusMessage(`Institusi berhasil ${editingInstitution ? 'diperbarui' : 'dibuat'} dengan file RAG`)
-        } catch (ragError) {
-          console.error('❌ RAG file error:', ragError)
-          // Institution was created, but RAG file failed - still show success but mention the file issue
-          setStatusMessage(
-            `Institusi berhasil ${editingInstitution ? 'diperbarui' : 'dibuat'}, tetapi gagal mengunggah file RAG: ${
-              ragError instanceof Error ? ragError.message : 'Unknown error'
-            }`,
-          )
-        }
-      } else {
-        setStatusMessage(`Institusi berhasil ${editingInstitution ? 'diperbarui' : 'dibuat'}`)
-      }
-
-      setInstitutionStatus('success')
-
-      // Reset form
-      setInstitutionName('')
-      setInstitutionSlug('')
-      setInstitutionDescription('')
-      setInstitutionJenjang('')
-      setInstitutionMataPelajaran('')
-      setInstitutionRagFile(null)
-      setInstitutionRagDescription('')
-      setEditingInstitution(null)
-      setInstitutionDialogOpen(false)
-
-      // Refresh institutions
-      await fetchInstitutions()
+      setInvitationStatus('success')
+      setStatusMessage(`Kosakata "${wordText}" berhasil ${editingWord ? 'diperbarui' : 'ditambahkan'}`)
+      setWordDialogOpen(false)
+      resetWordForm()
+      await fetchVocabWords(wordCategoryFilter || undefined)
     } catch (error) {
-      console.error('❌ Institution save error:', error)
       setInvitationStatus('error')
       setStatusMessage(error instanceof Error ? error.message : 'Operasi gagal')
     } finally {
       setIsInviting(false)
+      setUploading(false)
     }
+  }
+
+  // Delete vocab word
+  const handleDeleteWord = async (word: VocabWord) => {
+    if (!window.confirm(`Hapus kosakata "${word.text}"?`)) return
+    try {
+      const response = await fetch(`/api/admin/vocab/${word.id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error('Gagal menghapus kosakata')
+      setStatusMessage(`Kosakata "${word.text}" berhasil dihapus`)
+      setInvitationStatus('success')
+      await fetchVocabWords(wordCategoryFilter || undefined)
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : 'Gagal menghapus')
+      setInvitationStatus('error')
+    }
+  }
+
+  // Image file select helper
+  const handleImageFileSelect = (
+    file: File | null,
+    setFile: (f: File | null) => void,
+    setPreview: (p: string | null) => void,
+  ) => {
+    if (!file) {
+      setFile(null)
+      setPreview(null)
+      return
+    }
+    const allowed = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowed.includes(file.type)) {
+      setStatusMessage('Hanya gambar JPEG, PNG, WebP yang diizinkan')
+      setInvitationStatus('error')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setStatusMessage('Ukuran gambar maks 5MB')
+      setInvitationStatus('error')
+      return
+    }
+    setFile(file)
+    const reader = new FileReader()
+    reader.onload = (e) => setPreview(e.target?.result as string)
+    reader.readAsDataURL(file)
   }
 
   useEffect(() => {
@@ -514,25 +497,10 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
   }, [showQaLogs, fetchQaLogs])
 
   useEffect(() => {
-    if (showInstitutions) {
-      void fetchInstitutions()
+    if (showWords) {
+      void fetchVocabWords(wordCategoryFilter || undefined)
     }
-  }, [showInstitutions, fetchInstitutions])
-
-  // Auto-fetch RAG files when institution is selected and files are shown
-  useEffect(() => {
-    if (showRagFiles && selectedInstitution) {
-      void fetchRagFiles(selectedInstitution.institutionId)
-    }
-  }, [showRagFiles, selectedInstitution, fetchRagFiles])
-
-  // Clear RAG files when no institution is selected
-  useEffect(() => {
-    if (!selectedInstitution) {
-      setRagFiles([])
-      setShowRagFiles(false)
-    }
-  }, [selectedInstitution])
+  }, [showWords, wordCategoryFilter, fetchVocabWords])
 
   const handleSendInvitation = async () => {
     if (!inviteEmail) return
@@ -577,290 +545,6 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
       console.error('Invitation error:', error)
     } finally {
       setIsInviting(false)
-    }
-  }
-
-  const _handleResendInvitation = async (invitationId: string) => {
-    try {
-      const response = await fetch(`/api/admin/invite/${invitationId}/resend`, {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to resend invitation')
-      }
-
-      setStatusMessage('Invitation resent successfully')
-      setInvitationStatus('success')
-      await fetchAdminData()
-    } catch {
-      setStatusMessage('Failed to resend invitation')
-      setInvitationStatus('error')
-    }
-  }
-
-  const _handleCancelInvitation = async (invitationId: string) => {
-    try {
-      const response = await fetch(`/api/admin/invite/${invitationId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to cancel invitation')
-      }
-
-      setStatusMessage('Invitation cancelled successfully')
-      setInvitationStatus('success')
-      await fetchAdminData()
-    } catch {
-      setStatusMessage('Failed to cancel invitation')
-      setInvitationStatus('error')
-    }
-  }
-
-  // Handle file upload - DEPRECATED: now integrated with institution creation
-  const _handleFileUpload = async () => {
-    if (!selectedFile || !selectedInstitution) return
-
-    try {
-      setUploading(true)
-      setInvitationStatus('idle')
-
-      // Upload file first
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-      formData.append('institutionId', selectedInstitution.institutionId.toString())
-      formData.append('description', fileDescription)
-
-      const uploadResponse = await fetch('/api/admin/upload-rag-file', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const uploadResult = await uploadResponse.json()
-
-      if (!uploadResponse.ok) {
-        throw new Error(uploadResult.error ?? 'Failed to upload file')
-      }
-
-      // Create RAG file record
-      const createResponse = await fetch(`/api/admin/institutions/${selectedInstitution.institutionId}/rag-files`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName: uploadResult.data.fileName,
-          fileType: uploadResult.data.fileType,
-          filePath: uploadResult.data.filePath,
-          fileSize: uploadResult.data.fileSize,
-          description: fileDescription,
-        }),
-      })
-
-      const createResult = await createResponse.json()
-
-      if (!createResponse.ok) {
-        throw new Error(createResult.error ?? 'Failed to create RAG file record')
-      }
-
-      setInvitationStatus('success')
-      setStatusMessage(`File "${uploadResult.data.fileName}" berhasil diunggah dan ditambahkan ke RAG`)
-
-      // Reset form
-      setSelectedFile(null)
-      setFileDescription('')
-
-      // Refresh institutions data and RAG files
-      await fetchInstitutions()
-      if (selectedInstitution) {
-        await fetchRagFiles(selectedInstitution.institutionId)
-      }
-    } catch (error) {
-      setInvitationStatus('error')
-      setStatusMessage(error instanceof Error ? error.message : 'Gagal mengunggah file')
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  const _handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'text/plain']
-      if (!allowedTypes.includes(file.type)) {
-        setInvitationStatus('error')
-        setStatusMessage('Tipe file tidak valid. Hanya file PDF dan TXT yang diizinkan.')
-        return
-      }
-
-      // Validate file size (10MB)
-      const maxSize = 10 * 1024 * 1024
-      if (file.size > maxSize) {
-        setInvitationStatus('error')
-        setStatusMessage('Ukuran file melebihi batas 10MB')
-        return
-      }
-
-      setSelectedFile(file)
-      setInvitationStatus('idle')
-    }
-  }
-
-  // Handle RAG file select for institution creation
-  const handleInstitutionRagFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'text/plain']
-      if (!allowedTypes.includes(file.type)) {
-        setInvitationStatus('error')
-        setStatusMessage('Tipe file tidak valid. Hanya file PDF dan TXT yang diizinkan.')
-        return
-      }
-
-      // Validate file size (10MB)
-      const maxSize = 10 * 1024 * 1024
-      if (file.size > maxSize) {
-        setInvitationStatus('error')
-        setStatusMessage('Ukuran file melebihi batas 10MB')
-        return
-      }
-
-      setInstitutionRagFile(file)
-      setInvitationStatus('idle')
-    }
-  }
-
-  // Handle new RAG file select for replacement
-  const handleNewRagFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'text/plain']
-      if (!allowedTypes.includes(file.type)) {
-        setInvitationStatus('error')
-        setStatusMessage('Tipe file tidak valid. Hanya file PDF dan TXT yang diizinkan.')
-        return
-      }
-
-      // Validate file size (10MB)
-      const maxSize = 10 * 1024 * 1024
-      if (file.size > maxSize) {
-        setInvitationStatus('error')
-        setStatusMessage('Ukuran file melebihi batas 10MB')
-        return
-      }
-
-      setNewRagFile(file)
-      setInvitationStatus('idle')
-    }
-  }
-
-  // Handle RAG file replacement
-  const handleReplaceRagFile = async () => {
-    if (!newRagFile || !editingRagFile || !selectedInstitution) return
-
-    try {
-      setUploading(true)
-      setInvitationStatus('idle')
-
-      // Upload new file first
-      const formData = new FormData()
-      formData.append('file', newRagFile)
-      formData.append('institutionId', selectedInstitution.institutionId.toString())
-      formData.append('description', newRagDescription)
-
-      const uploadResponse = await fetch('/api/admin/upload-rag-file', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const uploadResult = await uploadResponse.json()
-
-      if (!uploadResponse.ok) {
-        throw new Error(uploadResult.error ?? 'Failed to upload new file')
-      }
-
-      // Update RAG file record with new file details
-      const updateResponse = await fetch(
-        `/api/admin/institutions/${selectedInstitution.institutionId}/rag-files/${editingRagFile.ragFileId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            fileName: uploadResult.data.fileName,
-            fileType: uploadResult.data.fileType,
-            filePath: uploadResult.data.filePath,
-            fileSize: uploadResult.data.fileSize,
-            description: newRagDescription || editingRagFile.description,
-            processingStatus: 'pending',
-          }),
-        },
-      )
-
-      const updateResult = await updateResponse.json()
-
-      if (!updateResponse.ok) {
-        throw new Error(updateResult.error ?? 'Failed to update RAG file record')
-      }
-
-      setInvitationStatus('success')
-      setStatusMessage(`File RAG "${uploadResult.data.fileName}" berhasil diganti`)
-
-      // Reset form
-      setNewRagFile(null)
-      setNewRagDescription('')
-      setEditingRagFile(null)
-      setReplaceRagDialogOpen(false)
-
-      // Refresh institutions data and RAG files
-      await fetchInstitutions()
-      if (selectedInstitution) {
-        await fetchRagFiles(selectedInstitution.institutionId)
-      }
-    } catch (error) {
-      setInvitationStatus('error')
-      setStatusMessage(error instanceof Error ? error.message : 'Gagal mengganti file RAG')
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  // Handle RAG file deletion
-  const handleDeleteRagFile = async (ragFile: RagFile) => {
-    if (!selectedInstitution || !window.confirm(`Apakah Anda yakin ingin menghapus file "${ragFile.fileName}"?`)) {
-      return
-    }
-
-    try {
-      setInvitationStatus('idle')
-      const response = await fetch(
-        `/api/admin/institutions/${selectedInstitution.institutionId}/rag-files/${ragFile.ragFileId}`,
-        {
-          method: 'DELETE',
-        },
-      )
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error ?? 'Failed to delete RAG file')
-      }
-
-      setInvitationStatus('success')
-      setStatusMessage(`File RAG "${ragFile.fileName}" berhasil dihapus`)
-
-      // Refresh institutions data and RAG files
-      await fetchInstitutions()
-      if (selectedInstitution) {
-        await fetchRagFiles(selectedInstitution.institutionId)
-      }
-    } catch (error) {
-      setInvitationStatus('error')
-      setStatusMessage(error instanceof Error ? error.message : 'Gagal menghapus file RAG')
     }
   }
 
@@ -1069,7 +753,7 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                               <Input
                                 id="invite-email"
                                 type="email"
-                                placeholder="admin@mail.tunarasa.my.id"
+                                placeholder="admin@mail.pensyarat.my.id"
                                 value={inviteEmail}
                                 onChange={(e) => setInviteEmail(e.target.value)}
                               />
@@ -1207,18 +891,16 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <MessageSquare className="text-primary h-5 w-5" />
-                  QA Logs & System Monitoring
+                  Logs & System Monitoring
                 </CardTitle>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  Question & Answer logs from the communication system with performance metrics
-                </p>
+                <p className="text-muted-foreground mt-1 text-sm">Logs from the system with performance metrics</p>
               </div>
               <Button
                 variant={showQaLogs ? 'secondary' : 'outline'}
                 onClick={() => setShowQaLogs(!showQaLogs)}
                 className="flex items-center gap-2"
               >
-                {showQaLogs ? 'Sembunyikan Log QA' : 'Lihat Log QA'}
+                {showQaLogs ? 'Sembunyikan Log' : 'Lihat Log'}
               </Button>
             </div>
           </CardHeader>
@@ -1447,238 +1129,328 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
           )}
         </Card>
 
-        {/* Institution Management Section - SuperAdmin Only */}
+        {/* Vocab Word Management Section - SuperAdmin Only */}
         {isSuperAdmin && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    <Building className="text-primary h-5 w-5" />
-                    Manajemen Institusi & RAG
+                    <FileText className="text-primary h-5 w-5" />
+                    Manajemen Kosakata dan Visual
                   </CardTitle>
-                  <p className="text-muted-foreground mt-1 text-sm">Kelola institusi dan file knowledge base RAG</p>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Kelola kata, kategori, dan gambar visual untuk platform belajar SDLB-B
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
-                    variant={showInstitutions ? 'secondary' : 'outline'}
-                    onClick={() => {
-                      setShowInstitutions(!showInstitutions)
-                      if (!showInstitutions) {
-                        void fetchInstitutions()
-                      }
-                    }}
+                    variant={showWords ? 'secondary' : 'outline'}
+                    onClick={() => setShowWords(!showWords)}
                     className="flex items-center gap-2"
                   >
-                    <Building className="h-4 w-4" />
-                    {showInstitutions ? 'Sembunyikan Institusi' : 'Kelola Institusi'}
+                    <FileText className="h-4 w-4" />
+                    {showWords ? 'Sembunyikan' : 'Kelola Kosakata'}
                   </Button>
-                  {selectedInstitution && (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant={showRagFiles ? 'secondary' : 'outline'}
-                        onClick={() => {
-                          setShowRagFiles(!showRagFiles)
-                          if (!showRagFiles && selectedInstitution) {
-                            setRagFiles([]) // Clear previous data
-                            void fetchRagFiles(selectedInstitution.institutionId)
-                          }
-                        }}
-                        className="flex items-center gap-2"
-                      >
-                        <FileText className="h-4 w-4" />
-                        {showRagFiles ? 'Sembunyikan File RAG' : 'Lihat File RAG'}
-                      </Button>
-
-                      {/* Upload button removed - now integrated with institution creation form */}
-                    </div>
-                  )}
                 </div>
               </div>
             </CardHeader>
 
-            {showInstitutions && (
+            {showWords && (
               <CardContent className="space-y-6">
-                {/* Institution Statistics */}
+                {/* Stats row */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-blue-600">{institutions.length}</div>
-                      <p className="text-muted-foreground text-xs">Total Institusi</p>
+                      <div className="text-2xl font-bold text-blue-600">{vocabWords.length}</div>
+                      <p className="text-muted-foreground text-xs">Total Kosakata</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
                       <div className="text-2xl font-bold text-green-600">
-                        {institutions.filter((i) => i.isActive).length}
+                        {vocabWords.filter((w) => w.type === 'konkret').length}
                       </div>
-                      <p className="text-muted-foreground text-xs">Institusi Aktif</p>
+                      <p className="text-muted-foreground text-xs">Kata Konkret</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-orange-600">
-                        {selectedInstitution?._count?.ragFiles ?? 0}
+                      <div className="text-2xl font-bold text-purple-600">
+                        {vocabWords.filter((w) => w.type === 'abstrak').length}
                       </div>
-                      <p className="text-muted-foreground text-xs">File RAG Institusi</p>
+                      <p className="text-muted-foreground text-xs">Kata Abstrak</p>
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Add Institution Button */}
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Institusi</h3>
-                  <Dialog open={institutionDialogOpen} onOpenChange={setInstitutionDialogOpen}>
+                {/* Filter + Add button */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Filter className="text-muted-foreground h-4 w-4" />
+                    <select
+                      value={wordCategoryFilter}
+                      onChange={(e) => setWordCategoryFilter(e.target.value)}
+                      className="border-input bg-background h-9 rounded-md border px-2 text-sm"
+                    >
+                      <option value="">Semua Kategori</option>
+                      {VOCAB_CATEGORIES.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <Dialog
+                    open={wordDialogOpen}
+                    onOpenChange={(open) => {
+                      setWordDialogOpen(open)
+                      if (!open) resetWordForm()
+                    }}
+                  >
                     <DialogTrigger asChild>
                       <Button
                         onClick={() => {
-                          setEditingInstitution(null)
-                          setInstitutionName('')
-                          setInstitutionSlug('')
-                          setInstitutionDescription('')
-                          setInstitutionRagFile(null)
-                          setInstitutionRagDescription('')
-                          setInvitationStatus('idle')
+                          resetWordForm()
+                          setWordDialogOpen(true)
                         }}
                       >
                         <Plus className="mr-2 h-4 w-4" />
-                        Tambah Mata Pelajaran
+                        Tambah Kosakata
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px]">
+                    <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
                       <DialogHeader>
-                        <DialogTitle>{editingInstitution ? 'Edit' : 'Tambah'} Mata Pelajaran</DialogTitle>
+                        <DialogTitle>{editingWord ? 'Edit' : 'Tambah'} Kosakata</DialogTitle>
                         <DialogDescription>
-                          {editingInstitution
-                            ? 'Perbarui detail mata pelajaran SLB-B'
-                            : 'Tambah mata pelajaran baru dengan file RAG knowledge base'}
+                          {editingWord
+                            ? 'Perbarui data kata dan gambar visual'
+                            : 'Tambah kata baru dengan gambar visual ke database'}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
+                        {/* Word text */}
                         <div className="space-y-2">
-                          <Label htmlFor="institution-jenjang">Jenjang</Label>
+                          <Label htmlFor="word-text">
+                            Kata <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="word-text"
+                            placeholder="e.g., kucing, sedikit, apel"
+                            value={wordText}
+                            onChange={(e) => setWordText(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Category */}
+                        <div className="space-y-2">
+                          <Label htmlFor="word-category">
+                            Kategori <span className="text-red-500">*</span>
+                          </Label>
                           <select
-                            id="institution-jenjang"
-                            value={institutionJenjang}
-                            onChange={(e) => setInstitutionJenjang(e.target.value as 'SDLB' | 'SMPLB' | 'SMALB' | '')}
-                            className="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                            id="word-category"
+                            value={wordCategory}
+                            onChange={(e) => {
+                              const cat = e.target.value
+                              setWordCategory(cat)
+                              if (cat === 'kata_keterangan') setWordType('abstrak')
+                            }}
+                            className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
                           >
-                            <option value="">Pilih Jenjang</option>
-                            <option value="SDLB">SDLB (Sekolah Dasar)</option>
-                            <option value="SMPLB">SMPLB (Sekolah Menengah Pertama)</option>
-                            <option value="SMALB">SMALB (Sekolah Menengah Atas)</option>
+                            <option value="">Pilih Kategori</option>
+                            {VOCAB_CATEGORIES.map((c) => (
+                              <option key={c.value} value={c.value}>
+                                {c.label}
+                              </option>
+                            ))}
                           </select>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="institution-mata-pelajaran">Mata Pelajaran</Label>
-                          <Input
-                            id="institution-mata-pelajaran"
-                            placeholder="e.g., Matematika, IPA, Bahasa Indonesia"
-                            value={institutionMataPelajaran}
-                            onChange={(e) => setInstitutionMataPelajaran(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="institution-name">Nama Subjek (Label)</Label>
-                          <Input
-                            id="institution-name"
-                            placeholder="e.g., Matematika SDLB Kelas 4"
-                            value={institutionName}
-                            onChange={(e) => {
-                              setInstitutionName(e.target.value)
-                              // Auto-generate slug
-                              const slug = e.target.value
-                                .toLowerCase()
-                                .replace(/[^a-z0-9\s-]/g, '')
-                                .replace(/\s+/g, '-')
-                                .replace(/-+/g, '-')
-                                .trim()
-                              setInstitutionSlug(slug)
-                            }}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="institution-slug">Slug URL</Label>
-                          <Input
-                            id="institution-slug"
-                            placeholder="e.g., matematika-sdlb-kelas-4"
-                            value={institutionSlug}
-                            onChange={(e) => setInstitutionSlug(e.target.value)}
-                          />
-                          <p className="text-muted-foreground text-xs">
-                            Akan digunakan dalam URL: /komunikasi/{institutionSlug}
-                          </p>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="institution-description">Deskripsi (Opsional)</Label>
-                          <Textarea
-                            id="institution-description"
-                            placeholder="Deskripsi singkat materi yang dicakup..."
-                            value={institutionDescription}
-                            onChange={(e) => setInstitutionDescription(e.target.value)}
-                            rows={3}
-                          />
-                        </div>
 
-                        {/* RAG File Upload Section - Only for new institutions */}
-                        {!editingInstitution && (
-                          <div className="border-t pt-4">
-                            <h4 className="mb-3 text-sm font-semibold">File Knowledge Base (Opsional)</h4>
-                            <div className="space-y-3">
-                              <div className="space-y-2">
-                                <Label htmlFor="institution-rag-file">File RAG (PDF/TXT - Maks 10MB)</Label>
-                                <input
-                                  id="institution-rag-file"
-                                  type="file"
-                                  accept=".pdf,.txt"
-                                  onChange={handleInstitutionRagFileSelect}
-                                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                />
-                                {institutionRagFile && (
-                                  <p className="text-sm text-green-600">
-                                    File terpilih: {institutionRagFile.name} (
-                                    {Math.round(institutionRagFile.size / 1024)} KB)
-                                  </p>
-                                )}
-                              </div>
-
-                              {institutionRagFile && (
-                                <div className="space-y-2">
-                                  <Label htmlFor="institution-rag-description">Deskripsi File RAG (Opsional)</Label>
-                                  <Textarea
-                                    id="institution-rag-description"
-                                    placeholder="Deskripsi singkat tentang konten file ini..."
-                                    value={institutionRagDescription}
-                                    onChange={(e) => setInstitutionRagDescription(e.target.value)}
-                                    rows={2}
+                        {/* Word type */}
+                        {wordCategory === 'kata_keterangan' ? (
+                          <div className="rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
+                            <p className="font-medium">Tipe: Abstrak (otomatis)</p>
+                            <p className="mt-1 text-xs text-purple-600">
+                              Kata keterangan selalu membutuhkan dua gambar perbandingan derajat (rendah ↔ tinggi).
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <Label>
+                              Tipe Kata <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="flex gap-4">
+                              {(['konkret', 'abstrak'] as const).map((t) => (
+                                <label key={t} className="flex cursor-pointer items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="word-type"
+                                    value={t}
+                                    checked={wordType === t}
+                                    onChange={() => setWordType(t)}
+                                    className="accent-green-600"
                                   />
-                                </div>
+                                  <span className="text-sm capitalize">{t}</span>
+                                </label>
+                              ))}
+                            </div>
+                            <p className="text-muted-foreground text-xs">
+                              Konkret = satu gambar objek. Abstrak = dua gambar perbandingan derajat.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Konkret: single image */}
+                        {wordType === 'konkret' && (
+                          <div className="space-y-2 rounded-lg bg-green-50 p-4">
+                            <Label>Gambar Objek</Label>
+                            {(wordImagePreview ?? wordImageUrl) && (
+                              <img
+                                src={wordImagePreview ?? wordImageUrl}
+                                alt="preview"
+                                className="h-28 w-28 rounded-lg object-cover"
+                              />
+                            )}
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              onChange={(e) =>
+                                handleImageFileSelect(
+                                  e.target.files?.[0] ?? null,
+                                  setWordImageFile,
+                                  setWordImagePreview,
+                                )
+                              }
+                              className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm"
+                            />
+                            <p className="text-muted-foreground text-xs">
+                              JPEG/PNG/WebP, maks 5MB. Akan diupload ke Cloudflare R2.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Abstrak: two comparison images */}
+                        {wordType === 'abstrak' && (
+                          <div className="space-y-4 rounded-lg bg-purple-50 p-4">
+                            <p className="text-sm font-medium text-purple-800">
+                              {wordCategory === 'kata_keterangan'
+                                ? 'Gambar Derajat: objek pada intensitas rendah ↔ tinggi'
+                                : 'Gambar Perbandingan (Rendah ↔ Tinggi)'}
+                            </p>
+
+                            {/* Low image */}
+                            <div className="space-y-2">
+                              <Label>
+                                {wordCategory === 'kata_keterangan'
+                                  ? 'Gambar Derajat Rendah (e.g., sedikit besar)'
+                                  : 'Gambar Rendah (e.g., "sedikit")'}
+                              </Label>
+                              {(compLowPreview ?? compLowUrl) && (
+                                <img
+                                  src={compLowPreview ?? compLowUrl}
+                                  alt="low"
+                                  className="h-20 w-20 rounded-lg object-cover"
+                                />
+                              )}
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={(e) =>
+                                  handleImageFileSelect(e.target.files?.[0] ?? null, setCompLowFile, setCompLowPreview)
+                                }
+                                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm"
+                              />
+                              <Input
+                                placeholder="Label rendah (e.g., Sedikit)"
+                                value={compLowLabel}
+                                onChange={(e) => setCompLowLabel(e.target.value)}
+                              />
+                            </div>
+
+                            {/* High image */}
+                            <div className="space-y-2">
+                              <Label>
+                                {wordCategory === 'kata_keterangan'
+                                  ? 'Gambar Derajat Tinggi (e.g., sangat besar)'
+                                  : 'Gambar Tinggi (e.g., "sangat")'}
+                              </Label>
+                              {(compHighPreview ?? compHighUrl) && (
+                                <img
+                                  src={compHighPreview ?? compHighUrl}
+                                  alt="high"
+                                  className="h-20 w-20 rounded-lg object-cover"
+                                />
+                              )}
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={(e) =>
+                                  handleImageFileSelect(
+                                    e.target.files?.[0] ?? null,
+                                    setCompHighFile,
+                                    setCompHighPreview,
+                                  )
+                                }
+                                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm"
+                              />
+                              <Input
+                                placeholder="Label tinggi (e.g., Sangat)"
+                                value={compHighLabel}
+                                onChange={(e) => setCompHighLabel(e.target.value)}
+                              />
+                            </div>
+
+                            {/* Reference word */}
+                            <div className="space-y-2">
+                              <Label>
+                                {wordCategory === 'kata_keterangan'
+                                  ? 'Kata Sifat Referensi (yang dimodifikasi)'
+                                  : 'Kata Referensi (objek yang diukur)'}
+                              </Label>
+                              <Input
+                                placeholder={
+                                  wordCategory === 'kata_keterangan'
+                                    ? 'e.g., besar, panas, jauh'
+                                    : 'e.g., makanan, minuman'
+                                }
+                                value={compReferenceWord}
+                                onChange={(e) => setCompReferenceWord(e.target.value)}
+                              />
+                              {wordCategory === 'kata_keterangan' && (
+                                <p className="text-xs text-purple-600">
+                                  Kata sifat yang dimodifikasi oleh keterangan ini, misalnya &quot;
+                                  {wordText || 'sangat'}&quot; + &quot;besar&quot; = sangat besar.
+                                </p>
                               )}
                             </div>
                           </div>
                         )}
 
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-2 pt-2">
                           <Button
                             variant="outline"
-                            onClick={() => setInstitutionDialogOpen(false)}
+                            onClick={() => {
+                              setWordDialogOpen(false)
+                              resetWordForm()
+                            }}
                             disabled={isInviting}
                           >
                             Batal
                           </Button>
                           <Button
-                            onClick={() => void handleSaveInstitution()}
-                            disabled={!institutionName.trim() || !institutionSlug.trim() || isInviting}
+                            onClick={() => void handleSaveWord()}
+                            disabled={!wordText.trim() || !wordCategory || !wordType || isInviting || uploading}
                           >
-                            {isInviting ? (
+                            {isInviting || uploading ? (
                               <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Saving...
+                                {uploading ? 'Mengupload...' : 'Menyimpan...'}
                               </>
                             ) : (
                               <>
                                 <Plus className="mr-2 h-4 w-4" />
-                                {editingInstitution ? 'Perbarui' : 'Buat'} Mata Pelajaran
+                                {editingWord ? 'Perbarui' : 'Tambah'} Kosakata
                               </>
                             )}
                           </Button>
@@ -1688,234 +1460,115 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                   </Dialog>
                 </div>
 
-                {/* Institutions List */}
-                {institutionLoading ? (
+                {/* Word list */}
+                {wordLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="text-primary h-8 w-8 animate-spin" />
-                    <span className="text-muted-foreground ml-3">Memuat institusi...</span>
+                    <span className="text-muted-foreground ml-3">Memuat kosakata...</span>
                   </div>
-                ) : institutions.length === 0 ? (
+                ) : vocabWords.length === 0 ? (
                   <div className="py-12 text-center">
-                    <Building className="text-muted-foreground/40 mx-auto mb-4 h-12 w-12" />
-                    <h3 className="mb-2 text-lg font-semibold">Tidak ada institusi ditemukan</h3>
-                    <p className="text-muted-foreground">Buat institusi pertama Anda untuk mulai mengelola file RAG.</p>
+                    <FileText className="text-muted-foreground/40 mx-auto mb-4 h-12 w-12" />
+                    <h3 className="mb-2 text-lg font-semibold">Belum ada kosakata</h3>
+                    <p className="text-muted-foreground">Tambah kata pertama untuk mulai membangun database visual.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {institutions.map((institution) => (
-                      <Card
-                        key={institution.institutionId}
-                        className={`cursor-pointer transition-all hover:shadow-md ${
-                          selectedInstitution?.institutionId === institution.institutionId
-                            ? 'border-primary bg-primary/5'
-                            : ''
-                        }`}
-                        onClick={() => {
-                          setSelectedInstitution(institution)
-                          setRagFiles([]) // Clear previous RAG files
-                          setShowRagFiles(false) // Reset RAG files visibility
-                        }}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-semibold">{institution.name}</h4>
-                              <p className="text-muted-foreground mb-2 text-sm">/{institution.slug}</p>
-                              {institution.description && (
-                                <p className="text-muted-foreground mb-3 line-clamp-2 text-xs">
-                                  {institution.description}
-                                </p>
-                              )}
-                              <div className="text-muted-foreground flex items-center gap-4 text-xs">
-                                <span className="flex items-center gap-1">
-                                  <FileText className="h-3 w-3" />
-                                  {institution._count?.ragFiles ?? 0} file
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <MessageSquare className="h-3 w-3" />
-                                  {institution._count?.conversations ?? 0} chats
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                              <Badge variant={institution.isActive ? 'default' : 'secondary'}>
-                                {institution.isActive ? 'Aktif' : 'Tidak Aktif'}
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Kata</TableHead>
+                          <TableHead>Kategori</TableHead>
+                          <TableHead>Tipe</TableHead>
+                          <TableHead>Gambar</TableHead>
+                          <TableHead className="text-right">Aksi</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {vocabWords.map((word) => (
+                          <TableRow key={word.id}>
+                            <TableCell className="font-medium">{word.text}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {VOCAB_CATEGORIES.find((c) => c.value === word.category)?.label ?? word.category}
                               </Badge>
-                              <div className="flex gap-1">
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="secondary"
+                                className={
+                                  word.type === 'konkret'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-purple-100 text-purple-700'
+                                }
+                              >
+                                {word.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {word.type === 'konkret' && word.imageUrl ? (
+                                <img src={word.imageUrl} alt={word.text} className="h-10 w-10 rounded object-cover" />
+                              ) : word.type === 'abstrak' && word.comparison ? (
+                                <div className="flex gap-1">
+                                  <img
+                                    src={word.comparison.lowImageUrl}
+                                    alt="low"
+                                    className="h-10 w-10 rounded object-cover"
+                                  />
+                                  <img
+                                    src={word.comparison.highImageUrl}
+                                    alt="high"
+                                    className="h-10 w-10 rounded object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setEditingInstitution(institution)
-                                    setInstitutionName(institution.name)
-                                    setInstitutionSlug(institution.slug)
-                                    setInstitutionDescription(institution.description ?? '')
-                                    setInstitutionDialogOpen(true)
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => {
+                                    setEditingWord(word)
+                                    setWordText(word.text)
+                                    setWordCategory(word.category)
+                                    setWordType(word.type)
+                                    setWordImageUrl(word.imageUrl ?? '')
+                                    if (word.comparison) {
+                                      setCompLowUrl(word.comparison.lowImageUrl)
+                                      setCompHighUrl(word.comparison.highImageUrl)
+                                      setCompLowLabel(word.comparison.lowLabel)
+                                      setCompHighLabel(word.comparison.highLabel)
+                                      setCompReferenceWord(word.comparison.referenceWord)
+                                    }
+                                    setWordDialogOpen(true)
                                   }}
                                 >
                                   <Edit className="h-3 w-3" />
                                 </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 w-7 p-0 text-red-600 hover:bg-red-50"
+                                  onClick={() => void handleDeleteWord(word)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
                               </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* RAG Files Section */}
-                {showRagFiles && selectedInstitution && (
-                  <div className="space-y-4">
-                    <div className="border-t pt-6">
-                      <h4 className="mb-4 text-lg font-semibold">File RAG</h4>
-
-                      {_ragFiles.length === 0 ? (
-                        <div className="py-8 text-center">
-                          <FileText className="text-muted-foreground/40 mx-auto mb-4 h-12 w-12" />
-                          <h3 className="mb-2 text-lg font-semibold">Belum ada file RAG</h3>
-                          <p className="text-muted-foreground">Unggah file PDF atau TXT pertama untuk institusi ini.</p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                          {_ragFiles.map((ragFile) => (
-                            <Card key={ragFile.ragFileId} className="p-4">
-                              <div className="flex items-start justify-between">
-                                <div className="min-w-0 flex-1">
-                                  <div className="mb-2 flex items-center gap-2">
-                                    <FileText className="h-4 w-4 flex-shrink-0 text-blue-600" />
-                                    <span className="truncate text-sm font-medium">{ragFile.fileName}</span>
-                                    <Badge
-                                      variant={ragFile.fileType === 'pdf' ? 'default' : 'secondary'}
-                                      className="text-xs"
-                                    >
-                                      {ragFile.fileType.toUpperCase()}
-                                    </Badge>
-                                  </div>
-
-                                  {ragFile.description && (
-                                    <p className="text-muted-foreground mb-2 line-clamp-2 text-xs">
-                                      {ragFile.description}
-                                    </p>
-                                  )}
-
-                                  <div className="text-muted-foreground flex items-center gap-4 text-xs">
-                                    {ragFile.fileSize && <span>{Math.round(ragFile.fileSize / 1024)} KB</span>}
-                                    <Badge
-                                      variant={
-                                        ragFile.processingStatus === 'completed'
-                                          ? 'default'
-                                          : ragFile.processingStatus === 'failed'
-                                            ? 'destructive'
-                                            : 'secondary'
-                                      }
-                                      className="text-xs"
-                                    >
-                                      {ragFile.processingStatus === 'pending' && 'Menunggu'}
-                                      {ragFile.processingStatus === 'processing' && 'Memproses'}
-                                      {ragFile.processingStatus === 'completed' && 'Selesai'}
-                                      {ragFile.processingStatus === 'failed' && 'Gagal'}
-                                    </Badge>
-                                  </div>
-                                </div>
-
-                                <div className="ml-2 flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 w-8 p-0"
-                                    title="Ganti File RAG"
-                                    onClick={() => {
-                                      setEditingRagFile(ragFile)
-                                      setNewRagFile(null)
-                                      setNewRagDescription(ragFile.description ?? '')
-                                      setReplaceRagDialogOpen(true)
-                                    }}
-                                  >
-                                    <Edit className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 w-8 p-0"
-                                    title="Hapus File RAG"
-                                    onClick={() => void handleDeleteRagFile(ragFile)}
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </CardContent>
             )}
           </Card>
         )}
-
-        {/* Replace RAG File Dialog */}
-        <Dialog open={replaceRagDialogOpen} onOpenChange={setReplaceRagDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Ganti File RAG</DialogTitle>
-              <DialogDescription>
-                Ganti file RAG &quot;{editingRagFile?.fileName}&quot; dengan file baru
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-rag-file">File Baru (PDF/TXT - Maks 10MB)</Label>
-                <input
-                  id="new-rag-file"
-                  type="file"
-                  accept=".pdf,.txt"
-                  onChange={handleNewRagFileSelect}
-                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                />
-                {newRagFile && (
-                  <p className="text-sm text-green-600">
-                    File terpilih: {newRagFile.name} ({Math.round(newRagFile.size / 1024)} KB)
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="new-rag-description">Deskripsi (Opsional)</Label>
-                <Textarea
-                  id="new-rag-description"
-                  placeholder="Deskripsi singkat tentang konten file ini..."
-                  value={newRagDescription}
-                  onChange={(e) => setNewRagDescription(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setReplaceRagDialogOpen(false)} disabled={uploading}>
-                  Batal
-                </Button>
-                <Button onClick={() => void handleReplaceRagFile()} disabled={!newRagFile || uploading}>
-                  {uploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Mengganti...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Ganti File
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   )

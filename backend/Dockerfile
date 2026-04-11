@@ -21,11 +21,11 @@ COPY ./app ./app
 RUN mkdir -p /app/assets /app/.deepeval
 
 # Create non-root user with gid=1000 to match frontend group
-RUN groupadd -r tunarasa --gid=1000 && useradd -r -g tunarasa tunarasa --uid=999
+RUN groupadd -r pensyarat --gid=1000 && useradd -r -g pensyarat pensyarat --uid=999
 
 # Set ownership for app directory including deepeval
-RUN chown -R tunarasa:tunarasa /app
-USER tunarasa
+RUN chown -R pensyarat:pensyarat /app
+USER pensyarat
 
 # Set working directory and disable deepeval telemetry
 WORKDIR /app

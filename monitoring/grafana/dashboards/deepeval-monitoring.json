@@ -1,7 +1,7 @@
 {
   "id": null,
-  "title": "Tunarasa LLM Quality Monitoring (DeepEval)",
-  "tags": ["tunarasa", "llm", "deepeval", "quality"],
+  "title": "PENSyarat AI LLM Quality Monitoring (DeepEval)",
+  "tags": ["pensyarat", "llm", "deepeval", "quality"],
   "style": "dark",
   "timezone": "browser",
   "editable": true,
@@ -25,17 +25,17 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "avg(tunarasa_llm_quality_score{metric=\"average\"})",
+          "expr": "avg(pensyarat_llm_quality_score{metric=\"average\"})",
           "legendFormat": "Overall Quality Score",
           "refId": "A"
         },
         {
-          "expr": "avg(tunarasa_llm_quality_score{metric=\"pass_rate\"})",
+          "expr": "avg(pensyarat_llm_quality_score{metric=\"pass_rate\"})",
           "legendFormat": "Pass Rate",
           "refId": "B"
         },
         {
-          "expr": "sum(tunarasa_llm_evaluations_total) or vector(0)",
+          "expr": "sum(pensyarat_llm_evaluations_total) or vector(0)",
           "legendFormat": "Total Evaluations",
           "refId": "C"
         }
@@ -83,7 +83,7 @@
       "type": "bargauge",
       "targets": [
         {
-          "expr": "max by (category) (tunarasa_llm_quality_score{metric=\"average\"})",
+          "expr": "max by (category) (pensyarat_llm_quality_score{metric=\"average\"})",
           "legendFormat": "{{category}}",
           "refId": "A",
           "instant": true
@@ -122,7 +122,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "max by (category) (tunarasa_llm_quality_score{metric=\"average\"})",
+          "expr": "max by (category) (pensyarat_llm_quality_score{metric=\"average\"})",
           "legendFormat": "{{category}} - Quality Score",
           "refId": "A"
         }
@@ -171,7 +171,7 @@
       "type": "piechart",
       "targets": [
         {
-          "expr": "max by (category) (tunarasa_llm_quality_score{metric=\"pass_rate\"})",
+          "expr": "max by (category) (pensyarat_llm_quality_score{metric=\"pass_rate\"})",
           "legendFormat": "{{category}}",
           "refId": "A"
         }
@@ -212,7 +212,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "sum by (category) (rate(tunarasa_llm_evaluations_total[5m]))",
+          "expr": "sum by (category) (rate(pensyarat_llm_evaluations_total[5m]))",
           "legendFormat": "{{category}}",
           "refId": "A"
         }
@@ -254,12 +254,12 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "tunarasa_system_status{component=\"deepeval_service\"}",
+          "expr": "pensyarat_system_status{component=\"deepeval_service\"}",
           "legendFormat": "DeepEval Service",
           "refId": "A"
         },
         {
-          "expr": "tunarasa_system_status{component=\"redis_cache\"}",
+          "expr": "pensyarat_system_status{component=\"redis_cache\"}",
           "legendFormat": "Redis Cache",
           "refId": "B"
         }
@@ -301,7 +301,7 @@
       "type": "table",
       "targets": [
         {
-          "expr": "group by (category, metric) (tunarasa_llm_quality_score)",
+          "expr": "group by (category, metric) (pensyarat_llm_quality_score)",
           "legendFormat": "",
           "refId": "A",
           "format": "table",
@@ -370,7 +370,7 @@
           "value": "$__all"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(tunarasa_llm_quality_score, category)",
+        "definition": "label_values(pensyarat_llm_quality_score, category)",
         "hide": 0,
         "includeAll": true,
         "label": "Category",
@@ -378,7 +378,7 @@
         "name": "category",
         "options": [],
         "query": {
-          "query": "label_values(tunarasa_llm_quality_score, category)",
+          "query": "label_values(pensyarat_llm_quality_score, category)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,
@@ -398,9 +398,9 @@
       "icon": "external link",
       "includeVars": false,
       "keepTime": false,
-      "tags": ["tunarasa"],
+      "tags": ["pensyarat"],
       "targetBlank": false,
-      "title": "Tunarasa Dashboards",
+      "title": "PENSyarat AI Dashboards",
       "tooltip": "",
       "type": "dashboards",
       "url": ""

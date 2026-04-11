@@ -24,36 +24,36 @@ const coveredByYourGrace = Covered_By_Your_Grace({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
-  title: 'Tanya Tangan AI - Platform Komunikasi Inklusif',
+  title: 'PENSyarat AI - Platform Komunikasi Inklusif',
   description:
     'Menciptakan kota cerdas dengan komunikasi tanpa batas. Platform komunikasi inklusif untuk aksesibilitas layanan publik bagi penyandang disabilitas.',
   keywords: ['komunikasi inklusif', 'aksesibilitas', 'bahasa isyarat', 'SIBI', 'tuna rungu', 'tuna wicara'],
-  authors: [{ name: 'Tanya Tangan AI Team' }],
+  authors: [{ name: 'PENSyarat AI Team' }],
   robots: 'index, follow',
   icons: {
-    icon: '/favicon.ico',
-    apple: '/favicon.ico',
-    shortcut: '/favicon.ico',
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+    shortcut: '/favicon.png',
   },
   openGraph: {
-    title: 'Tanya Tangan AI - Platform Komunikasi Inklusif',
+    title: 'PENSyarat AI - Platform Komunikasi Inklusif',
     description: 'Menciptakan kota cerdas dengan komunikasi tanpa batas',
     type: 'website',
     locale: 'id_ID',
     images: [
       {
-        url: '/favicon.ico',
+        url: '/assets/branding/pensyarat_meta.png',
         width: 512,
         height: 512,
-        alt: 'Tanya Tangan AI Logo - Platform Komunikasi Inklusif',
+        alt: 'PENSyarat AI Logo - Platform Komunikasi Inklusif',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Tanya Tangan AI - Platform Komunikasi Inklusif',
+    title: 'PENSyarat AI - Platform Komunikasi Inklusif',
     description: 'Menciptakan kota cerdas dengan komunikasi tanpa batas',
-    images: ['/favicon.ico'],
+    images: ['/assets/branding/pensyarat_meta.png'],
   },
 }
 

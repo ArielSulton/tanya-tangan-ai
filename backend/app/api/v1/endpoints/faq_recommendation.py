@@ -1,5 +1,5 @@
 """
-FAQ Recommendation API endpoints for Tunarasa Backend
+FAQ Recommendation API endpoints for PENSyarat AI Backend
 Provides endpoints for institution-specific FAQ clustering and recommendations
 """
 

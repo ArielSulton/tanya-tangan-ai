@@ -1,5 +1,5 @@
 """
-Seed script for Visual Vocabulary Platform (Tanya Tangan)
+Seed script for Visual Vocabulary Platform (PENSyarat AI)
 Populates words + word_comparisons tables with SDLB-B level vocabulary.
 
 Uses raw SQL (not ORM) to avoid String(36) vs uuid column type mismatch.

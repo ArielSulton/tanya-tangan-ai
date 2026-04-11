@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Transform Tanya Tangan from a RAG chatbot into a visual vocabulary learning platform for SDLB-B students using SIBI gesture input.
+**Goal:** Transform PENSyarat AI from a RAG chatbot into a visual vocabulary learning platform for SDLB-B students using SIBI gesture input.
 
 **Architecture:** Reuse existing gesture recognition, FastAPI infrastructure, and LangChain/ChatGroq. Add `words`, `word_comparisons`, `word_requests` tables. New `/vocab/` routes replace `/layanan/` + `/komunikasi/` as the core user flow. New `/api/v1/vocab/` endpoints handle lookup and AI fallback.
 

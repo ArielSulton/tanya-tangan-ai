@@ -700,7 +700,6 @@ async def get_validation_status(
 
         # Additional system status checks
         system_status = {
-            "redis_connected": validation_service.redis_client is not None,
             "validation_cache_size": len(validation_service._validation_cache),
             "blocked_keywords_count": len(validation_service._blocked_keywords),
             "last_update": datetime.now(timezone.utc).isoformat(),
@@ -981,9 +980,9 @@ async def get_prometheus_metrics(
         # Generate Prometheus metrics format
         metrics_lines = []
         metrics_lines.append(
-            "# HELP tunarasa_llm_quality_score LLM quality scores by category"
+            "# HELP pensyarat_llm_quality_score LLM quality scores by category"
         )
-        metrics_lines.append("# TYPE tunarasa_llm_quality_score gauge")
+        metrics_lines.append("# TYPE pensyarat_llm_quality_score gauge")
 
         for category, metrics in performance_metrics.items():
             avg_score = metrics.get("average_score", 0.0)
@@ -991,26 +990,22 @@ async def get_prometheus_metrics(
             total_evals = metrics.get("total_evaluations", 0)
 
             metrics_lines.append(
-                f'tunarasa_llm_quality_score{{category="{category}",metric="average"}} {avg_score}'
+                f'pensyarat_llm_quality_score{{category="{category}",metric="average"}} {avg_score}'
             )
             metrics_lines.append(
-                f'tunarasa_llm_quality_score{{category="{category}",metric="pass_rate"}} {pass_rate}'
+                f'pensyarat_llm_quality_score{{category="{category}",metric="pass_rate"}} {pass_rate}'
             )
             metrics_lines.append(
-                f'tunarasa_llm_evaluations_total{{category="{category}"}} {total_evals}'
+                f'pensyarat_llm_evaluations_total{{category="{category}"}} {total_evals}'
             )
 
         # Add overall system metrics
-        metrics_lines.append("# HELP tunarasa_system_status System status indicators")
-        metrics_lines.append("# TYPE tunarasa_system_status gauge")
-        metrics_lines.append('tunarasa_system_status{component="deepeval_service"} 1')
-        metrics_lines.append(
-            f'tunarasa_system_status{{component="redis_cache"}} {1 if monitoring_service.redis_client else 0}'
-        )
-
+        metrics_lines.append("# HELP pensyarat_system_status System status indicators")
+        metrics_lines.append("# TYPE pensyarat_system_status gauge")
+        metrics_lines.append('pensyarat_system_status{component="deepeval_service"} 1')
         # Add timestamp
         current_timestamp = int(datetime.now(timezone.utc).timestamp() * 1000)
-        metrics_lines.append(f"tunarasa_last_update_timestamp {current_timestamp}")
+        metrics_lines.append(f"pensyarat_last_update_timestamp {current_timestamp}")
 
         prometheus_output = "\n".join(metrics_lines)
 
@@ -1032,9 +1027,6 @@ async def get_monitoring_health(
         # Check service components
         health_status = {
             "deepeval_service": "healthy",
-            "redis_connection": (
-                "healthy" if monitoring_service.redis_client else "unhealthy"
-            ),
             "metrics_available": len(monitoring_service.performance_metrics) > 0,
             "last_evaluation": None,
         }
@@ -1050,7 +1042,6 @@ async def get_monitoring_health(
         overall_healthy = all(
             [
                 health_status["deepeval_service"] == "healthy",
-                health_status["redis_connection"] == "healthy",
                 health_status["metrics_available"],
             ]
         )
