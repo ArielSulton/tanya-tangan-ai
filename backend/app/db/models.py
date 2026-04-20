@@ -606,6 +606,14 @@ class Word(Base):
     level: Mapped[str] = mapped_column(String(20), nullable=False, default="sdlb")
     image_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     image_source: Mapped[str] = mapped_column(String(20), nullable=False, default="api")
+    # Adverb sub-treatment columns (nullable — only set for kata_keterangan words)
+    adverb_subcategory: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True
+    )  # degree|temporal|modality|intensity
+    slider_config: Mapped[Optional[Dict]] = mapped_column(JSONB, nullable=True)
+    timeline_config: Mapped[Optional[Dict]] = mapped_column(JSONB, nullable=True)
+    certainty_config: Mapped[Optional[Dict]] = mapped_column(JSONB, nullable=True)
+    gauge_config: Mapped[Optional[Dict]] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -617,6 +625,7 @@ class Word(Base):
     __table_args__ = (
         Index("words_text_category_idx", "text", "category"),
         Index("words_category_idx", "category"),
+        Index("words_adverb_subcategory_idx", "adverb_subcategory"),
     )
 
 

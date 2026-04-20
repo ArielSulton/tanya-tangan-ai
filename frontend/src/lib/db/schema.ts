@@ -548,12 +548,53 @@ export const words = pgTable(
     level: text('level').notNull().default('sdlb'),
     imageUrl: text('image_url'),
     imageSource: text('image_source').notNull().default('api'),
+    // Adverb sub-treatment columns (nullable — only set for kata_keterangan words)
+    adverbSubcategory: text('adverb_subcategory'), // degree|temporal|modality|intensity — null for non-adverbs
+    sliderConfig: jsonb('slider_config').$type<{
+      default_position: number
+      low_label: string
+      high_label: string
+      reference_word: string
+      accent_color: string
+      emoji_low: string
+      emoji_high: string
+    } | null>(),
+    timelineConfig: jsonb('timeline_config').$type<{
+      frequency: number
+      period_label: string
+      occurrence_count: number
+      total_slots: number
+      accent_color: string
+      icon_filled: string
+      icon_empty: string
+      description: string
+    } | null>(),
+    certaintyConfig: jsonb('certainty_config').$type<{
+      certainty_level: number
+      low_label: string
+      high_label: string
+      accent_color: string
+      emoji_uncertain: string
+      emoji_certain: string
+      description: string
+    } | null>(),
+    gaugeConfig: jsonb('gauge_config').$type<{
+      intensity_level: number
+      sensation_word: string
+      low_label: string
+      high_label: string
+      accent_color: string
+      emoji_low: string
+      emoji_high: string
+      unit_symbol: string
+    } | null>(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [
     index('words_category_idx').on(table.category),
     index('words_type_idx').on(table.type),
     index('words_level_idx').on(table.level),
+    index('words_adverb_subcategory_idx').on(table.adverbSubcategory),
   ],
 ).enableRLS()
 
