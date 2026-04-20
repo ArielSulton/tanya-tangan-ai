@@ -55,6 +55,11 @@ export async function GET(request: NextRequest) {
         imageUrl: words.imageUrl,
         imageSource: words.imageSource,
         createdAt: words.createdAt,
+        adverbSubcategory: words.adverbSubcategory,
+        sliderConfig: words.sliderConfig,
+        timelineConfig: words.timelineConfig,
+        certaintyConfig: words.certaintyConfig,
+        gaugeConfig: words.gaugeConfig,
         compId: wordComparisons.id,
         lowImageUrl: wordComparisons.lowImageUrl,
         highImageUrl: wordComparisons.highImageUrl,
@@ -78,6 +83,11 @@ export async function GET(request: NextRequest) {
       imageUrl: r.imageUrl,
       imageSource: r.imageSource,
       createdAt: r.createdAt,
+      adverbSubcategory: r.adverbSubcategory,
+      sliderConfig: r.sliderConfig,
+      timelineConfig: r.timelineConfig,
+      certaintyConfig: r.certaintyConfig,
+      gaugeConfig: r.gaugeConfig,
       comparison: r.compId
         ? {
             id: r.compId,
@@ -108,7 +118,18 @@ export async function POST(request: NextRequest) {
     if (!(await isAdminOrSuperAdmin(user.id))) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
 
     const body = await request.json()
-    const { text, category, type, imageUrl, comparison } = body as {
+    const {
+      text,
+      category,
+      type,
+      imageUrl,
+      comparison,
+      adverbSubcategory,
+      sliderConfig,
+      timelineConfig,
+      certaintyConfig,
+      gaugeConfig,
+    } = body as {
       text: string
       category: string
       type: 'konkret' | 'abstrak'
@@ -120,6 +141,11 @@ export async function POST(request: NextRequest) {
         highLabel: string
         referenceWord: string
       }
+      adverbSubcategory?: string
+      sliderConfig?: unknown
+      timelineConfig?: unknown
+      certaintyConfig?: unknown
+      gaugeConfig?: unknown
     }
 
     if (!text?.trim() || !category || !type) {
@@ -144,7 +170,12 @@ export async function POST(request: NextRequest) {
         level: 'sdlb',
         imageUrl: imageUrl ?? null,
         imageSource: imageUrl ? 'r2' : 'api',
-      })
+        adverbSubcategory: adverbSubcategory ?? null,
+        sliderConfig: (sliderConfig ?? null) as Record<string, unknown> | null,
+        timelineConfig: (timelineConfig ?? null) as Record<string, unknown> | null,
+        certaintyConfig: (certaintyConfig ?? null) as Record<string, unknown> | null,
+        gaugeConfig: (gaugeConfig ?? null) as Record<string, unknown> | null,
+      } as typeof words.$inferInsert)
       .returning()
 
     if (type === 'abstrak' && comparison) {

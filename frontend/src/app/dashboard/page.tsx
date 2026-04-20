@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +29,7 @@ import {
   Crown,
   Shield,
   AlertCircle,
+  AlertTriangle,
   Loader2,
   Activity,
   MessageSquare,
@@ -143,6 +145,19 @@ interface VocabWord {
     highLabel: string
     referenceWord: string
   } | null
+  adverbSubcategory?: string | null
+  sliderConfig?: Record<string, unknown> | null
+  timelineConfig?: Record<string, unknown> | null
+  certaintyConfig?: Record<string, unknown> | null
+  gaugeConfig?: Record<string, unknown> | null
+}
+
+interface WordRequest {
+  id: string
+  gesture_input: string
+  suggested_word: string | null
+  session_id: string | null
+  created_at: string | null
 }
 
 const VOCAB_CATEGORIES = [
@@ -151,6 +166,13 @@ const VOCAB_CATEGORIES = [
   { value: 'alam', label: 'Alam' },
   { value: 'perasaan', label: 'Perasaan' },
   { value: 'kata_keterangan', label: 'Kata Keterangan' },
+]
+
+const ADVERB_SUBCATEGORIES = [
+  { value: 'degree', label: 'Derajat (IntensitySlider)', description: 'sangat, agak, terlalu, paling' },
+  { value: 'temporal', label: 'Temporal (TimelineAnimation)', description: 'sering, jarang, pernah, baru saja' },
+  { value: 'modality', label: 'Modalitas (CertaintyDial)', description: 'mungkin, pasti, kira-kira' },
+  { value: 'intensity', label: 'Intensitas (SensationGauge)', description: 'sangat pedas, agak nyeri' },
 ]
 
 // Component that uses auth hooks - only rendered client-side
@@ -229,6 +251,15 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
   })
   const [showQaLogs, setShowQaLogs] = useState(false)
 
+  // Word Requests state
+  const [wordRequests, setWordRequests] = useState<WordRequest[]>([])
+  const [wordRequestsLoading, setWordRequestsLoading] = useState(false)
+  const [wordRequestsPage, setWordRequestsPage] = useState(1)
+  const [wordRequestsTotalPages, setWordRequestsTotalPages] = useState(0)
+  const [wordRequestsTotal, setWordRequestsTotal] = useState(0)
+  const [wordRequestsStatusFilter, setWordRequestsStatusFilter] = useState<string>('all')
+  const [showWordRequests, setShowWordRequests] = useState(false)
+
   // Vocab word management state
   const [vocabWords, setVocabWords] = useState<VocabWord[]>([])
   const [wordLoading, setWordLoading] = useState(false)
@@ -256,6 +287,13 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
   const [compHighUrl, setCompHighUrl] = useState('')
   const [compHighLabel, setCompHighLabel] = useState('')
   const [compReferenceWord, setCompReferenceWord] = useState('')
+
+  // Adverb subcategory state
+  const [wordAdverbSubcategory, setWordAdverbSubcategory] = useState('')
+  const [wordSliderConfig, setWordSliderConfig] = useState('')
+  const [wordTimelineConfig, setWordTimelineConfig] = useState('')
+  const [wordCertaintyConfig, setWordCertaintyConfig] = useState('')
+  const [wordGaugeConfig, setWordGaugeConfig] = useState('')
 
   // Fetch admin users and invitations
   const fetchAdminData = useCallback(async () => {
@@ -327,6 +365,34 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
     [qaLogsFilters],
   )
 
+  const fetchWordRequests = useCallback(async (page: number = 1, statusFilter: string = 'all') => {
+    try {
+      setWordRequestsLoading(true)
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '20',
+      })
+      if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter)
+
+      const response = await fetch(`/api/admin/vocab/requests?${params.toString()}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.data) {
+          setWordRequests(data.data.requests)
+          setWordRequestsTotalPages(data.data.total_pages)
+          setWordRequestsTotal(data.data.total)
+          setWordRequestsPage(page)
+        }
+      } else {
+        console.error('Failed to fetch word requests:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Error fetching word requests:', error)
+    } finally {
+      setWordRequestsLoading(false)
+    }
+  }, [])
+
   // Fetch vocab words
   const fetchVocabWords = useCallback(async (category?: string) => {
     try {
@@ -374,6 +440,11 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
     setCompHighUrl('')
     setCompHighLabel('')
     setCompReferenceWord('')
+    setWordAdverbSubcategory('')
+    setWordSliderConfig('')
+    setWordTimelineConfig('')
+    setWordCertaintyConfig('')
+    setWordGaugeConfig('')
     setEditingWord(null)
   }
 
@@ -413,6 +484,35 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
           highLabel: compHighLabel,
           referenceWord: compReferenceWord,
         }
+      }
+
+      // Add adverb fields for kata_keterangan words
+      if (wordCategory === 'kata_keterangan' && wordAdverbSubcategory) {
+        body.adverbSubcategory = wordAdverbSubcategory
+        if (wordSliderConfig)
+          try {
+            body.sliderConfig = JSON.parse(wordSliderConfig)
+          } catch {
+            /* invalid JSON, skip */
+          }
+        if (wordTimelineConfig)
+          try {
+            body.timelineConfig = JSON.parse(wordTimelineConfig)
+          } catch {
+            /* invalid JSON, skip */
+          }
+        if (wordCertaintyConfig)
+          try {
+            body.certaintyConfig = JSON.parse(wordCertaintyConfig)
+          } catch {
+            /* invalid JSON, skip */
+          }
+        if (wordGaugeConfig)
+          try {
+            body.gaugeConfig = JSON.parse(wordGaugeConfig)
+          } catch {
+            /* invalid JSON, skip */
+          }
       }
 
       const method = editingWord ? 'PUT' : 'POST'
@@ -495,6 +595,12 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
       void fetchQaLogs(1)
     }
   }, [showQaLogs, fetchQaLogs])
+
+  useEffect(() => {
+    if (showWordRequests) {
+      void fetchWordRequests(1, wordRequestsStatusFilter)
+    }
+  }, [showWordRequests, wordRequestsStatusFilter, fetchWordRequests])
 
   useEffect(() => {
     if (showWords) {
@@ -1127,6 +1233,181 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
               )}
             </CardContent>
           )}
+
+          {/* Permintaan Kosakata Section */}
+          <CardHeader className="border-t pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  Permintaan Kosakata
+                </CardTitle>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Input isyarat dari siswa yang belum cocok di database
+                </p>
+              </div>
+              <Button
+                variant={showWordRequests ? 'secondary' : 'outline'}
+                onClick={() => setShowWordRequests(!showWordRequests)}
+                className="flex items-center gap-2"
+              >
+                {showWordRequests ? 'Sembunyikan' : 'Lihat Permintaan'}
+              </Button>
+            </div>
+          </CardHeader>
+
+          {showWordRequests && (
+            <CardContent className="space-y-6">
+              {/* Status filter */}
+              <div className="bg-muted/50 flex flex-wrap items-center gap-4 rounded-lg border p-4">
+                <div className="flex items-center gap-2">
+                  <Filter className="text-muted-foreground h-4 w-4" />
+                  <Select
+                    value={wordRequestsStatusFilter}
+                    onValueChange={(value) => setWordRequestsStatusFilter(value)}
+                  >
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Semua Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua</SelectItem>
+                      <SelectItem value="pending">Belum Ditangani</SelectItem>
+                      <SelectItem value="resolved">Sudah Ditangani</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => void fetchWordRequests(1, wordRequestsStatusFilter)}
+                  disabled={wordRequestsLoading}
+                  className="flex items-center gap-2"
+                >
+                  {wordRequestsLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  Terapkan Filter
+                </Button>
+              </div>
+
+              {/* Word Requests Table */}
+              {wordRequestsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="text-primary h-8 w-8 animate-spin" />
+                  <span className="text-muted-foreground ml-3">Memuat permintaan kosakata...</span>
+                </div>
+              ) : wordRequests.length === 0 ? (
+                <div className="py-12 text-center">
+                  <AlertTriangle className="text-muted-foreground/40 mx-auto mb-4 h-12 w-12" />
+                  <h3 className="mb-2 text-lg font-semibold">Tidak ada permintaan kosakata</h3>
+                  <p className="text-muted-foreground">
+                    {wordRequestsStatusFilter !== 'all'
+                      ? 'Tidak ada permintaan yang cocok dengan filter saat ini.'
+                      : 'Belum ada input isyarat yang belum cocok di database.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[250px]">Input Isyarat</TableHead>
+                          <TableHead className="w-[200px]">Kata Saran</TableHead>
+                          <TableHead className="w-[130px]">Status</TableHead>
+                          <TableHead className="w-[160px]">Waktu</TableHead>
+                          <TableHead className="w-[100px] text-right">Aksi</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {wordRequests.map((r) => (
+                          <TableRow key={r.id}>
+                            <TableCell>
+                              <div className="max-w-[230px] truncate text-sm font-medium">{r.gesture_input}</div>
+                            </TableCell>
+                            <TableCell>
+                              {r.suggested_word ? (
+                                <span className="text-sm">{r.suggested_word}</span>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {r.suggested_word ? (
+                                <Badge variant="secondary" className="border-green-200 bg-green-50 text-green-700">
+                                  <CheckCircle className="mr-1 h-3 w-3" />
+                                  Resolved
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="border-red-200 bg-red-50 text-red-700">
+                                  <Clock className="mr-1 h-3 w-3" />
+                                  Pending
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-muted-foreground text-xs">
+                                {r.created_at ? formatDate(r.created_at) : '—'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 gap-1 px-2 text-xs"
+                                onClick={() => {
+                                  resetWordForm()
+                                  setWordText(r.gesture_input)
+                                  if (r.suggested_word) {
+                                    setWordCategory('')
+                                  }
+                                  setWordDialogOpen(true)
+                                }}
+                              >
+                                <Plus className="h-3 w-3" />
+                                Tambah Kata
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Pagination */}
+                  {wordRequestsTotalPages > 1 && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-muted-foreground text-sm">
+                        Menampilkan {wordRequests.length} dari {wordRequestsTotal} permintaan
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={wordRequestsPage <= 1 || wordRequestsLoading}
+                          onClick={() => void fetchWordRequests(wordRequestsPage - 1, wordRequestsStatusFilter)}
+                        >
+                          Sebelumnya
+                        </Button>
+                        <span className="text-muted-foreground text-sm">
+                          Halaman {wordRequestsPage} dari {wordRequestsTotalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={wordRequestsPage >= wordRequestsTotalPages || wordRequestsLoading}
+                          onClick={() => void fetchWordRequests(wordRequestsPage + 1, wordRequestsStatusFilter)}
+                        >
+                          Berikutnya
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          )}
         </Card>
 
         {/* Vocab Word Management Section - SuperAdmin Only */}
@@ -1267,6 +1548,91 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                           </select>
                         </div>
 
+                        {/* Adverb Subcategory — only for kata_keterangan */}
+                        {wordCategory === 'kata_keterangan' && (
+                          <div className="space-y-2">
+                            <Label htmlFor="word-adverb-subcategory">
+                              Sub-kategori Keterangan <span className="text-red-500">*</span>
+                            </Label>
+                            <select
+                              id="word-adverb-subcategory"
+                              value={wordAdverbSubcategory}
+                              onChange={(e) => setWordAdverbSubcategory(e.target.value)}
+                              className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                            >
+                              <option value="">Pilih Sub-kategori</option>
+                              {ADVERB_SUBCATEGORIES.map((sc) => (
+                                <option key={sc.value} value={sc.value}>
+                                  {sc.label}
+                                </option>
+                              ))}
+                            </select>
+                            {wordAdverbSubcategory && (
+                              <p className="text-xs text-purple-600">
+                                {ADVERB_SUBCATEGORIES.find((sc) => sc.value === wordAdverbSubcategory)?.description}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Config JSON — only show for the relevant subcategory */}
+                        {wordCategory === 'kata_keterangan' && wordAdverbSubcategory && (
+                          <div className="space-y-2 rounded-lg border border-purple-200 bg-purple-50 p-3">
+                            <p className="text-sm font-medium text-purple-800">Konfigurasi Komponen Interaktif</p>
+                            {wordAdverbSubcategory === 'degree' && (
+                              <div className="space-y-2">
+                                <Label className="text-xs">Slider Config (JSON)</Label>
+                                <Textarea
+                                  placeholder='{"default_position": 0.7, "low_label": "sedikit", "high_label": "sangat", "reference_word": "besar", "accent_color": "#22c55e", "emoji_low": "🌱", "emoji_high": "🌳"}'
+                                  value={wordSliderConfig}
+                                  onChange={(e) => setWordSliderConfig(e.target.value)}
+                                  rows={4}
+                                  className="font-mono text-xs"
+                                />
+                              </div>
+                            )}
+                            {wordAdverbSubcategory === 'temporal' && (
+                              <div className="space-y-2">
+                                <Label className="text-xs">Timeline Config (JSON)</Label>
+                                <Textarea
+                                  placeholder='{"frequency": 0.85, "period_label": "seminggu", "occurrence_count": 6, "total_slots": 7, "accent_color": "#3b82f6", "icon_filled": "✅", "icon_empty": "⬜", "description": "Hampir setiap hari"}'
+                                  value={wordTimelineConfig}
+                                  onChange={(e) => setWordTimelineConfig(e.target.value)}
+                                  rows={4}
+                                  className="font-mono text-xs"
+                                />
+                              </div>
+                            )}
+                            {wordAdverbSubcategory === 'modality' && (
+                              <div className="space-y-2">
+                                <Label className="text-xs">Certainty Config (JSON)</Label>
+                                <Textarea
+                                  placeholder='{"certainty_level": 0.3, "low_label": "tidak yakin", "high_label": "sangat yakin", "accent_color": "#f59e0b", "emoji_uncertain": "🤔", "emoji_certain": "✅", "description": "Kemungkinan terjadi"}'
+                                  value={wordCertaintyConfig}
+                                  onChange={(e) => setWordCertaintyConfig(e.target.value)}
+                                  rows={4}
+                                  className="font-mono text-xs"
+                                />
+                              </div>
+                            )}
+                            {wordAdverbSubcategory === 'intensity' && (
+                              <div className="space-y-2">
+                                <Label className="text-xs">Gauge Config (JSON)</Label>
+                                <Textarea
+                                  placeholder='{"intensity_level": 0.8, "sensation_word": "pedas", "low_label": "sedikit pedas", "high_label": "sangat pedas", "accent_color": "#ef4444", "emoji_low": "😐", "emoji_high": "🥵", "unit_symbol": "°"}'
+                                  value={wordGaugeConfig}
+                                  onChange={(e) => setWordGaugeConfig(e.target.value)}
+                                  rows={4}
+                                  className="font-mono text-xs"
+                                />
+                              </div>
+                            )}
+                            <p className="text-muted-foreground text-xs">
+                              Masukkan konfigurasi JSON untuk komponen interaktif. Biarkan kosong jika tidak diperlukan.
+                            </p>
+                          </div>
+                        )}
+
                         {/* Word type */}
                         {wordCategory === 'kata_keterangan' ? (
                           <div className="rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
@@ -1306,9 +1672,11 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                           <div className="space-y-2 rounded-lg bg-green-50 p-4">
                             <Label>Gambar Objek</Label>
                             {(wordImagePreview ?? wordImageUrl) && (
-                              <img
+                              <Image
                                 src={wordImagePreview ?? wordImageUrl}
                                 alt="preview"
+                                width={112}
+                                height={112}
                                 className="h-28 w-28 rounded-lg object-cover"
                               />
                             )}
@@ -1347,9 +1715,11 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                                   : 'Gambar Rendah (e.g., "sedikit")'}
                               </Label>
                               {(compLowPreview ?? compLowUrl) && (
-                                <img
+                                <Image
                                   src={compLowPreview ?? compLowUrl}
                                   alt="low"
+                                  width={80}
+                                  height={80}
                                   className="h-20 w-20 rounded-lg object-cover"
                                 />
                               )}
@@ -1376,9 +1746,11 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                                   : 'Gambar Tinggi (e.g., "sangat")'}
                               </Label>
                               {(compHighPreview ?? compHighUrl) && (
-                                <img
+                                <Image
                                   src={compHighPreview ?? compHighUrl}
                                   alt="high"
+                                  width={80}
+                                  height={80}
                                   className="h-20 w-20 rounded-lg object-cover"
                                 />
                               )}
@@ -1479,6 +1851,7 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                         <TableRow>
                           <TableHead>Kata</TableHead>
                           <TableHead>Kategori</TableHead>
+                          <TableHead>Sub-kategori</TableHead>
                           <TableHead>Tipe</TableHead>
                           <TableHead>Gambar</TableHead>
                           <TableHead className="text-right">Aksi</TableHead>
@@ -1494,6 +1867,19 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                               </Badge>
                             </TableCell>
                             <TableCell>
+                              {word.category === 'kata_keterangan' && word.adverbSubcategory ? (
+                                <Badge
+                                  variant="outline"
+                                  className="border-purple-200 bg-purple-50 text-xs text-purple-700"
+                                >
+                                  {ADVERB_SUBCATEGORIES.find((sc) => sc.value === word.adverbSubcategory)?.label ??
+                                    word.adverbSubcategory}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
                               <Badge
                                 variant="secondary"
                                 className={
@@ -1507,17 +1893,27 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                             </TableCell>
                             <TableCell>
                               {word.type === 'konkret' && word.imageUrl ? (
-                                <img src={word.imageUrl} alt={word.text} className="h-10 w-10 rounded object-cover" />
+                                <Image
+                                  src={word.imageUrl}
+                                  alt={word.text}
+                                  width={40}
+                                  height={40}
+                                  className="h-10 w-10 rounded object-cover"
+                                />
                               ) : word.type === 'abstrak' && word.comparison ? (
                                 <div className="flex gap-1">
-                                  <img
+                                  <Image
                                     src={word.comparison.lowImageUrl}
                                     alt="low"
+                                    width={40}
+                                    height={40}
                                     className="h-10 w-10 rounded object-cover"
                                   />
-                                  <img
+                                  <Image
                                     src={word.comparison.highImageUrl}
                                     alt="high"
+                                    width={40}
+                                    height={40}
                                     className="h-10 w-10 rounded object-cover"
                                   />
                                 </div>
@@ -1537,6 +1933,19 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                                     setWordCategory(word.category)
                                     setWordType(word.type)
                                     setWordImageUrl(word.imageUrl ?? '')
+                                    setWordAdverbSubcategory(word.adverbSubcategory ?? '')
+                                    setWordSliderConfig(
+                                      word.sliderConfig ? JSON.stringify(word.sliderConfig, null, 2) : '',
+                                    )
+                                    setWordTimelineConfig(
+                                      word.timelineConfig ? JSON.stringify(word.timelineConfig, null, 2) : '',
+                                    )
+                                    setWordCertaintyConfig(
+                                      word.certaintyConfig ? JSON.stringify(word.certaintyConfig, null, 2) : '',
+                                    )
+                                    setWordGaugeConfig(
+                                      word.gaugeConfig ? JSON.stringify(word.gaugeConfig, null, 2) : '',
+                                    )
                                     if (word.comparison) {
                                       setCompLowUrl(word.comparison.lowImageUrl)
                                       setCompHighUrl(word.comparison.highImageUrl)

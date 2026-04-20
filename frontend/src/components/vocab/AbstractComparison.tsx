@@ -27,22 +27,24 @@ function ComparisonImage({ src, alt, label, category }: { src: string; alt: stri
   const placeholder = CATEGORY_PLACEHOLDERS[category] ?? '🖼️'
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-1 flex-col items-center gap-2 text-center">
       {src && !imgError ? (
-        <Image
-          src={src}
-          alt={alt}
-          width={160}
-          height={160}
-          className="h-40 w-40 rounded-xl object-cover shadow"
-          onError={() => setImgError(true)}
-        />
+        <div className="w-full max-w-[160px]">
+          <Image
+            src={src}
+            alt={alt}
+            width={160}
+            height={160}
+            className="aspect-square w-full rounded-xl object-cover shadow"
+            onError={() => setImgError(true)}
+          />
+        </div>
       ) : (
-        <div className="flex h-40 w-40 items-center justify-center rounded-xl bg-gray-100 text-6xl shadow">
+        <div className="flex aspect-square w-full max-w-[160px] items-center justify-center rounded-xl bg-gray-100 text-4xl shadow sm:text-6xl">
           {placeholder}
         </div>
       )}
-      <span className="text-center text-sm font-semibold text-gray-700">{label}</span>
+      <span className="text-sm leading-tight font-semibold text-gray-700">{label}</span>
     </div>
   )
 }
@@ -59,21 +61,21 @@ export function AbstractComparison({
   const isKataKeterangan = category === 'kata_keterangan'
 
   return (
-    <Card className="mx-auto w-full max-w-md">
-      <CardContent className="flex flex-col items-center gap-4 p-6">
-        <h2 className="text-3xl font-bold tracking-wide text-gray-900 uppercase">{word}</h2>
+    <Card className="mx-auto w-full max-w-md border-white bg-white/80 shadow-sm backdrop-blur-sm">
+      <CardContent className="flex flex-col items-center gap-4 p-4 sm:p-6">
+        <h2 className="text-center text-2xl font-bold tracking-wide text-slate-800 uppercase sm:text-3xl">{word}</h2>
         {isKataKeterangan && referenceWord && (
-          <p className="text-sm text-gray-500">
-            memodifikasi: <span className="font-semibold text-purple-600">{referenceWord}</span>
+          <p className="text-center text-sm text-slate-500">
+            memodifikasi: <span className="font-semibold text-emerald-600">{referenceWord}</span>
           </p>
         )}
-        <div className="flex w-full items-center justify-around gap-4">
+        <div className="mt-2 flex w-full items-center justify-between gap-2 sm:gap-4">
           <ComparisonImage src={lowImageUrl} alt={lowLabel} label={lowLabel} category={category} />
-          <span className="text-2xl font-bold text-gray-400">↔</span>
+          <span className="shrink-0 text-xl font-bold text-slate-300 sm:text-2xl">↔</span>
           <ComparisonImage src={highImageUrl} alt={highLabel} label={highLabel} category={category} />
         </div>
         {isKataKeterangan && (
-          <p className="text-center text-xs text-gray-400">Geser intensitas dari rendah ke tinggi</p>
+          <p className="mt-2 text-center text-xs text-slate-400">Geser intensitas dari rendah ke tinggi</p>
         )}
       </CardContent>
     </Card>

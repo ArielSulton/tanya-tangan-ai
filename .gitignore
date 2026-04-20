@@ -152,11 +152,13 @@ temp/
 
 # Documentation
 readme/
+AGENTS.md
 CLAUDE.md
 GEMINI.md
 QWEN.md
 
 # Reference
+superpowers/
 reference/
 
 # Database files (if any local)

@@ -234,7 +234,7 @@ function generateFallbackHTML({
         </div>
 
         <div class="footer">
-          <p>© 2025 PENSyarat AI Team. Made with ❤️ for accessible communication.</p>
+          <p>© 2026 PENSyarat AI Team. Made with ❤️ for accessible communication.</p>
           <p>If you have any questions, please contact our support team.</p>
         </div>
       </body>

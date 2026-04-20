@@ -37,7 +37,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params
     const body = await request.json()
-    const { text, category, type, imageUrl, comparison } = body as {
+    const {
+      text,
+      category,
+      type,
+      imageUrl,
+      comparison,
+      adverbSubcategory,
+      sliderConfig,
+      timelineConfig,
+      certaintyConfig,
+      gaugeConfig,
+    } = body as {
       text?: string
       category?: string
       type?: 'konkret' | 'abstrak'
@@ -49,6 +60,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         highLabel: string
         referenceWord: string
       } | null
+      adverbSubcategory?: string | null
+      sliderConfig?: unknown
+      timelineConfig?: unknown
+      certaintyConfig?: unknown
+      gaugeConfig?: unknown
     }
 
     const updateData: Partial<typeof words.$inferInsert> = {}
@@ -59,6 +75,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       updateData.imageUrl = imageUrl
       updateData.imageSource = imageUrl ? 'r2' : 'api'
     }
+    if (adverbSubcategory !== undefined) updateData.adverbSubcategory = adverbSubcategory ?? null
+    if (sliderConfig !== undefined) (updateData as Record<string, unknown>).sliderConfig = sliderConfig ?? null
+    if (timelineConfig !== undefined) (updateData as Record<string, unknown>).timelineConfig = timelineConfig ?? null
+    if (certaintyConfig !== undefined) (updateData as Record<string, unknown>).certaintyConfig = certaintyConfig ?? null
+    if (gaugeConfig !== undefined) (updateData as Record<string, unknown>).gaugeConfig = gaugeConfig ?? null
 
     const [updatedWord] = await db.update(words).set(updateData).where(eq(words.id, id)).returning()
 

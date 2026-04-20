@@ -12,7 +12,7 @@ const navigationItems = [
     id: 'beranda',
   },
   {
-    name: 'Vocabulary',
+    name: 'Kamus Isyarat',
     href: '/vocab',
     id: 'vocabulary',
   },
@@ -27,7 +27,7 @@ export function Navbar() {
   const pathname = usePathname()
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white">
+    <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -37,11 +37,11 @@ export function Navbar() {
               alt="PENSyarat AI Logo"
               width={36}
               height={36}
-              className="h-9 w-9 rounded-xl shadow-sm object-contain"
+              className="h-9 w-9 rounded-xl object-contain shadow-sm"
               priority
             />
             <span className="text-lg font-bold text-gray-900">
-              PENSyarat <span className="text-green-600">AI</span>
+              PENSyarat <span className="text-emerald-600">AI</span>
             </span>
           </Link>
 
@@ -55,8 +55,8 @@ export function Navbar() {
                   key={item.id}
                   href={item.href}
                   className={cn(
-                    'text-sm font-medium transition-colors hover:text-green-600',
-                    isActive ? 'border-b-2 border-green-600 pb-1 text-green-600' : 'text-gray-700',
+                    'text-sm font-medium transition-colors hover:text-emerald-600',
+                    isActive ? 'border-b-2 border-emerald-600 pb-1 text-emerald-600' : 'text-slate-600',
                   )}
                 >
                   {item.name}
@@ -69,7 +69,7 @@ export function Navbar() {
           <div className="md:hidden">
             <button
               type="button"
-              className="text-gray-700 hover:text-green-600 focus:text-green-600 focus:outline-none"
+              className="text-slate-600 hover:text-emerald-600 focus:text-emerald-600 focus:outline-none"
               aria-label="Toggle menu"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

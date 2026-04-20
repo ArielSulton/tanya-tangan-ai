@@ -227,7 +227,7 @@ export function AdminInvitationEmail({
             color: '#374151',
           }}
         >
-          © 2025 PENSyarat AI Team
+          © 2026 PENSyarat AI Team
         </p>
         <p
           style={{
