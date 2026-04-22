@@ -12,6 +12,10 @@ import { CertaintyDial } from '@/components/vocab/CertaintyDial'
 import { SensationGauge } from '@/components/vocab/SensationGauge'
 import { DragDropQuiz } from '@/components/vocab/DragDropQuiz'
 import { ImageMatchQuiz } from '@/components/vocab/ImageMatchQuiz'
+import { SizeContrastCard } from '@/components/vocab/SizeContrastCard'
+import { IntensityCard } from '@/components/vocab/IntensityCard'
+import { SelectionCard } from '@/components/vocab/SelectionCard'
+import { CombinationCard } from '@/components/vocab/CombinationCard'
 import type { AdverbSubcategory, SliderConfig, TimelineConfig, CertaintyConfig, GaugeConfig } from '@/lib/adverb-types'
 import { getInteractionComponent } from '@/lib/adverb-types'
 import { ArrowLeft, Loader2, Keyboard, Gamepad2 } from 'lucide-react'
@@ -24,7 +28,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   benda: 'Benda',
   alam: 'Alam',
   perasaan: 'Perasaan',
-  kata_keterangan: 'Kata Keterangan',
+  kata_keterangan: 'Keterangan Abstrak',
 }
 
 interface WordComparison {
@@ -51,6 +55,7 @@ interface WordResult {
 
 type LookupResult =
   | { state: 'idle' }
+  | { state: 'pending'; word: string; suggestedWord: string | null; explanation: string | null }
   | { state: 'loading' }
   | { state: 'found'; word: WordResult }
   | { state: 'fallback'; gestureInput: string; suggestedWord: string | null; explanation: string }
@@ -76,7 +81,7 @@ export default function VocabKategoriPage() {
 
   const handleWordFormed = useCallback(
     async (word: string) => {
-      if (!word.trim() || result.state === 'loading') return
+      if (!word.trim()) return
       setResult({ state: 'loading' })
 
       try {
@@ -109,7 +114,7 @@ export default function VocabKategoriPage() {
         setResult({ state: 'error' })
       }
     },
-    [kategori, result.state],
+    [kategori],
   )
 
   const handleTrySuggested = useCallback(
@@ -193,12 +198,102 @@ export default function VocabKategoriPage() {
                 <div className="min-h-[460px] flex-grow overflow-hidden rounded-[2.5rem] bg-slate-50 p-2 shadow-inner ring-1 ring-black/5">
                   <GestureRecognition
                     onWordFormed={(word) => {
-                      void handleWordFormed(word)
+                      const normalized = word.toLowerCase()
+                      // EXPERIMENTAL: Jika input startsWith 'y' di kata_keterangan, langsung suggest 'yang'
+                      const immediateSuggestion =
+                        normalized.startsWith('y') && kategori === 'kata_keterangan'
+                          ? 'yang'
+                          : normalized.startsWith('k') && kategori === 'hewan'
+                            ? 'kelinci'
+                            : null
+                      setResult({
+                        state: 'pending',
+                        word: normalized,
+                        suggestedWord: immediateSuggestion,
+                        explanation: null,
+                      })
+
+                      void (async () => {
+                        try {
+                          const fallbackRes = await fetch('/api/backend/api/v1/vocab/fallback', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ gesture_input: normalized, category: kategori }),
+                          })
+                          if (fallbackRes.ok) {
+                            const data = await fallbackRes.json()
+                            // Only update if user hasn't already acted on it
+                            setResult((prev) => {
+                              if (prev.state !== 'pending' || prev.word !== normalized) return prev
+                              return {
+                                state: 'pending',
+                                word: normalized,
+                                suggestedWord: data.suggested_word ?? null,
+                                explanation: data.explanation ?? null,
+                              }
+                            })
+                          }
+                        } catch {}
+                      })()
                     }}
                     enableWordFormation={true}
                     showAlternatives={false}
                   />
                 </div>
+
+                {result.state === 'pending' && (
+                  <div className="flex flex-col gap-3 rounded-3xl bg-amber-50 p-4 shadow-sm ring-2 ring-amber-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-2xl">
+                          ✋
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium tracking-wide text-amber-600 uppercase">Kata Terdeteksi</p>
+                          <p className="text-2xl font-black tracking-widest text-slate-800 uppercase">{result.word}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => {
+                            const wordToSearch = result.suggestedWord ?? result.word
+                            void handleWordFormed(wordToSearch)
+                          }}
+                          className="h-10 rounded-full bg-emerald-500 px-6 font-bold text-white shadow-md transition-all hover:scale-105 hover:bg-emerald-600"
+                        >
+                          Cari
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setResult({ state: 'idle' })
+                          }}
+                          variant="outline"
+                          className="h-10 rounded-full px-4 font-bold shadow-sm"
+                        >
+                          Batal
+                        </Button>
+                      </div>
+                    </div>
+                    {result.suggestedWord && (
+                      <div className="flex flex-col gap-2 border-t border-amber-200 pt-3">
+                        <div className="flex items-center gap-2 text-sm text-orange-600">
+                          <span className="font-medium">Maksud kamu:</span>
+                          <button
+                            onClick={() => {
+                              void handleWordFormed(result.suggestedWord!)
+                            }}
+                            className="rounded-lg bg-orange-100 px-3 py-1 font-bold text-orange-700 transition-colors hover:bg-orange-200"
+                          >
+                            {result.suggestedWord}
+                          </button>
+                        </div>
+                        {result.explanation && (
+                          <p className="text-xs leading-relaxed text-slate-600">{result.explanation}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Always-visible Manual Input */}
                 <div className="flex flex-col gap-2 rounded-3xl bg-white p-3 shadow-sm ring-1 ring-slate-900/5 transition-all focus-within:ring-2 focus-within:ring-emerald-400">
@@ -234,7 +329,7 @@ export default function VocabKategoriPage() {
                 </div>
 
                 <div className="relative z-10 flex w-full flex-grow flex-col items-center justify-center">
-                  {result.state === 'idle' && (
+                  {(result.state === 'idle' || result.state === 'pending') && (
                     <div className="animate-in zoom-in mx-auto flex max-w-sm flex-col items-center text-center duration-500">
                       <div className="mb-6 flex h-32 w-32 rotate-3 items-center justify-center rounded-[2.5rem] bg-emerald-100/50 text-7xl shadow-inner ring-1 ring-emerald-200 transition-transform hover:rotate-6">
                         👋
@@ -267,6 +362,41 @@ export default function VocabKategoriPage() {
                   {result.state === 'found' &&
                     result.word.word_type === 'abstrak' &&
                     (() => {
+                      const w = result.word.text.toLowerCase()
+                      const isStaticCardWord =
+                        w === 'besar' || w === 'kecil' || w === 'sangat' || w === 'yang' || w === 'dan'
+
+                      if (isStaticCardWord && result.word.category === 'kata_keterangan') {
+                        if (w === 'besar' || w === 'kecil') {
+                          return (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                              <SizeContrastCard word={result.word.text} category={result.word.category} />
+                            </div>
+                          )
+                        }
+                        if (w === 'sangat') {
+                          return (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                              <IntensityCard word={result.word.text} category={result.word.category} />
+                            </div>
+                          )
+                        }
+                        if (w === 'yang') {
+                          return (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                              <SelectionCard word={result.word.text} category={result.word.category} />
+                            </div>
+                          )
+                        }
+                        if (w === 'dan') {
+                          return (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                              <CombinationCard word={result.word.text} category={result.word.category} />
+                            </div>
+                          )
+                        }
+                      }
+
                       const interactionType = getInteractionComponent(
                         result.word.category,
                         result.word.adverb_subcategory,
@@ -340,14 +470,6 @@ export default function VocabKategoriPage() {
 
                       return null
                     })()}
-
-                  {result.state === 'found' && result.word.word_type === 'abstrak' && !result.word.comparison && (
-                    <div className="animate-in fade-in slide-in-from-bottom-4 w-full rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-900/5 duration-500">
-                      <p className="font-medium text-slate-600">
-                        Data visual komparatif untuk kata abstrak ini belum tersedia.
-                      </p>
-                    </div>
-                  )}
 
                   {result.state === 'fallback' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 flex h-full w-full flex-col justify-center duration-500">

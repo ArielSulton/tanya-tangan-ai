@@ -52,7 +52,7 @@ const features = [
   {
     title: 'Komparasi Visual Kata Abstrak',
     description:
-      'Untuk kata keterangan seperti "sedikit", "agak", "sangat", dan "terlalu", platform menampilkan gambar berdampingan yang merepresentasikan derajat makna secara konkret.',
+      'Untuk keterangan abstrak seperti "sedikit", "agak", "sangat", dan "terlalu", platform menampilkan gambar berdampingan yang merepresentasikan derajat makna secara konkret.',
     icon: Scale,
     bgColor: 'bg-purple-50/50 hover:bg-purple-50',
     borderColor: 'border-purple-100',
@@ -74,7 +74,7 @@ const features = [
   {
     title: 'Kategori Kosakata Terstruktur',
     description:
-      'Kosakata dikelompokkan dalam lima kategori: Hewan, Benda, Alam, Perasaan, dan Kata Keterangan, sesuai materi Bahasa Indonesia Kurikulum Merdeka SDLB-B.',
+      'Kosakata dikelompokkan dalam lima kategori: Hewan, Benda, Alam, Perasaan, dan Keterangan Abstrak, sesuai materi Bahasa Indonesia Kurikulum Merdeka SDLB-B.',
     icon: Library,
     bgColor: 'bg-pink-50/50 hover:bg-pink-50',
     borderColor: 'border-pink-100',
@@ -142,7 +142,7 @@ export default function Beranda() {
 
               <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-600 sm:text-xl">
                 Siswa memasukkan kata melalui gestur bahasa isyarat SIBI, lalu platform menampilkan gambar visual
-                maknanya. Dari kata konkret hingga kata keterangan abstrak dengan teknologi AI.
+                maknanya. Dari kata konkret hingga keterangan abstrak abstrak dengan teknologi AI.
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">

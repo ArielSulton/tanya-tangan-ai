@@ -165,7 +165,7 @@ const VOCAB_CATEGORIES = [
   { value: 'benda', label: 'Benda' },
   { value: 'alam', label: 'Alam' },
   { value: 'perasaan', label: 'Perasaan' },
-  { value: 'kata_keterangan', label: 'Kata Keterangan' },
+  { value: 'kata_keterangan', label: 'Keterangan Abstrak' },
 ]
 
 const ADVERB_SUBCATEGORIES = [
@@ -1638,7 +1638,7 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                           <div className="rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
                             <p className="font-medium">Tipe: Abstrak (otomatis)</p>
                             <p className="mt-1 text-xs text-purple-600">
-                              Kata keterangan selalu membutuhkan dua gambar perbandingan derajat (rendah ↔ tinggi).
+                              Keterangan abstrak selalu membutuhkan dua gambar perbandingan derajat (rendah ↔ tinggi).
                             </p>
                           </div>
                         ) : (

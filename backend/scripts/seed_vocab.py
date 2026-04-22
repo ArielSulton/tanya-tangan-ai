@@ -66,7 +66,7 @@ WORDS_KONKRET = [
 ]
 
 # ---------------------------------------------------------------------------
-# Seed data — abstrak words with degree slider config (kata keterangan derajat)
+# Seed data — abstrak words with degree slider config (keterangan abstrak derajat)
 # These use word_comparisons (static images) as fallback + slider as primary.
 # ---------------------------------------------------------------------------
 
@@ -454,6 +454,65 @@ WORDS_ADVERB_INTENSITY = [
     },
 ]
 
+# ---------------------------------------------------------------------------
+# Seed data — static visual cards (besar/kecil, sangat, yang, dan)
+# These bypass interactive components and render as static visual cards.
+# ---------------------------------------------------------------------------
+
+WORDS_STATIC_VISUAL = [
+    {
+        "text": "kecil",
+        "category": "kata_keterangan",
+        "adverb_subcategory": "degree",
+        "slider_config": {
+            "default_position": 0.35,
+            "low_label": "sangat kecil",
+            "high_label": "besar",
+            "reference_word": "kecil",
+            "accent_color": "#0ea5e9",
+            "emoji_low": "🔍",
+            "emoji_high": "🏠",
+        },
+        "comparison": {
+            "low_image_url": uns("1511193311917-da9f8a9d4d49"),
+            "high_image_url": uns("1557050543-4d5f4e07ef46"),
+            "low_label": "sangat kecil",
+            "high_label": "besar",
+            "reference_word": "kecil",
+        },
+    },
+    {
+        "text": "yang",
+        "category": "kata_keterangan",
+        "adverb_subcategory": "degree",
+        "slider_config": {
+            "default_position": 0.5,
+            "low_label": "yang",
+            "high_label": "yang",
+            "reference_word": "yang",
+            "accent_color": "#f59e0b",
+            "emoji_low": "👆",
+            "emoji_high": "👆",
+        },
+        "comparison": None,
+    },
+    {
+        "text": "dan",
+        "category": "kata_keterangan",
+        "adverb_subcategory": "degree",
+        "slider_config": {
+            "default_position": 0.5,
+            "low_label": "dan",
+            "high_label": "dan",
+            "reference_word": "dan",
+            "accent_color": "#8b5cf6",
+            "emoji_low": "🤝",
+            "emoji_high": "🤝",
+        },
+        "comparison": None,
+    },
+]
+
 
 # ---------------------------------------------------------------------------
 # Main
@@ -534,6 +593,45 @@ async def seed() -> None:
                     "ref_word": comp["reference_word"],
                 },
             )
+        await db.commit()
+
+        print("🌱 Seeding static visual card words (besar/kecil, yang, dan)...")
+        for w in WORDS_STATIC_VISUAL:
+            result = await db.execute(
+                text("""
+                    INSERT INTO words (id, text, category, type, level, image_url, image_source,
+                                      adverb_subcategory, slider_config)
+                    VALUES (gen_random_uuid(), :text, :category, 'abstrak', 'sdlb', NULL, 'api',
+                            :adverb_subcategory, CAST(:slider_config AS jsonb))
+                    RETURNING id
+                """),
+                {
+                    "text": w["text"],
+                    "category": w["category"],
+                    "adverb_subcategory": w["adverb_subcategory"],
+                    "slider_config": json.dumps(w["slider_config"]),
+                },
+            )
+            word_id = result.scalar()
+
+            comp = w.get("comparison")
+            if comp:
+                await db.execute(
+                    text("""
+                        INSERT INTO word_comparisons
+                            (id, word_id, low_image_url, high_image_url, low_label, high_label, reference_word)
+                        VALUES
+                            (gen_random_uuid(), :word_id, :low_url, :high_url, :low_label, :high_label, :ref_word)
+                    """),
+                    {
+                        "word_id": word_id,
+                        "low_url": comp["low_image_url"],
+                        "high_url": comp["high_image_url"],
+                        "low_label": comp["low_label"],
+                        "high_label": comp["high_label"],
+                        "ref_word": comp["reference_word"],
+                    },
+                )
         await db.commit()
 
         # Insert temporal adverb words (timeline config, no comparison)

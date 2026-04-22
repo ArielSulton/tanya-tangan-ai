@@ -7,7 +7,6 @@ import { fSign } from './Fsign'
 import { gSign } from './Gsign'
 import { hSign } from './Hsign'
 import { iSign } from './Isign'
-import { jSign } from './Jsign'
 import { kSign } from './Ksign'
 import { lSign } from './Lsign'
 import { mSign } from './Msign'
@@ -35,7 +34,6 @@ const Handsigns = {
   gSign,
   hSign,
   iSign,
-  jSign,
   kSign,
   lSign,
   mSign,

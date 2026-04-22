@@ -1,19 +1,22 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { DndContext, type DragEndEvent, useDraggable, useDroppable, closestCenter } from '@dnd-kit/core'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { SizeContrastCard } from './SizeContrastCard'
+import { IntensityCard } from './IntensityCard'
+import { SelectionCard } from './SelectionCard'
+import { CombinationCard } from './CombinationCard'
+
+type VisualType = 'size-contrast' | 'intensity' | 'selection' | 'combination'
 
 interface QuizItem {
   id: string
   word: string
-  subcategory: 'degree' | 'temporal' | 'modality' | 'intensity'
-  emoji: string
-  description: string
-  distractors: string[]
+  visualType: VisualType
+  choices: string[]
 }
 
 interface DragDropQuizProps {
@@ -24,62 +27,38 @@ interface DragDropQuizProps {
 
 type QuizState = 'loading' | 'playing' | 'feedback' | 'results'
 
-const MOCK_QUIZ_DATA: QuizItem[] = [
+const KATA_KETERANGAN_QUIZ: QuizItem[] = [
   {
     id: '1',
     word: 'sangat',
-    subcategory: 'degree',
-    emoji: '⚡',
-    description: 'sangat = tingkat tertinggi',
-    distractors: ['💧', '🍃', '🤔'],
+    visualType: 'intensity',
+    choices: ['sangat', 'besar', 'yang', 'dan'],
   },
   {
     id: '2',
-    word: 'sering',
-    subcategory: 'temporal',
-    emoji: '📅',
-    description: 'sering = banyak kali',
-    distractors: ['⏳', '🕰️', '🔔'],
+    word: 'besar',
+    visualType: 'size-contrast',
+    choices: ['sangat', 'besar', 'kecil', 'dan'],
   },
   {
     id: '3',
-    word: 'pasti',
-    subcategory: 'modality',
-    emoji: '✅',
-    description: 'pasti = 100% yakin',
-    distractors: ['❓', '❌', '🤷'],
+    word: 'kecil',
+    visualType: 'size-contrast',
+    choices: ['sangat', 'besar', 'kecil', 'yang'],
   },
   {
     id: '4',
-    word: 'pedas',
-    subcategory: 'intensity',
-    emoji: '🌶️',
-    description: 'pedas = rasa yang terasa di lidah',
-    distractors: ['🧊', '🍋', '🍬'],
+    word: 'yang',
+    visualType: 'selection',
+    choices: ['yang', 'dan', 'kecil', 'sangat'],
   },
   {
     id: '5',
-    word: 'jarang',
-    subcategory: 'temporal',
-    emoji: '⏳',
-    description: 'jarang = hampir tidak pernah',
-    distractors: ['📅', '⏰', '🏃'],
+    word: 'dan',
+    visualType: 'combination',
+    choices: ['dan', 'yang', 'besar', 'sangat'],
   },
 ]
-
-const CATEGORY_COLORS = {
-  degree: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  temporal: 'bg-blue-100 text-blue-800 border-blue-200',
-  modality: 'bg-amber-100 text-amber-800 border-amber-200',
-  intensity: 'bg-red-100 text-red-800 border-red-200',
-} as const
-
-const CATEGORY_LABELS = {
-  degree: 'Degree',
-  temporal: 'Temporal',
-  modality: 'Modality',
-  intensity: 'Intensity',
-} as const
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array]
@@ -99,91 +78,20 @@ function getEmojiRating(score: number, total: number): { stars: number; message:
   return { stars: 1, message: 'Tetap semangat!', emoji: '✨' }
 }
 
-function DraggableItem({
-  id,
-  emoji,
-  isCorrect,
-  showResult,
-}: {
-  id: string
-  emoji: string
-  isCorrect?: boolean
-  showResult?: boolean
-}) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id,
-  })
-
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined
-
-  const baseClasses = `
-    flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 border-dashed
-    bg-white/60 backdrop-blur-sm cursor-grab active:cursor-grabbing
-    transition-all duration-200 select-none touch-none
-    hover:bg-white/80 hover:border-solid hover:shadow-md
-  `
-
-  const resultClasses = showResult
-    ? isCorrect
-      ? 'border-emerald-400 bg-emerald-50 scale-110'
-      : 'border-red-400 bg-red-50 scale-95'
-    : ''
-
-  const draggingClasses = isDragging ? 'opacity-50 scale-105 z-50 shadow-xl' : ''
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`${baseClasses} ${resultClasses} ${draggingClasses}`}
-    >
-      <span className="text-4xl">{emoji}</span>
-    </div>
-  )
-}
-
-function DropZone({
-  id,
-  children,
-  showResult,
-  isCorrect,
-}: {
-  id: string
-  children?: React.ReactNode
-  showResult?: boolean
-  isCorrect?: boolean
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id })
-
-  const baseClasses = `
-    relative flex flex-col items-center justify-center gap-2
-    min-h-[100px] rounded-xl border-2 border-dashed
-    transition-all duration-300
-  `
-
-  const defaultBg = 'bg-slate-50/50 border-slate-300'
-  const hoverBg = 'bg-blue-50/50 border-blue-400 border-solid scale-[1.02]'
-  const correctBg = 'bg-emerald-50 border-emerald-400 border-solid'
-  const wrongBg = 'bg-red-50 border-red-400 border-solid'
-
-  let stateBg = defaultBg
-  if (showResult) {
-    stateBg = isCorrect ? correctBg : wrongBg
-  } else if (isOver) {
-    stateBg = hoverBg
+function VisualCard({ word, visualType }: { word: string; visualType: VisualType }) {
+  if (visualType === 'size-contrast') {
+    return <SizeContrastCard word={word} category="kata_keterangan" mode="quiz" />
   }
-
-  return (
-    <div ref={setNodeRef} className={`${baseClasses} ${stateBg}`}>
-      {children}
-    </div>
-  )
+  if (visualType === 'intensity') {
+    return <IntensityCard word={word} category="kata_keterangan" mode="quiz" />
+  }
+  if (visualType === 'selection') {
+    return <SelectionCard word={word} category="kata_keterangan" mode="quiz" />
+  }
+  if (visualType === 'combination') {
+    return <CombinationCard word={word} category="kata_keterangan" mode="quiz" />
+  }
+  return null
 }
 
 function ConfettiEffect({ show }: { show: boolean }) {
@@ -269,12 +177,11 @@ export function DragDropQuiz({ category, onComplete, onExit }: DragDropQuizProps
   const [score, setScore] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
-  const [shuffledOptions, setShuffledOptions] = useState<string[]>([])
   const [showConfetti, setShowConfetti] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const shuffled = shuffleArray(MOCK_QUIZ_DATA)
+      const shuffled = shuffleArray(KATA_KETERANGAN_QUIZ)
       setQuestions(shuffled.slice(0, 5))
       setQuizState('playing')
     }, 800)
@@ -282,27 +189,16 @@ export function DragDropQuiz({ category, onComplete, onExit }: DragDropQuizProps
     return () => clearTimeout(timer)
   }, [category])
 
-  useEffect(() => {
-    if (questions.length > 0 && currentIndex < questions.length) {
-      const current = questions[currentIndex]
-      const options = shuffleArray([current.emoji, ...current.distractors.map((d) => d)])
-      setShuffledOptions(options)
-    }
-  }, [currentIndex, questions])
-
   const currentQuestion = questions[currentIndex]
 
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
+  const handleAnswer = useCallback(
+    (word: string) => {
       if (quizState !== 'playing' || !currentQuestion) return
 
-      const { active } = event
-      const droppedText = active.id as string
-
-      setSelectedAnswer(droppedText)
+      setSelectedAnswer(word)
       setQuizState('feedback')
 
-      const correct = droppedText === currentQuestion.emoji
+      const correct = word === currentQuestion.word
       setIsCorrect(correct)
 
       if (correct) {
@@ -317,17 +213,17 @@ export function DragDropQuiz({ category, onComplete, onExit }: DragDropQuizProps
   const handleNext = useCallback(() => {
     if (currentIndex >= questions.length - 1) {
       setQuizState('results')
-      onComplete?.(score, questions.length)
+      onComplete?.(score + (isCorrect ? 0 : 0), questions.length)
     } else {
       setCurrentIndex((prev) => prev + 1)
       setSelectedAnswer(null)
       setIsCorrect(null)
       setQuizState('playing')
     }
-  }, [currentIndex, questions.length, score, onComplete])
+  }, [currentIndex, questions.length, score, isCorrect, onComplete])
 
   const handlePlayAgain = useCallback(() => {
-    setQuestions(shuffleArray(MOCK_QUIZ_DATA).slice(0, 5))
+    setQuestions(shuffleArray(KATA_KETERANGAN_QUIZ).slice(0, 5))
     setCurrentIndex(0)
     setScore(0)
     setSelectedAnswer(null)
@@ -364,84 +260,89 @@ export function DragDropQuiz({ category, onComplete, onExit }: DragDropQuizProps
   if (!currentQuestion) return null
 
   const progress = ((currentIndex + 1) / questions.length) * 100
+  const shuffledChoices = shuffleArray(currentQuestion.choices)
 
   return (
-    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <Card className="mx-auto w-full max-w-lg border-white bg-white/80 shadow-sm backdrop-blur-sm">
-        <CardContent className="relative p-6">
-          <ConfettiEffect show={showConfetti} />
+    <Card className="mx-auto w-full max-w-lg border-white bg-white/80 shadow-sm backdrop-blur-sm">
+      <CardContent className="relative p-6">
+        <ConfettiEffect show={showConfetti} />
 
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className={CATEGORY_COLORS[currentQuestion.subcategory]}>
-                {CATEGORY_LABELS[currentQuestion.subcategory]}
-              </Badge>
-              <span className="text-sm text-slate-500">
-                {currentIndex + 1} / {questions.length}
-              </span>
-            </div>
-            {onExit && (
-              <Button variant="ghost" size="icon" onClick={onExit} className="text-slate-400 hover:text-slate-600">
-                ✕
-              </Button>
-            )}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="border-emerald-200 bg-emerald-100 text-emerald-800">
+              Keterangan Abstrak
+            </Badge>
+            <span className="text-sm text-slate-500">
+              {currentIndex + 1} / {questions.length}
+            </span>
           </div>
-
-          <Progress value={progress} className="mb-6 h-2 bg-slate-200" />
-
-          <div className="mb-6 text-center">
-            <p className="mb-2 text-sm font-medium tracking-wide text-slate-500 uppercase">Tarik emoji yang matching</p>
-            <h3 className="text-3xl font-bold text-slate-800">{currentQuestion.word}</h3>
-            <p className="mt-1 text-sm text-slate-600">{currentQuestion.description}</p>
-          </div>
-
-          <div className="mb-6">
-            <p className="mb-2 text-center text-sm font-medium text-slate-500">Letakkan di sini:</p>
-            <DropZone id="drop-zone" showResult={quizState === 'feedback'} isCorrect={isCorrect ?? undefined}>
-              {selectedAnswer ? (
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-4xl">{selectedAnswer}</span>
-                  {quizState === 'feedback' && (
-                    <span className={`text-lg font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {isCorrect ? '✓ Benar!' : '✗ Salah'}
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <span className="text-slate-400">?</span>
-              )}
-            </DropZone>
-          </div>
-
-          <div className="mb-6">
-            <p className="mb-3 text-center text-sm font-medium text-slate-500">Pilih jawaban:</p>
-            <div className="grid grid-cols-4 gap-3">
-              {shuffledOptions.map((option, index) => (
-                <DraggableItem
-                  key={`${option}-${index}`}
-                  id={option}
-                  emoji={option}
-                  isCorrect={option === currentQuestion.emoji}
-                  showResult={quizState === 'feedback'}
-                />
-              ))}
-            </div>
-          </div>
-
-          {quizState === 'feedback' && (
-            <div className="flex justify-center">
-              <Button
-                onClick={handleNext}
-                size="lg"
-                className={`px-8 ${isCorrect ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-600 hover:bg-slate-700'}`}
-              >
-                {currentIndex >= questions.length - 1 ? 'Lihat Hasil' : 'Soal Berikutnya'}
-              </Button>
-            </div>
+          {onExit && (
+            <Button variant="ghost" size="icon" onClick={onExit} className="text-slate-400 hover:text-slate-600">
+              ✕
+            </Button>
           )}
-        </CardContent>
-      </Card>
-    </DndContext>
+        </div>
+
+        <Progress value={progress} className="mb-4 h-2 bg-slate-200" />
+
+        <div className="mb-4 text-center">
+          <p className="mb-2 text-sm font-medium tracking-wide text-slate-500 uppercase">Apa kata ini?</p>
+        </div>
+
+        <div className="mb-6 flex justify-center">
+          <div className="w-full max-w-sm">
+            <VisualCard word={currentQuestion.word} visualType={currentQuestion.visualType} />
+          </div>
+        </div>
+
+        <div className="mb-4 grid grid-cols-2 gap-3">
+          {shuffledChoices.map((choice) => {
+            const isSelected = selectedAnswer === choice
+            const isCorrectAnswer = choice === currentQuestion.word
+            const showResult = quizState === 'feedback'
+
+            let btnClass = 'h-12 rounded-xl font-bold text-lg shadow-sm transition-all '
+            if (showResult) {
+              if (isCorrectAnswer) {
+                btnClass += 'bg-emerald-500 text-white shadow-emerald-200'
+              } else if (isSelected && !isCorrectAnswer) {
+                btnClass += 'bg-red-500 text-white shadow-red-200'
+              } else {
+                btnClass += 'bg-slate-100 text-slate-400'
+              }
+            } else {
+              btnClass += 'bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 hover:scale-[1.02]'
+            }
+
+            return (
+              <Button
+                key={choice}
+                onClick={() => handleAnswer(choice)}
+                disabled={quizState === 'feedback'}
+                className={btnClass}
+              >
+                {choice}
+              </Button>
+            )
+          })}
+        </div>
+
+        {quizState === 'feedback' && (
+          <div className="flex flex-col items-center gap-3">
+            <span className={`text-lg font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
+              {isCorrect ? '✓ Benar!' : `✗ Salah! Jawabannya: ${currentQuestion.word}`}
+            </span>
+            <Button
+              onClick={handleNext}
+              size="lg"
+              className={`px-8 ${isCorrect ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-600 hover:bg-slate-700'}`}
+            >
+              {currentIndex >= questions.length - 1 ? 'Lihat Hasil' : 'Soal Berikutnya'}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 

@@ -25,6 +25,7 @@ export const SIBI_CONFIG = {
   TEMPORAL_VALIDATION_WINDOW: 1500, // Optimized to 1.2 seconds for balanced validation
 
   // SIBI alphabet mapping (Indonesian Sign Language)
+  // EXPERIMENTAL: J dipetakan ke Y (J -> Y)
   ALPHABET: [
     'A',
     'B',
@@ -35,7 +36,7 @@ export const SIBI_CONFIG = {
     'G',
     'H',
     'I',
-    'J',
+    // J dihapus - menggunakan Y sebagai pengganti
     'K',
     'L',
     'M',
@@ -59,6 +60,7 @@ export const SIBI_CONFIG = {
   SUPPORTED_LANGUAGES: ['sibi', 'bisindo'] as const,
 
   // Available gestures (implemented in handsigns directory)
+  // EXPERIMENTAL: J dipetakan ke Y (J -> Y)
   AVAILABLE_GESTURES: [
     'A',
     'B',
@@ -69,7 +71,7 @@ export const SIBI_CONFIG = {
     'G',
     'H',
     'I',
-    'J',
+    // J dihapus - menggunakan Y sebagai pengganti
     'K',
     'L',
     'M',
