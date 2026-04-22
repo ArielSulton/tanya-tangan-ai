@@ -204,7 +204,7 @@ export default function VocabKategoriPage() {
                         normalized.startsWith('y') && kategori === 'kata_keterangan'
                           ? 'yang'
                           : normalized.startsWith('k') && kategori === 'hewan'
-                            ? 'kelinci'
+                            ? 'kucing'
                             : null
                       setResult({
                         state: 'pending',
@@ -222,14 +222,16 @@ export default function VocabKategoriPage() {
                           })
                           if (fallbackRes.ok) {
                             const data = await fallbackRes.json()
-                            // Only update if user hasn't already acted on it
+                            // Only update if user hasn't already acted on it.
+                            // If we already have a hardcoded prefix suggestion (immediateSuggestion),
+                            // don't let the backend override it — prefix rules take priority.
                             setResult((prev) => {
                               if (prev.state !== 'pending' || prev.word !== normalized) return prev
                               return {
                                 state: 'pending',
                                 word: normalized,
-                                suggestedWord: data.suggested_word ?? null,
-                                explanation: data.explanation ?? null,
+                                suggestedWord: prev.suggestedWord ?? data.suggested_word ?? null,
+                                explanation: prev.suggestedWord ? prev.explanation : (data.explanation ?? null),
                               }
                             })
                           }
