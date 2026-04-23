@@ -5,20 +5,26 @@ Enhanced with standardized API responses
 """
 
 import logging
+import os
 import re
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+
+import base64
+import cv2
+import numpy as np
 
 from app.core.config import settings
 from app.middleware.response_middleware import ResponseFactory, create_response_factory
 from app.models.api_response import ApiResponse, HealthCheckData
 from app.services.deepeval_monitoring import evaluate_llm_response
 from app.services.document_manager import get_document_manager
+from app.services.gesture_recognition_service import GestureRecognitionService
 from app.services.gesture_validation_service import validate_gesture_prediction
 from app.services.langchain_service import process_question_simple
 from app.services.metrics_service import metrics_service
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -510,3 +516,67 @@ async def gesture_health_check(
     return response_factory.success(
         data=health_data, message="Gesture service is ready to process text"
     )
+
+
+# Singleton service instance for recognize endpoint
+_gesture_service: Optional[GestureRecognitionService] = None
+
+
+def get_gesture_service() -> GestureRecognitionService:
+    """Get or create singleton GestureRecognitionService instance."""
+    global _gesture_service
+    if _gesture_service is None:
+        yolo_model_path = os.getenv("YOLO_MODEL_PATH", "app/models/sibi_yolo.pt")
+        _gesture_service = GestureRecognitionService(yolo_model_path=yolo_model_path)
+    return _gesture_service
+
+
+class GestureRecognizeRequest(BaseModel):
+    """Request model for gesture recognition from camera frame."""
+
+    frame: str
+    session_id: Optional[str] = None
+
+
+class GestureRecognizeResponse(BaseModel):
+    """Response model for gesture recognition result."""
+
+    letter: str
+    confidence: float
+    alternatives: list[dict]
+    processing_time_ms: int
+
+
+@router.post("/recognize", response_model=GestureRecognizeResponse)
+async def recognize_gesture(
+    request: GestureRecognizeRequest,
+    service: GestureRecognitionService = Depends(get_gesture_service),
+):
+    """Recognize gesture from camera frame.
+
+    Receives base64-encoded image from frontend camera,
+    processes with MediaPipe + YOLO, returns predicted letter.
+    """
+    try:
+        if request.frame.startswith("data:"):
+            base64_data = request.frame.split(",")[1]
+        else:
+            base64_data = request.frame
+
+        image_bytes = base64.b64decode(base64_data)
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if image is None:
+            raise HTTPException(status_code=400, detail="Invalid image data")
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to decode image: {str(e)}")
+
+    try:
+        result = service.recognize(image)
+        return GestureRecognizeResponse(**result)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Recognition failed: {str(e)}")
