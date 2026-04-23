@@ -30,6 +30,11 @@ langchain-pinecone
 tiktoken
 scikit-learn
 
+# Computer Vision - Gesture Recognition
+ultralytics>=8.0.0
+mediapipe>=0.10.0
+opencv-python>=4.8.0
+
 # Document Processing
 pypdf
 python-docx
