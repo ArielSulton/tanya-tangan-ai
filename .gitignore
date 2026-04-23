@@ -169,6 +169,7 @@ reference/
 
 # Model and RAG Docs
 /backend/documents/pdf
+/backend/app/models/sibi_yolo.pt
 /frontend/public/models/tfjs_model/*.bin
 /frontend/public/models/*.h5
 !/frontend/public/models/model.h5
