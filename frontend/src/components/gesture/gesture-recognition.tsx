@@ -9,16 +9,22 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
-import { useGestureRecognition } from '@/hooks/use-gesture-recognition'
-import { GestureRecognitionResult } from '@/lib/ai/services/gesture-recognition'
+import { useGestureRecognition, UseGestureRecognitionReturn } from '@/hooks/use-gesture-recognition'
 import { SIBI_CONFIG } from '@/lib/ai/config/sibi-config'
 import { Play, Pause, AlertCircle, Hand, RotateCcw, Send } from 'lucide-react'
+
+interface GestureResult {
+  letter: string
+  confidence: number
+  alternatives?: { letter: string; confidence: number }[]
+  processing_time_ms?: number
+}
 
 interface GestureRecognitionProps {
   onLetterDetected?: (letter: string, confidence: number) => void
   onWordFormed?: (word: string) => void
   onSendText?: (text: string, confidence: number) => void
-  onGestureUpdate?: (gesture: GestureRecognitionResult) => void
+  onGestureUpdate?: (gesture: GestureResult) => void
   language?: 'sibi' | 'bisindo'
   className?: string
   showAlternatives?: boolean
@@ -54,20 +60,6 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
 
   // Gesture recognition hook
   const { isInitialized, isRunning, isLoading, error, lastResult, start, stop, initialize } = useGestureRecognition({
-    config: {
-      handPoseConfig: {
-        maxNumHands: SIBI_CONFIG.MAX_NUM_HANDS,
-        detectionConfidence: SIBI_CONFIG.MIN_DETECTION_CONFIDENCE,
-        scoreThreshold: SIBI_CONFIG.SCORE_THRESHOLD,
-        flipHorizontal: SIBI_CONFIG.FLIP_HORIZONTAL,
-      },
-      processingOptions: {
-        enableSmoothing: true,
-        smoothingWindow: SIBI_CONFIG.SMOOTHING_WINDOW,
-        debounceTime: SIBI_CONFIG.DEBOUNCE_TIME,
-        autoStart: false,
-      },
-    },
     onResult: handleGestureResult,
     onError: (error) => console.error('Gesture recognition error:', error),
     onStatus: (status) => console.log('Status:', status),
@@ -140,7 +132,7 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
   )
 
   // Handle gesture recognition results with enhanced validation
-  function handleGestureResult(result: GestureRecognitionResult): void {
+  function handleGestureResult(result: GestureResult): void {
     setConfidence(result.confidence)
 
     // Call gesture update callback

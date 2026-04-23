@@ -1,19 +1,22 @@
 /**
  * useGestureRecognition Hook
- * React hook for A-Z gesture recognition with MediaPipe and TensorFlow.js
+ * React hook for A-Z gesture recognition via backend API (YOLO + MediaPipe)
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import {
-  GestureRecognitionService,
-  GestureRecognitionResult,
-  GestureRecognitionConfig,
-} from '@/lib/ai/services/gesture-recognition'
+import { useState, useCallback, useRef } from 'react'
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+
+interface GestureResult {
+  letter: string
+  confidence: number
+  alternatives?: { letter: string; confidence: number }[]
+  processing_time_ms?: number
+}
 
 export interface UseGestureRecognitionOptions {
-  config?: GestureRecognitionConfig
   autoStart?: boolean
-  onResult?: (result: GestureRecognitionResult) => void
+  onResult?: (result: GestureResult) => void
   onError?: (error: Error) => void
   onStatus?: (status: string) => void
 }
@@ -25,19 +28,16 @@ export interface UseGestureRecognitionReturn {
   isLoading: boolean
   error: Error | null
   status: string
-  lastResult: GestureRecognitionResult | null
+  lastResult: GestureResult | null
 
   // Controls
   start: () => Promise<void>
   stop: () => Promise<void>
   initialize: (videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement) => Promise<void>
-
-  // Configuration
-  updateConfig: (config: Partial<GestureRecognitionConfig>) => void
-  getConfig: () => GestureRecognitionConfig | null
+  captureAndRecognize: (videoElement: HTMLVideoElement) => Promise<GestureResult | null>
+  stopRecognition: () => void
 
   // Utility
-  getSystemStatus: () => unknown
   dispose: () => void
 }
 
@@ -47,106 +47,35 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [status, setStatus] = useState<string>('Not initialized')
-  const [lastResult, setLastResult] = useState<GestureRecognitionResult | null>(null)
+  const [lastResult, setLastResult] = useState<GestureResult | null>(null)
 
-  const gestureServiceRef = useRef<GestureRecognitionService | null>(null)
   const videoElementRef = useRef<HTMLVideoElement | null>(null)
-  const canvasElementRef = useRef<HTMLCanvasElement | null>(null)
-
-  // Initialize gesture recognition service (only once on mount)
-  useEffect(() => {
-    console.log('🏗️ Creating new GestureRecognitionService instance')
-    gestureServiceRef.current = new GestureRecognitionService(options.config)
-
-    return () => {
-      console.log('🗑️ Disposing GestureRecognitionService instance')
-      if (gestureServiceRef.current) {
-        gestureServiceRef.current.dispose()
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only create once on mount - config changes don't recreate service
-
-  // Set up callbacks separately to avoid recreating service
-  useEffect(() => {
-    if (!gestureServiceRef.current) return
-
-    // Set up callbacks
-    gestureServiceRef.current.setOnResult((result) => {
-      setLastResult(result)
-      setError(null)
-      if (options.onResult) {
-        options.onResult(result)
-      }
-    })
-
-    gestureServiceRef.current.setOnError((error) => {
-      setError(error)
-      setIsRunning(false)
-      if (options.onError) {
-        options.onError(error)
-      }
-    })
-
-    gestureServiceRef.current.setOnStatus((status) => {
-      setStatus(status)
-      if (options.onStatus) {
-        options.onStatus(status)
-      }
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options.onResult, options.onError, options.onStatus]) // Only callback dependencies
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const recognitionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Initialize the system
   const initialize = useCallback(
     async (videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement): Promise<void> => {
-      if (!gestureServiceRef.current) {
-        throw new Error('Gesture recognition service not available')
-      }
-
       try {
         setIsLoading(true)
         setError(null)
-        setStatus('Starting initialization...')
+        setStatus('Starting camera...')
 
         videoElementRef.current = videoElement
-        canvasElementRef.current = canvasElement
+        canvasRef.current = canvasElement
 
-        // Add timeout to prevent indefinite loading
-        await Promise.race([
-          gestureServiceRef.current.initialize(videoElement, canvasElement),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Initialization timeout - please refresh and try again')), 60000),
-          ),
-        ])
-
-        // Small delay to ensure all async initialization is complete
+        // Small delay to ensure camera stream is ready
         await new Promise((resolve) => setTimeout(resolve, 100))
 
-        // Check if the service actually initialized successfully
-        console.log('🔍 Service reference check:', gestureServiceRef.current)
-        console.log('🔍 Service instance ID:', gestureServiceRef.current?.constructor.name)
-        const serviceStatus = gestureServiceRef.current.getStatus()
-        console.log('🔍 Service status check:', serviceStatus)
-
-        if (serviceStatus.isInitialized) {
-          setIsInitialized(true)
-          if (serviceStatus.handPoseReady) {
-            setStatus('Gesture recognition fully operational')
-          } else {
-            setStatus('Gesture recognition ready (initializing HandPose)')
-          }
-        } else {
-          setIsInitialized(false)
-          setStatus('Initialization failed - gesture recognition disabled')
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error)
+        setIsInitialized(true)
+        setStatus('Camera ready')
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err)
         console.error('Initialization failed:', errorMessage)
         setError(new Error(`Initialization failed: ${errorMessage}`))
         setIsInitialized(false)
-        setStatus('Initialization failed - please refresh page')
-        throw error
+        setStatus('Initialization failed')
+        throw err
       } finally {
         setIsLoading(false)
       }
@@ -154,94 +83,130 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
     [],
   )
 
-  // Start gesture recognition
+  // Capture frame and send to backend API
+  const captureAndRecognize = useCallback(async (videoElement: HTMLVideoElement): Promise<GestureResult | null> => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // Capture frame to canvas
+      const canvas = canvasRef.current || document.createElement('canvas')
+      canvas.width = videoElement.videoWidth || 640
+      canvas.height = videoElement.videoHeight || 480
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        throw new Error('Failed to get canvas context')
+      }
+      ctx.drawImage(videoElement, 0, 0)
+
+      // Convert to base64
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+
+      // Send to backend
+      const response = await fetch(`${BACKEND_URL}/api/v1/gesture/recognize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ frame: dataUrl }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || 'Recognition failed')
+      }
+
+      const result: GestureResult = await response.json()
+
+      setLastResult(result)
+      setError(null)
+
+      if (options.onResult) {
+        options.onResult(result)
+      }
+
+      return result
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      console.error('Recognition error:', message)
+      setError(new Error(message))
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }, [options])
+
+  // Start continuous recognition
   const start = useCallback(async (): Promise<void> => {
-    if (!gestureServiceRef.current) {
-      throw new Error('Gesture recognition service not available')
-    }
-
     if (!isInitialized) {
-      throw new Error('Gesture recognition not initialized')
+      throw new Error('Not initialized')
+    }
+
+    if (!videoElementRef.current) {
+      throw new Error('Video element not available')
     }
 
     try {
       setIsLoading(true)
       setError(null)
-
-      await gestureServiceRef.current.start()
-      setIsRunning(true)
       setStatus('Recognition started')
-    } catch (error) {
-      setError(error as Error)
+
+      const FRAME_INTERVAL_MS = 500 // Capture and send frame every 500ms
+
+      const runRecognition = async () => {
+        if (videoElementRef.current && videoElementRef.current.readyState >= 2) {
+          await captureAndRecognize(videoElementRef.current)
+        }
+      }
+
+      // Run first frame immediately
+      await runRecognition()
+
+      // Set up continuous recognition
+      recognitionIntervalRef.current = setInterval(runRecognition, FRAME_INTERVAL_MS)
+
+      setIsRunning(true)
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)))
       setIsRunning(false)
-      throw error
+      throw err
     } finally {
       setIsLoading(false)
     }
-  }, [isInitialized])
+  }, [isInitialized, captureAndRecognize])
 
-  // Stop gesture recognition
+  // Stop recognition
   const stop = useCallback(async (): Promise<void> => {
-    if (!gestureServiceRef.current) {
-      return
+    if (recognitionIntervalRef.current) {
+      clearInterval(recognitionIntervalRef.current)
+      recognitionIntervalRef.current = null
     }
 
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      await gestureServiceRef.current.stop()
-      setIsRunning(false)
-      setStatus('Recognition stopped')
-    } catch (error) {
-      setError(error as Error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
+    setIsRunning(false)
+    setStatus('Recognition stopped')
   }, [])
 
-  // Update configuration
-  const updateConfig = useCallback((config: Partial<GestureRecognitionConfig>): void => {
-    if (gestureServiceRef.current) {
-      gestureServiceRef.current.updateConfig(config)
+  // Stop recognition (alias for internal use)
+  const stopRecognition = useCallback(() => {
+    if (recognitionIntervalRef.current) {
+      clearInterval(recognitionIntervalRef.current)
+      recognitionIntervalRef.current = null
     }
-  }, [])
-
-  // Get current configuration
-  const getConfig = useCallback((): GestureRecognitionConfig | null => {
-    if (gestureServiceRef.current) {
-      return gestureServiceRef.current.getConfig()
-    }
-    return null
-  }, [])
-
-  // Get system status
-  const getSystemStatus = useCallback(() => {
-    if (gestureServiceRef.current) {
-      return gestureServiceRef.current.getStatus()
-    }
-    return null
+    setIsRunning(false)
+    setLastResult(null)
+    setStatus('Stopped')
   }, [])
 
   // Dispose of resources
   const dispose = useCallback((): void => {
-    if (gestureServiceRef.current) {
-      gestureServiceRef.current.dispose()
-      setIsInitialized(false)
-      setIsRunning(false)
-      setError(null)
-      setStatus('Disposed')
-      setLastResult(null)
+    if (recognitionIntervalRef.current) {
+      clearInterval(recognitionIntervalRef.current)
+      recognitionIntervalRef.current = null
     }
+    setIsInitialized(false)
+    setIsRunning(false)
+    setError(null)
+    setStatus('Disposed')
+    setLastResult(null)
   }, [])
-
-  // Auto-start if configured
-  useEffect(() => {
-    if (options.autoStart && isInitialized && !isRunning && !error) {
-      start().catch(console.error)
-    }
-  }, [options.autoStart, isInitialized, isRunning, error, start])
 
   return {
     // State
@@ -256,13 +221,10 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
     start,
     stop,
     initialize,
-
-    // Configuration
-    updateConfig,
-    getConfig,
+    captureAndRecognize,
+    stopRecognition,
 
     // Utility
-    getSystemStatus,
     dispose,
   }
 }
