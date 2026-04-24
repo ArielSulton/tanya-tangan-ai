@@ -527,7 +527,11 @@ def get_gesture_service() -> GestureRecognitionService:
     global _gesture_service
     if _gesture_service is None:
         yolo_model_path = os.getenv("YOLO_MODEL_PATH", "app/models/sibi_yolo.pt")
-        _gesture_service = GestureRecognitionService(yolo_model_path=yolo_model_path)
+        use_gpu = os.getenv("USE_GPU", "false").lower() == "true"
+        imgsz = int(os.getenv("YOLO_IMGSZ", "416"))
+        _gesture_service = GestureRecognitionService(
+            yolo_model_path=yolo_model_path, use_gpu=use_gpu, imgsz=imgsz
+        )
     return _gesture_service
 
 
@@ -539,12 +543,17 @@ class GestureRecognizeRequest(BaseModel):
 
 
 class GestureRecognizeResponse(BaseModel):
-    """Response model for gesture recognition result."""
+    """Response model for gesture recognition result with visualization data."""
 
-    letter: str
-    confidence: float
-    alternatives: list[dict]
-    processing_time_ms: int
+    letter: Optional[str] = None
+    confidence: float = 0.0
+    alternatives: list[dict] = []
+    processing_time_ms: int = 0
+    detected: bool = True
+    validated: bool = False
+    landmarks: Optional[list[list[float]]] = None
+    mediapipe_bbox: Optional[dict] = None
+    yolo_bbox: Optional[dict] = None
 
 
 @router.post("/recognize", response_model=GestureRecognizeResponse)
@@ -556,6 +565,7 @@ async def recognize_gesture(
 
     Receives base64-encoded image from frontend camera,
     processes with MediaPipe + YOLO, returns predicted letter.
+    Returns detected=False (not an error) when no hand is visible.
     """
     try:
         if request.frame.startswith("data:"):
@@ -570,13 +580,15 @@ async def recognize_gesture(
         if image is None:
             raise HTTPException(status_code=400, detail="Invalid image data")
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to decode image: {str(e)}")
 
     try:
-        result = service.recognize(image)
-        return GestureRecognizeResponse(**result)
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        result = service.recognize(image, session_id=request.session_id)
+        return GestureRecognizeResponse(**result, detected=True)
+    except ValueError:
+        return GestureRecognizeResponse(detected=False)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Recognition failed: {str(e)}")

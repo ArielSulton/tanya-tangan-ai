@@ -4,24 +4,55 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     libpq-dev \
     libgl1 \
+    libglx-mesa0 \
+    libegl1 \
+    libegl-mesa0 \
+    libgles2 \
+    # Mesa software renderer (no GPU needed)
+    libgbm1 \
+    libdrm2 \
     libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    libx11-6 \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# NOTE: GPU support is handled at the Docker HOST level, not inside the image.
+# To enable GPU: set USE_GPU=true in .env and add the following to the
+# backend service in compose.dev.yaml (requires nvidia-container-toolkit on host):
+#
+#   runtime: nvidia
+#   environment:
+#     - NVIDIA_VISIBLE_DEVICES=all
+#
+# No special apt packages needed inside the container for CUDA — YOLO handles
+# CUDA via PyTorch which is already included in requirements.txt.
+
+# Headless environment — no display, prevent GUI popups from OpenCV/matplotlib
+ENV DISPLAY=""
+ENV MPLBACKEND=Agg
+ENV OPENCV_IO_ENABLE_OPENEXR=0
+ENV LIBGL_ALWAYS_SOFTWARE=1
+ENV MESA_GL_VERSION_OVERRIDE=3.3
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --force-reinstall "opencv-python-headless>=4.8.0"
 
 # Copy application code
 COPY ./app ./app
 
 # Create directories for assets and deepeval
-RUN mkdir -p /app/assets /app/.deepeval
+RUN mkdir -p /app/assets /app/.deepeval /app/models
 
 # Create non-root user with gid=1000 to match frontend group
 RUN groupadd -r pensyarat --gid=1000 && useradd -r -g pensyarat pensyarat --uid=999

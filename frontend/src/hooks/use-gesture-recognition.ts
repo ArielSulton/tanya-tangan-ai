@@ -5,13 +5,24 @@
 
 import { useState, useCallback, useRef } from 'react'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:8000'
+
+interface Bbox {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
 
 interface GestureResult {
   letter: string
   confidence: number
   alternatives?: { letter: string; confidence: number }[]
   processing_time_ms?: number
+  landmarks?: number[][]
+  mediapipe_bbox?: Bbox
+  yolo_bbox?: Bbox
+  validated?: boolean
 }
 
 export interface UseGestureRecognitionOptions {
@@ -31,8 +42,8 @@ export interface UseGestureRecognitionReturn {
   lastResult: GestureResult | null
 
   // Controls
-  start: () => Promise<void>
-  stop: () => Promise<void>
+  start: () => void
+  stop: () => void
   initialize: (videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement) => Promise<void>
   captureAndRecognize: (videoElement: HTMLVideoElement) => Promise<GestureResult | null>
   stopRecognition: () => void
@@ -52,8 +63,11 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
   const videoElementRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const recognitionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const isRunningRef = useRef(false)
+  const sessionIdRef = useRef<string>(crypto.randomUUID())
 
-  // Initialize the system
+  // Initialize the system — opens the camera and pipes stream to the video element
   const initialize = useCallback(
     async (videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement): Promise<void> => {
       try {
@@ -64,8 +78,22 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
         videoElementRef.current = videoElement
         canvasRef.current = canvasElement
 
-        // Small delay to ensure camera stream is ready
-        await new Promise((resolve) => setTimeout(resolve, 100))
+        // Request camera access
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { min: 640, ideal: 640 }, height: { min: 480, ideal: 480 }, facingMode: 'user' },
+          audio: false,
+        })
+
+        streamRef.current = stream
+        videoElement.srcObject = stream
+
+        // Wait for video metadata to load
+        await new Promise<void>((resolve, reject) => {
+          videoElement.onloadedmetadata = () => resolve()
+          videoElement.onerror = () => reject(new Error('Video element error'))
+        })
+
+        await videoElement.play()
 
         setIsInitialized(true)
         setStatus('Camera ready')
@@ -84,58 +112,53 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
   )
 
   // Capture frame and send to backend API
-  const captureAndRecognize = useCallback(async (videoElement: HTMLVideoElement): Promise<GestureResult | null> => {
-    setIsLoading(true)
-    setError(null)
+  const captureAndRecognize = useCallback(
+    async (videoElement: HTMLVideoElement): Promise<GestureResult | null> => {
+      try {
+        const canvas = canvasRef.current ?? document.createElement('canvas')
+        canvas.width = videoElement.videoWidth ?? 640
+        canvas.height = videoElement.videoHeight ?? 480
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          return null
+        }
+        ctx.drawImage(videoElement, 0, 0)
 
-    try {
-      // Capture frame to canvas
-      const canvas = canvasRef.current || document.createElement('canvas')
-      canvas.width = videoElement.videoWidth || 640
-      canvas.height = videoElement.videoHeight || 480
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        throw new Error('Failed to get canvas context')
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+
+        const response = await fetch(`${BACKEND_URL}/api/v1/gesture/recognize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ frame: dataUrl, session_id: sessionIdRef.current }),
+        })
+
+        if (!response.ok) {
+          return null
+        }
+
+        const result: GestureResult & { detected?: boolean } = await response.json()
+
+        if (result.detected === false || !result.letter) {
+          setLastResult(null)
+          return null
+        }
+
+        setLastResult(result)
+
+        if (options.onResult) {
+          options.onResult(result)
+        }
+
+        return result
+      } catch {
+        return null
       }
-      ctx.drawImage(videoElement, 0, 0)
-
-      // Convert to base64
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
-
-      // Send to backend
-      const response = await fetch(`${BACKEND_URL}/api/v1/gesture/recognize`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ frame: dataUrl }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || 'Recognition failed')
-      }
-
-      const result: GestureResult = await response.json()
-
-      setLastResult(result)
-      setError(null)
-
-      if (options.onResult) {
-        options.onResult(result)
-      }
-
-      return result
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      console.error('Recognition error:', message)
-      setError(new Error(message))
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [options])
+    },
+    [options],
+  )
 
   // Start continuous recognition
-  const start = useCallback(async (): Promise<void> => {
+  const start = useCallback((): void => {
     if (!isInitialized) {
       throw new Error('Not initialized')
     }
@@ -148,24 +171,33 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
       setIsLoading(true)
       setError(null)
       setStatus('Recognition started')
+      isRunningRef.current = true
+      setIsRunning(true)
 
-      const FRAME_INTERVAL_MS = 500 // Capture and send frame every 500ms
+      const MIN_IDLE_DELAY_MS = 50 // Prevent tight spin when no hand in frame
 
-      const runRecognition = async () => {
-        if (videoElementRef.current && videoElementRef.current.readyState >= 2) {
-          await captureAndRecognize(videoElementRef.current)
+      const runLoop = async () => {
+        while (isRunningRef.current && videoElementRef.current) {
+          if (videoElementRef.current.readyState >= 2) {
+            // Await directly — loop rate = YOLO inference time automatically
+            const result = await captureAndRecognize(videoElementRef.current)
+
+            // If no hand detected (fast return ~10ms), add small delay
+            // to avoid spinning the event loop capturing empty frames
+            if (!result) {
+              await new Promise((resolve) => setTimeout(resolve, MIN_IDLE_DELAY_MS))
+            }
+          } else {
+            // Video not ready yet, wait briefly
+            await new Promise((resolve) => setTimeout(resolve, MIN_IDLE_DELAY_MS))
+          }
         }
       }
 
-      // Run first frame immediately
-      await runRecognition()
-
-      // Set up continuous recognition
-      recognitionIntervalRef.current = setInterval(runRecognition, FRAME_INTERVAL_MS)
-
-      setIsRunning(true)
+      void runLoop().catch((err) => console.error('Recognition loop error:', err))
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)))
+      isRunningRef.current = false
       setIsRunning(false)
       throw err
     } finally {
@@ -174,13 +206,24 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
   }, [isInitialized, captureAndRecognize])
 
   // Stop recognition
-  const stop = useCallback(async (): Promise<void> => {
+  const stop = useCallback((): void => {
+    isRunningRef.current = false
+    setIsRunning(false)
+
     if (recognitionIntervalRef.current) {
       clearInterval(recognitionIntervalRef.current)
       recognitionIntervalRef.current = null
     }
 
-    setIsRunning(false)
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+
+    if (videoElementRef.current) {
+      videoElementRef.current.srcObject = null
+    }
+    setIsInitialized(false)
     setStatus('Recognition stopped')
   }, [])
 
@@ -201,6 +244,17 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
       clearInterval(recognitionIntervalRef.current)
       recognitionIntervalRef.current = null
     }
+
+    // Stop camera stream tracks
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+
+    if (videoElementRef.current) {
+      videoElementRef.current.srcObject = null
+    }
+
     setIsInitialized(false)
     setIsRunning(false)
     setError(null)

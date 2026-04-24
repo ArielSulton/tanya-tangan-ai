@@ -328,6 +328,11 @@ services:
       - CLOUDFLARE_R2_SECRET_ACCESS_KEY=${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
       - CLOUDFLARE_R2_BUCKET_NAME=${CLOUDFLARE_R2_BUCKET_NAME}
       - CLOUDFLARE_R2_PUBLIC_URL=${CLOUDFLARE_R2_PUBLIC_URL}
+
+      # Gesture Recognition
+      - YOLO_MODEL_PATH=${YOLO_MODEL_PATH}
+      - YOLO_IMGSZ=${YOLO_IMGSZ:-416}
+      - USE_GPU=${USE_GPU:-false}
     depends_on:
       init-permissions:
         condition: service_completed_successfully
@@ -352,8 +357,6 @@ services:
       - ./assets:/app/assets
       - ./backend/app/models:/app/models:ro
       - shared_uploads:/app/uploads
-    environment:
-      - YOLO_MODEL_PATH=/app/models/sibi_yolo.pt
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 30s

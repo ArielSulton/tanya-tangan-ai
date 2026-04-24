@@ -9,15 +9,25 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
-import { useGestureRecognition, UseGestureRecognitionReturn } from '@/hooks/use-gesture-recognition'
-import { SIBI_CONFIG } from '@/lib/ai/config/sibi-config'
+import { useGestureRecognition } from '@/hooks/use-gesture-recognition'
 import { Play, Pause, AlertCircle, Hand, RotateCcw, Send } from 'lucide-react'
+
+interface Bbox {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
 
 interface GestureResult {
   letter: string
   confidence: number
   alternatives?: { letter: string; confidence: number }[]
   processing_time_ms?: number
+  landmarks?: number[][]
+  mediapipe_bbox?: Bbox
+  yolo_bbox?: Bbox
+  validated?: boolean
 }
 
 interface GestureRecognitionProps {
@@ -45,20 +55,17 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationFrameRef = useRef<number | null>(null)
+  const isRunningRef = useRef(false)
+  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null)
   const [currentWord, setCurrentWord] = useState<string>('')
   const [_detectedLetters, setDetectedLetters] = useState<string[]>([])
   const [_stabilityCount, setStabilityCount] = useState(0)
   const [showCamera, _setShowCamera] = useState(true)
   const [confidence, setConfidence] = useState(0)
 
-  // Enhanced temporal consistency state
-  const [confidenceHistory, setConfidenceHistory] = useState<number[]>([])
-  const [letterHistory, setLetterHistory] = useState<string[]>([])
-  const [gestureStartTime, setGestureStartTime] = useState<number | null>(null)
-  const [isValidating, setIsValidating] = useState(false)
-  const [averageConfidence, setAverageConfidence] = useState(0)
+  const gestureResultRef = useRef<GestureResult | null>(null)
 
-  // Gesture recognition hook
   const { isInitialized, isRunning, isLoading, error, lastResult, start, stop, initialize } = useGestureRecognition({
     onResult: handleGestureResult,
     onError: (error) => console.error('Gesture recognition error:', error),
@@ -80,106 +87,36 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     }
   }, [isInitialized, initialize])
 
-  // Enhanced temporal consistency validation
-  const validateTemporalConsistency = useCallback(
-    (letter: string, confidence: number): boolean => {
-      const now = Date.now()
-
-      // Update confidence history
-      setConfidenceHistory((prev) => {
-        const newHistory = [...prev, confidence].slice(-SIBI_CONFIG.CONFIDENCE_AVERAGING_WINDOW)
-        const avgConfidence = newHistory.reduce((sum, c) => sum + c, 0) / newHistory.length
-        setAverageConfidence(avgConfidence)
-        return newHistory
-      })
-
-      // Update letter history
-      setLetterHistory((prev) => {
-        const newHistory = [...prev, letter].slice(-SIBI_CONFIG.MIN_STABLE_FRAMES)
-        return newHistory
-      })
-
-      // Set gesture start time if this is a new gesture
-      if (!gestureStartTime) {
-        setGestureStartTime(now)
-        return false // Need more frames for validation
-      }
-
-      // Check if we're within validation window
-      if (now - gestureStartTime > SIBI_CONFIG.TEMPORAL_VALIDATION_WINDOW) {
-        // Reset validation for new gesture
-        setGestureStartTime(now)
-        setConfidenceHistory([confidence])
-        setLetterHistory([letter])
-        return false
-      }
-
-      // Validate consistency requirements
-      const recentHistory = letterHistory.slice(-SIBI_CONFIG.MIN_STABLE_FRAMES)
-      const isLetterConsistent =
-        recentHistory.length >= SIBI_CONFIG.MIN_STABLE_FRAMES && recentHistory.every((l) => l === letter)
-
-      const recentConfidences = confidenceHistory.slice(-SIBI_CONFIG.MIN_STABLE_FRAMES)
-      const confidenceVariation =
-        recentConfidences.length > 1 ? Math.max(...recentConfidences) - Math.min(...recentConfidences) : 0
-
-      const isConfidenceStable = confidenceVariation <= SIBI_CONFIG.MAX_CONFIDENCE_VARIATION
-      const hasMinConfidence = averageConfidence >= SIBI_CONFIG.CONFIDENCE_THRESHOLD
-
-      return isLetterConsistent && isConfidenceStable && hasMinConfidence
-    },
-    [confidenceHistory, letterHistory, gestureStartTime, averageConfidence],
-  )
-
-  // Handle gesture recognition results with enhanced validation
   function handleGestureResult(result: GestureResult): void {
+    gestureResultRef.current = result
+
+    if (onGestureUpdate) onGestureUpdate(result)
+
     setConfidence(result.confidence)
 
-    // Call gesture update callback
-    if (onGestureUpdate) {
-      onGestureUpdate(result)
-    }
-
-    // Enhanced temporal consistency validation
-    const isValid = validateTemporalConsistency(result.letter, result.confidence)
-    setIsValidating(!isValid)
-
-    if (isValid) {
-      console.log(`✅ Gesture validated: ${result.letter} (avg confidence: ${averageConfidence.toFixed(2)})`)
-
-      // Add letter to word after validation passes
+    if (result.validated) {
       addLetterToWord(result.letter)
-
-      // Reset validation state for next gesture
-      setGestureStartTime(null)
-      setConfidenceHistory([])
-      setLetterHistory([])
       setStabilityCount(0)
-    }
-
-    // Call external callback with validation status
-    if (onLetterDetected) {
-      onLetterDetected(result.letter, isValid ? averageConfidence : result.confidence)
+      if (onLetterDetected) onLetterDetected(result.letter, result.confidence)
     }
   }
 
   // Add letter to current word
   const addLetterToWord = useCallback(
     (letter: string) => {
-      if (currentWord.length < maxWordLength) {
-        const newWord = currentWord + letter
-        setCurrentWord(newWord)
-        setDetectedLetters((prev) => [...prev, letter])
-
+      setCurrentWord((prev) => {
+        if (prev.length >= maxWordLength) return prev
+        const newWord = prev + letter
+        setDetectedLetters((p) => [...p, letter])
         if (enableWordFormation && onWordFormed) {
-          onWordFormed(newWord)
+          queueMicrotask(() => onWordFormed(newWord))
         }
-      }
+        return newWord
+      })
     },
-    [currentWord, maxWordLength, enableWordFormation, onWordFormed],
+    [maxWordLength, enableWordFormation, onWordFormed],
   )
 
-  // Clear current word
   const clearWord = useCallback(() => {
     setCurrentWord('')
     setDetectedLetters([])
@@ -208,23 +145,64 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     }
   }, [currentWord, enableWordFormation, onWordFormed])
 
+  useEffect(() => {
+    if (canvasRef.current && !canvasCtxRef.current) {
+      canvasCtxRef.current = canvasRef.current.getContext('2d')
+    }
+  }, [])
+
+  useEffect(() => {
+    gestureResultRef.current = lastResult
+  }, [lastResult])
+
+  useEffect(() => {
+    isRunningRef.current = isRunning
+    if (!isRunning && canvasCtxRef.current && canvasRef.current) {
+      canvasCtxRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+    }
+  }, [isRunning])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvasCtxRef.current
+    if (!ctx) return
+
+    const drawFrame = () => {
+      const _result = gestureResultRef.current
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      animationFrameRef.current = requestAnimationFrame(drawFrame)
+    }
+
+    animationFrameRef.current = requestAnimationFrame(drawFrame)
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+    }
+  }, [])
+
   // Toggle camera start/stop
   const toggleCamera = useCallback(async () => {
     try {
       if (isRunning) {
-        await stop()
+        stop()
       } else {
-        // Ensure initialization is complete before starting
+        // Re-initialize camera if needed (e.g. after a stop)
+        if (!isInitialized && videoRef.current && canvasRef.current) {
+          await initialize(videoRef.current, canvasRef.current)
+        }
         if (!isInitialized) {
           console.warn('Gesture recognition not yet initialized')
           return
         }
-        await start()
+        start()
       }
     } catch (error) {
       console.error('Failed to toggle camera:', error)
     }
-  }, [isRunning, isInitialized, start, stop])
+  }, [isRunning, isInitialized, initialize, start, stop])
 
   // Compact UI mode for integration with komunikasi page
   if (className?.includes('compact')) {
@@ -313,7 +291,7 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
               <div className="rounded-lg bg-black/50 px-3 py-1 text-sm text-white">
                 <div className="flex items-center space-x-2">
                   <div className="h-2 w-2 animate-pulse rounded-full bg-green-500"></div>
-                  <span>TensorFlow.js Aktif</span>
+                  <span>YOLO + MediaPipe</span>
                 </div>
               </div>
 
@@ -321,24 +299,23 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
               {lastResult && (
                 <div
                   className={`rounded-lg px-4 py-2 text-white transition-colors ${
-                    isValidating ? 'bg-orange-600' : 'bg-blue-600'
+                    lastResult.validated ? 'bg-emerald-600' : 'bg-blue-600'
                   }`}
                 >
                   <div className="flex items-center space-x-2">
                     <span className="text-2xl font-bold">{lastResult.letter}</span>
                     <div className="text-xs">
-                      <div>Current: {Math.round(lastResult.confidence * 100)}%</div>
-                      {averageConfidence > 0 && <div>Avg: {Math.round(averageConfidence * 100)}%</div>}
+                      <div>Conf: {Math.round(lastResult.confidence * 100)}%</div>
                       <div className="mt-1 flex items-center gap-1">
-                        {isValidating ? (
-                          <>
-                            <div className="h-2 w-2 animate-pulse rounded-full bg-yellow-400"></div>
-                            <span className="text-yellow-200">Validating...</span>
-                          </>
-                        ) : (
+                        {lastResult.validated ? (
                           <>
                             <div className="h-2 w-2 rounded-full bg-green-400"></div>
                             <span className="text-green-200">Validated</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="h-2 w-2 animate-pulse rounded-full bg-yellow-400"></div>
+                            <span className="text-yellow-200">Menunggu...</span>
                           </>
                         )}
                       </div>
@@ -351,13 +328,9 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
               {isRunning && confidence > 0 && (
                 <div className="rounded-lg bg-black/50 px-3 py-2">
                   <div className="mb-1 text-xs text-white">Confidence</div>
-                  <Progress
-                    value={averageConfidence > 0 ? averageConfidence * 100 : confidence * 100}
-                    className="h-2 bg-gray-600"
-                  />
-                  <div className="mt-1 flex justify-between text-xs text-gray-300">
-                    <span>Min: {Math.round(SIBI_CONFIG.CONFIDENCE_THRESHOLD * 100)}%</span>
-                    <span>{Math.round((averageConfidence > 0 ? averageConfidence : confidence) * 100)}%</span>
+                  <Progress value={confidence * 100} className="h-2 bg-gray-600" />
+                  <div className="mt-1 flex justify-end text-xs text-gray-300">
+                    <span>{Math.round(confidence * 100)}%</span>
                   </div>
                 </div>
               )}
@@ -436,7 +409,7 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
             <div
               className={`flex items-center justify-center rounded-2xl px-6 py-3 shadow-xl backdrop-blur-md transition-all duration-300 ${
-                isValidating ? 'scale-95 bg-orange-500/90' : 'scale-100 bg-emerald-500/90'
+                lastResult.validated ? 'scale-100 bg-emerald-500/90' : 'scale-95 bg-orange-500/90'
               }`}
             >
               <span className="text-4xl font-black text-white">{lastResult.letter}</span>

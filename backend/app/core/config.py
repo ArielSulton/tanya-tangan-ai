@@ -58,6 +58,10 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float
     LLM_MAX_TOKENS: int
 
+    # YOLO + MediaPipe Configuration
+    USE_GPU: bool = False
+    YOLO_MODEL_PATH: str = "/app/models/sibi_yolo.pt"
+
     # RAG System Configuration
     PINECONE_API_KEY: Optional[str] = None
     PINECONE_INDEX_NAME: str

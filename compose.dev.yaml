@@ -228,6 +228,11 @@ services:
       - CLOUDFLARE_R2_SECRET_ACCESS_KEY=${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
       - CLOUDFLARE_R2_BUCKET_NAME=${CLOUDFLARE_R2_BUCKET_NAME}
       - CLOUDFLARE_R2_PUBLIC_URL=${CLOUDFLARE_R2_PUBLIC_URL}
+
+      # Gesture Recognition
+      - YOLO_MODEL_PATH=${YOLO_MODEL_PATH}
+      - YOLO_IMGSZ=${YOLO_IMGSZ:-416}
+      - USE_GPU=${USE_GPU:-false}
     depends_on:
       init-permissions:
         condition: service_completed_successfully
@@ -245,8 +250,6 @@ services:
       - ./assets:/app/assets
       - ./backend/app/models:/app/models:ro
       - shared_uploads:/app/uploads
-    environment:
-      - YOLO_MODEL_PATH=/app/models/sibi_yolo.pt
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
       test: ["CMD", "curl", "-f", "${NEXT_PUBLIC_BACKEND_URL}/api/health"]
