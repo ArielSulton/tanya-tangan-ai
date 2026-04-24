@@ -1,0 +1,621 @@
+services:
+  # Init service to fix shared volume permissions
+  init-permissions:
+    image: alpine:latest
+    volumes:
+      - shared_uploads:/app/uploads
+    command: >
+      sh -c "
+        echo 'Setting up shared uploads directory permissions...' &&
+        mkdir -p /app/uploads/rag-files &&
+        chown -R 1001:1000 /app/uploads &&
+        chmod -R 775 /app/uploads &&
+        echo 'Permissions set successfully: frontend=1001:1000, backend can write via group' &&
+        ls -la /app/uploads/
+      "
+    networks:
+      - pensyarat-local-net
+
+  # Frontend Service (Next.js - Production Build)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        - NEXT_PUBLIC_ENABLE_SUPABASE_AUTH=${NEXT_PUBLIC_ENABLE_SUPABASE_AUTH}
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+        - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+        - NEXT_PUBLIC_SIGN_IN_URL=${NEXT_PUBLIC_SIGN_IN_URL}
+        - NEXT_PUBLIC_SIGN_UP_URL=${NEXT_PUBLIC_SIGN_UP_URL}
+        - NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL}
+        - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL}
+      secrets:
+        - NODE_ENV
+        - ENVIRONMENT
+        - DEBUG
+        - SITE_NAME
+        - NEXT_PUBLIC_APP_URL
+        - NEXT_PUBLIC_BACKEND_URL
+        - NEXT_PUBLIC_API_URL
+        - BACKEND_URL
+        - NEXT_TELEMETRY_DISABLED
+        - NEXT_PRIVATE_STANDALONE
+        - DATABASE_URL
+        - NEXT_PUBLIC_SUPABASE_URL
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY
+        - SUPABASE_SERVICE_ROLE_KEY
+        - user
+        - password
+        - host
+        - port
+        - dbname
+        - SECRET_KEY
+        - ACCESS_TOKEN_EXPIRE_MINUTES
+        - NEXT_PUBLIC_ENABLE_SUPABASE_AUTH
+        - SUPABASE_JWT_SECRET
+        - SUPABASE_PROJECT_ID
+        - NEXT_PUBLIC_SIGN_IN_URL
+        - NEXT_PUBLIC_SIGN_UP_URL
+        - NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL
+        - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL
+        - SUPERADMIN_EMAILS
+        - ADMIN_EMAILS
+        - GROQ_API_KEY
+        - LLM_MODEL
+        - LLM_TEMPERATURE
+        - LLM_MAX_TOKENS
+        - PINECONE_API_KEY
+        - PINECONE_INDEX_NAME
+        - EMBEDDING_MODEL
+        - RAG_CHUNK_SIZE
+        - RAG_CHUNK_OVERLAP
+        - RAG_RETRIEVAL_K
+        - RAG_SIMILARITY_THRESHOLD
+        - RESEND_API_KEY
+        - FROM_EMAIL
+        - FROM_NAME
+        - ADMIN_EMAIL
+        - CORS_ORIGINS
+        - ALLOWED_HOSTS
+        - RATE_LIMIT_REQUESTS
+        - RATE_LIMIT_WINDOW
+        - MAX_FILE_SIZE
+        - UPLOAD_DIR
+        - API_V1_STR
+        - PROJECT_NAME
+        - PROMETHEUS_PORT
+        - GRAFANA_ADMIN_USER
+        - GRAFANA_ADMIN_PASSWORD
+        - GRAFANA_DOMAIN
+        - GRAFANA_URL
+        - NEXT_PUBLIC_GRAFANA_URL
+        - CLOUDFLARE_R2_ACCOUNT_ID
+        - CLOUDFLARE_R2_ACCESS_KEY_ID
+        - CLOUDFLARE_R2_SECRET_ACCESS_KEY
+        - CLOUDFLARE_R2_BUCKET_NAME
+        - CLOUDFLARE_R2_PUBLIC_URL
+    env_file:
+      - .env
+    environment:
+      # Environment Configuration
+      - NODE_ENV=production
+      - ENVIRONMENT=${ENVIRONMENT}
+      - DEBUG=${DEBUG}
+      - SITE_NAME=${SITE_NAME}
+
+      # Frontend Configuration (Next.js)
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - BACKEND_URL=http://backend:8000
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PRIVATE_STANDALONE=${NEXT_PRIVATE_STANDALONE}
+
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - user=${user}
+      - password=${password}
+      - host=${host}
+      - port=${port}
+      - dbname=${dbname}
+
+      # Authentication & Security
+      - SECRET_KEY=${SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - NEXT_PUBLIC_ENABLE_SUPABASE_AUTH=${NEXT_PUBLIC_ENABLE_SUPABASE_AUTH}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - SUPABASE_PROJECT_ID=${SUPABASE_PROJECT_ID}
+      - NEXT_PUBLIC_SIGN_IN_URL=${NEXT_PUBLIC_SIGN_IN_URL}
+      - NEXT_PUBLIC_SIGN_UP_URL=${NEXT_PUBLIC_SIGN_UP_URL}
+      - NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL}
+      - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL}
+      - SUPERADMIN_EMAILS=${SUPERADMIN_EMAILS}
+      - ADMIN_EMAILS=${ADMIN_EMAILS}
+
+      # AI Services Configuration
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - LLM_MODEL=${LLM_MODEL}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS}
+
+      # RAG System Configuration
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL}
+      - RAG_CHUNK_SIZE=${RAG_CHUNK_SIZE}
+      - RAG_CHUNK_OVERLAP=${RAG_CHUNK_OVERLAP}
+      - RAG_RETRIEVAL_K=${RAG_RETRIEVAL_K}
+      - RAG_SIMILARITY_THRESHOLD=${RAG_SIMILARITY_THRESHOLD}
+
+      # External Services
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+
+      # API & Security Configuration
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE}
+      - UPLOAD_DIR=${UPLOAD_DIR}
+      - API_V1_STR=${API_V1_STR}
+      - PROJECT_NAME=${PROJECT_NAME}
+
+      # Monitoring & Observability
+      - PROMETHEUS_PORT=${PROMETHEUS_PORT}
+      - PROMETHEUS_URL=${PROMETHEUS_URL}
+      - GRAFANA_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
+      - GRAFANA_URL=${GRAFANA_URL}
+      - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+
+      # Cloudflare R2 Storage
+      - CLOUDFLARE_R2_ACCOUNT_ID=${CLOUDFLARE_R2_ACCOUNT_ID}
+      - CLOUDFLARE_R2_ACCESS_KEY_ID=${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      - CLOUDFLARE_R2_SECRET_ACCESS_KEY=${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_R2_BUCKET_NAME=${CLOUDFLARE_R2_BUCKET_NAME}
+      - CLOUDFLARE_R2_PUBLIC_URL=${CLOUDFLARE_R2_PUBLIC_URL}
+    depends_on:
+      init-permissions:
+        condition: service_completed_successfully
+      backend:
+        condition: service_started
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - pensyarat-local-net
+    volumes:
+      - shared_uploads:/app/uploads
+    ports:
+      - "5000:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Backend Service (FastAPI - Production)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      # Environment Configuration
+      - NODE_ENV=production
+      - ENVIRONMENT=${ENVIRONMENT}
+      - DEBUG=${DEBUG}
+      - SITE_NAME=${SITE_NAME}
+
+      # Frontend Configuration (Next.js)
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - BACKEND_URL=http://backend:8000
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PRIVATE_STANDALONE=${NEXT_PRIVATE_STANDALONE}
+
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - user=${user}
+      - password=${password}
+      - host=${host}
+      - port=${port}
+      - dbname=${dbname}
+
+      # Authentication & Security
+      - SECRET_KEY=${SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - NEXT_PUBLIC_ENABLE_SUPABASE_AUTH=${NEXT_PUBLIC_ENABLE_SUPABASE_AUTH}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - SUPABASE_PROJECT_ID=${SUPABASE_PROJECT_ID}
+      - NEXT_PUBLIC_SIGN_IN_URL=${NEXT_PUBLIC_SIGN_IN_URL}
+      - NEXT_PUBLIC_SIGN_UP_URL=${NEXT_PUBLIC_SIGN_UP_URL}
+      - NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL}
+      - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL}
+      - SUPERADMIN_EMAILS=${SUPERADMIN_EMAILS}
+      - ADMIN_EMAILS=${ADMIN_EMAILS}
+
+      # AI Services Configuration
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - LLM_MODEL=${LLM_MODEL}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS}
+
+      # RAG System Configuration
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL}
+      - RAG_CHUNK_SIZE=${RAG_CHUNK_SIZE}
+      - RAG_CHUNK_OVERLAP=${RAG_CHUNK_OVERLAP}
+      - RAG_RETRIEVAL_K=${RAG_RETRIEVAL_K}
+      - RAG_SIMILARITY_THRESHOLD=${RAG_SIMILARITY_THRESHOLD}
+
+      # External Services
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+
+      # API & Security Configuration
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE}
+      - UPLOAD_DIR=${UPLOAD_DIR}
+      - API_V1_STR=${API_V1_STR}
+      - PROJECT_NAME=${PROJECT_NAME}
+
+      # Monitoring & Observability
+      - PROMETHEUS_PORT=${PROMETHEUS_PORT}
+      - PROMETHEUS_URL=${PROMETHEUS_URL}
+      - GRAFANA_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
+      - GRAFANA_URL=${GRAFANA_URL}
+      - NEXT_PUBLIC_GRAFANA_URL=${NEXT_PUBLIC_GRAFANA_URL}
+
+      # Cloudflare R2 Storage
+      - CLOUDFLARE_R2_ACCOUNT_ID=${CLOUDFLARE_R2_ACCOUNT_ID}
+      - CLOUDFLARE_R2_ACCESS_KEY_ID=${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      - CLOUDFLARE_R2_SECRET_ACCESS_KEY=${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_R2_BUCKET_NAME=${CLOUDFLARE_R2_BUCKET_NAME}
+      - CLOUDFLARE_R2_PUBLIC_URL=${CLOUDFLARE_R2_PUBLIC_URL}
+
+      # Gesture Recognition
+      - YOLO_MODEL_PATH=${YOLO_MODEL_PATH}
+      - YOLO_IMGSZ=${YOLO_IMGSZ:-416}
+      - USE_GPU=${USE_GPU:-false}
+    depends_on:
+      init-permissions:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - pensyarat-local-net
+    secrets:
+      - NODE_ENV
+      - ENVIRONMENT
+      - DEBUG
+      - SITE_NAME
+      - NEXT_PUBLIC_APP_URL
+      - NEXT_PUBLIC_BACKEND_URL
+      - NEXT_PUBLIC_API_URL
+      - BACKEND_URL
+      - NEXT_TELEMETRY_DISABLED
+      - NEXT_PRIVATE_STANDALONE
+      - DATABASE_URL
+      - NEXT_PUBLIC_SUPABASE_URL
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY
+      - SUPABASE_SERVICE_ROLE_KEY
+      - user
+      - password
+      - host
+      - port
+      - dbname
+      - SECRET_KEY
+      - ACCESS_TOKEN_EXPIRE_MINUTES
+      - NEXT_PUBLIC_ENABLE_SUPABASE_AUTH
+      - SUPABASE_JWT_SECRET
+      - SUPABASE_PROJECT_ID
+      - NEXT_PUBLIC_SIGN_IN_URL
+      - NEXT_PUBLIC_SIGN_UP_URL
+      - NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL
+      - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL
+      - SUPERADMIN_EMAILS
+      - ADMIN_EMAILS
+      - GROQ_API_KEY
+      - LLM_MODEL
+      - LLM_TEMPERATURE
+      - LLM_MAX_TOKENS
+      - PINECONE_API_KEY
+      - PINECONE_INDEX_NAME
+      - EMBEDDING_MODEL
+      - RAG_CHUNK_SIZE
+      - RAG_CHUNK_OVERLAP
+      - RAG_RETRIEVAL_K
+      - RAG_SIMILARITY_THRESHOLD
+      - RESEND_API_KEY
+      - FROM_EMAIL
+      - FROM_NAME
+      - ADMIN_EMAIL
+      - CORS_ORIGINS
+      - ALLOWED_HOSTS
+      - RATE_LIMIT_REQUESTS
+      - RATE_LIMIT_WINDOW
+      - MAX_FILE_SIZE
+      - UPLOAD_DIR
+      - API_V1_STR
+      - PROJECT_NAME
+      - PROMETHEUS_PORT
+      - GRAFANA_ADMIN_USER
+      - GRAFANA_ADMIN_PASSWORD
+      - GRAFANA_DOMAIN
+      - GRAFANA_URL
+      - NEXT_PUBLIC_GRAFANA_URL
+      - CLOUDFLARE_R2_ACCOUNT_ID
+      - CLOUDFLARE_R2_ACCESS_KEY_ID
+      - CLOUDFLARE_R2_SECRET_ACCESS_KEY
+      - CLOUDFLARE_R2_BUCKET_NAME
+      - CLOUDFLARE_R2_PUBLIC_URL
+      - YOLO_MODEL_PATH
+      - YOLO_IMGSZ
+      - USE_GPU
+    volumes:
+      - ./assets:/app/assets
+      - ./backend/app/models:/app/models:ro
+      - shared_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # Prometheus (Metrics Collection)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - pensyarat-local-net
+    volumes:
+      - ./monitoring/prometheus/configs/prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerting:/etc/prometheus/alerting:ro
+      - ./monitoring/prometheus/recording-rules:/etc/prometheus/recording-rules:ro
+      - prometheus_data_local:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # Grafana (Monitoring Dashboard)
+  grafana:
+    image: grafana/grafana:latest
+    env_file:
+      - .env
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_FEATURE_TOGGLES_ENABLE=panelTitleSearch,publicDashboards
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-worldmap-panel,grafana-piechart-panel
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_LOG_LEVEL=info
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_DATASOURCES_DEFAULT_NAME=Prometheus
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    ports:
+      - "3030:3000"
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - pensyarat-local-net
+    volumes:
+      - grafana_data_local:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  prometheus_data_local:
+    driver: local
+  grafana_data_local:
+    driver: local
+  shared_uploads:
+    driver: local
+
+networks:
+  pensyarat-local-net:
+    name: pensyarat-local-net
+    driver: bridge
+
+secrets:
+  NODE_ENV:
+    environment: NODE_ENV
+  ENVIRONMENT:
+    environment: ENVIRONMENT
+  DEBUG:
+    environment: DEBUG
+  SITE_NAME:
+    environment: SITE_NAME
+  NEXT_PUBLIC_APP_URL:
+    environment: NEXT_PUBLIC_APP_URL
+  NEXT_PUBLIC_BACKEND_URL:
+    environment: NEXT_PUBLIC_BACKEND_URL
+  NEXT_PUBLIC_API_URL:
+    environment: NEXT_PUBLIC_API_URL
+  BACKEND_URL:
+    environment: BACKEND_URL
+  NEXT_TELEMETRY_DISABLED:
+    environment: NEXT_TELEMETRY_DISABLED
+  NEXT_PRIVATE_STANDALONE:
+    environment: NEXT_PRIVATE_STANDALONE
+  DATABASE_URL:
+    environment: DATABASE_URL
+  NEXT_PUBLIC_SUPABASE_URL:
+    environment: NEXT_PUBLIC_SUPABASE_URL
+  NEXT_PUBLIC_SUPABASE_ANON_KEY:
+    environment: NEXT_PUBLIC_SUPABASE_ANON_KEY
+  SUPABASE_SERVICE_ROLE_KEY:
+    environment: SUPABASE_SERVICE_ROLE_KEY
+  user:
+    environment: user
+  password:
+    environment: password
+  host:
+    environment: host
+  port:
+    environment: port
+  dbname:
+    environment: dbname
+  SECRET_KEY:
+    environment: SECRET_KEY
+  ACCESS_TOKEN_EXPIRE_MINUTES:
+    environment: ACCESS_TOKEN_EXPIRE_MINUTES
+  NEXT_PUBLIC_ENABLE_SUPABASE_AUTH:
+    environment: NEXT_PUBLIC_ENABLE_SUPABASE_AUTH
+  SUPABASE_JWT_SECRET:
+    environment: SUPABASE_JWT_SECRET
+  SUPABASE_PROJECT_ID:
+    environment: SUPABASE_PROJECT_ID
+  NEXT_PUBLIC_SIGN_IN_URL:
+    environment: NEXT_PUBLIC_SIGN_IN_URL
+  NEXT_PUBLIC_SIGN_UP_URL:
+    environment: NEXT_PUBLIC_SIGN_UP_URL
+  NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL:
+    environment: NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL
+  NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL:
+    environment: NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL
+  SUPERADMIN_EMAILS:
+    environment: SUPERADMIN_EMAILS
+  ADMIN_EMAILS:
+    environment: ADMIN_EMAILS
+  GROQ_API_KEY:
+    environment: GROQ_API_KEY
+  LLM_MODEL:
+    environment: LLM_MODEL
+  LLM_TEMPERATURE:
+    environment: LLM_TEMPERATURE
+  LLM_MAX_TOKENS:
+    environment: LLM_MAX_TOKENS
+  PINECONE_API_KEY:
+    environment: PINECONE_API_KEY
+  PINECONE_INDEX_NAME:
+    environment: PINECONE_INDEX_NAME
+  EMBEDDING_MODEL:
+    environment: EMBEDDING_MODEL
+  RAG_CHUNK_SIZE:
+    environment: RAG_CHUNK_SIZE
+  RAG_CHUNK_OVERLAP:
+    environment: RAG_CHUNK_OVERLAP
+  RAG_RETRIEVAL_K:
+    environment: RAG_RETRIEVAL_K
+  RAG_SIMILARITY_THRESHOLD:
+    environment: RAG_SIMILARITY_THRESHOLD
+  RESEND_API_KEY:
+    environment: RESEND_API_KEY
+  FROM_EMAIL:
+    environment: FROM_EMAIL
+  FROM_NAME:
+    environment: FROM_NAME
+  ADMIN_EMAIL:
+    environment: ADMIN_EMAIL
+  CORS_ORIGINS:
+    environment: CORS_ORIGINS
+  ALLOWED_HOSTS:
+    environment: ALLOWED_HOSTS
+  RATE_LIMIT_REQUESTS:
+    environment: RATE_LIMIT_REQUESTS
+  RATE_LIMIT_WINDOW:
+    environment: RATE_LIMIT_WINDOW
+  MAX_FILE_SIZE:
+    environment: MAX_FILE_SIZE
+  UPLOAD_DIR:
+    environment: UPLOAD_DIR
+  API_V1_STR:
+    environment: API_V1_STR
+  PROJECT_NAME:
+    environment: PROJECT_NAME
+  PROMETHEUS_PORT:
+    environment: PROMETHEUS_PORT
+  GRAFANA_ADMIN_USER:
+    environment: GRAFANA_ADMIN_USER
+  GRAFANA_ADMIN_PASSWORD:
+    environment: GRAFANA_ADMIN_PASSWORD
+  GRAFANA_DOMAIN:
+    environment: GRAFANA_DOMAIN
+  GRAFANA_URL:
+    environment: GRAFANA_URL
+  NEXT_PUBLIC_GRAFANA_URL:
+    environment: NEXT_PUBLIC_GRAFANA_URL
+  CLOUDFLARE_R2_ACCOUNT_ID:
+    environment: CLOUDFLARE_R2_ACCOUNT_ID
+  CLOUDFLARE_R2_ACCESS_KEY_ID:
+    environment: CLOUDFLARE_R2_ACCESS_KEY_ID
+  CLOUDFLARE_R2_SECRET_ACCESS_KEY:
+    environment: CLOUDFLARE_R2_SECRET_ACCESS_KEY
+  CLOUDFLARE_R2_BUCKET_NAME:
+    environment: CLOUDFLARE_R2_BUCKET_NAME
+  CLOUDFLARE_R2_PUBLIC_URL:
+    environment: CLOUDFLARE_R2_PUBLIC_URL
+  YOLO_MODEL_PATH:
+    environment: YOLO_MODEL_PATH
+  YOLO_IMGSZ:
+    environment: YOLO_IMGSZ
+  USE_GPU:
+    environment: USE_GPU
