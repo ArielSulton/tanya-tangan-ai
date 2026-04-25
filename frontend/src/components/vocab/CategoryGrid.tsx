@@ -58,7 +58,7 @@ export function CategoryGrid() {
         <Link
           key={featuredCategory.slug}
           href={`/vocab/${featuredCategory.slug}`}
-          className="group hover:shadow-3xl relative w-full overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-2xl transition-all duration-500 hover:-translate-y-1 border-4 border-emerald-500/70 hover:border-emerald-400"
+          className="group hover:shadow-3xl relative w-full overflow-hidden rounded-[2.5rem] border-4 border-emerald-500/70 bg-slate-900 shadow-2xl transition-all duration-500 hover:-translate-y-1 hover:border-emerald-400"
         >
           <div className="absolute inset-0 h-[55%]">
             <Image
