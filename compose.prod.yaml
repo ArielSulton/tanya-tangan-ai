@@ -351,19 +351,9 @@ services:
       - "traefik.http.routers.pensyarat-backend.entrypoints=websecure"
       - "traefik.http.routers.pensyarat-backend.tls.certResolver=letsencrypt"
       - "traefik.http.routers.pensyarat-backend.service=pensyarat-backend"
+      - "traefik.http.routers.pensyarat-backend.middlewares=pensyarat-cors@file"
       - "traefik.http.services.pensyarat-backend.loadbalancer.server.port=8000"
       - "traefik.docker.network=dokploy-network"
-
-      # Attach the CORS middleware to this router
-      - "traefik.http.routers.pensyarat-backend.middlewares=pensyarat-cors@docker"
-
-      # Define the CORS middleware
-      - "traefik.http.middlewares.pensyarat-cors.headers.accesscontrolalloworiginlist=https://pensyarat.my.id"
-      - "traefik.http.middlewares.pensyarat-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS,PATCH"
-      - "traefik.http.middlewares.pensyarat-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,Accept,Origin,X-Requested-With"
-      - "traefik.http.middlewares.pensyarat-cors.headers.accesscontrolallowcredentials=true"
-      - "traefik.http.middlewares.pensyarat-cors.headers.accesscontrolmaxage=86400"
-      - "traefik.http.middlewares.pensyarat-cors.headers.addvaryheader=true"
     volumes:
       - ./assets:/app/assets
       - ./backend/app/models:/app/models:ro
