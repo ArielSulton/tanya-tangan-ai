@@ -41,22 +41,33 @@ def create_application() -> FastAPI:
         ),
     )
 
-    # Security middleware - TrustedHostMiddleware with updated allowed_hosts
+    # -------------------------------------------------------------------------
+    # MIDDLEWARE STACK
+    # NOTE: FastAPI/Starlette wraps middlewares in reverse order of add_middleware()
+    # calls. The LAST middleware added = OUTERMOST layer (first to receive requests).
+    # Execution order for a request:
+    #   CORS → Metrics → RateLimit → Auth → TrustedHost → App
+    # -------------------------------------------------------------------------
+
+    # 1. TrustedHostMiddleware — innermost security gate (added first)
     if settings.ENVIRONMENT == "production":
         allowed_hosts = get_allowed_hosts()
-        print(
-            f"🔒 [Security] TrustedHostMiddleware enabled with hosts: {allowed_hosts}"
-        )
+        print(f"🔒 [Security] TrustedHostMiddleware enabled with hosts: {allowed_hosts}")
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
 
-    # Metrics middleware - using real metrics service (BEFORE auth middleware)
+    # 2. Auth middleware
+    app.add_middleware(AuthMiddleware)
+
+    # 3. Rate limit middleware
+    app.add_middleware(RateLimitMiddleware)
+
+    # 4. Metrics middleware — decorator-style, sits above add_middleware() calls
     @app.middleware("http")
     async def metrics_middleware(request: Request, call_next):
         start_time = time.time()
 
         response = await call_next(request)
 
-        # Record metrics using metrics service
         try:
             duration = time.time() - start_time
             metrics_service.record_http_request(
@@ -70,48 +81,37 @@ def create_application() -> FastAPI:
 
         return response
 
-    # Custom middleware (AFTER metrics middleware)
-    app.add_middleware(RateLimitMiddleware)
-    app.add_middleware(AuthMiddleware)
-
-    # CORS middleware LAST (outermost layer)
-    # This ensures CORS headers are added even to responses from outer middlewares
+    # 5. CORSMiddleware — LAST added = OUTERMOST layer.
+    #    This guarantees it intercepts OPTIONS preflight requests before
+    #    AuthMiddleware or RateLimitMiddleware can reject them.
     cors_origins = get_cors_origins()
     print(f"🌐 [CORS] Allowed origins: {cors_origins}")
 
-    # Temporary: Allow all origins for debugging
-    if settings.ENVIRONMENT == "production":
-        print("⚠️  [CORS] Using wildcard for debugging - REMOVE IN PRODUCTION!")
-        cors_origins_to_use = ["*"]
-    else:
-        cors_origins_to_use = cors_origins
-
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=cors_origins_to_use,
-        allow_credentials=(
-            False if "*" in cors_origins_to_use else True
-        ),  # Can't use credentials with wildcard
-        allow_methods=["*"],  # Allow all methods
-        allow_headers=["*"],  # Allow all headers
-        expose_headers=["*"],  # Expose all headers
+        allow_origins=cors_origins,       # e.g. ["https://pensyarat.my.id"]
+        allow_credentials=True,           # Safe — no wildcard origin
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
     )
 
-    # Include API router
+    # -------------------------------------------------------------------------
+    # ROUTES
+    # -------------------------------------------------------------------------
+
     app.include_router(api_router, prefix="/api/v1")
 
-    # Note: Metrics service is initialized via import at module level
+    # -------------------------------------------------------------------------
+    # LIFECYCLE EVENTS
+    # -------------------------------------------------------------------------
 
-    # Startup and shutdown events for database
     @app.on_event("startup")
     async def startup_event():
         """Initialize database connection and monitoring on startup"""
         try:
-            # Initialize database connection
             await init_database()
             print("✅ Database connection initialized successfully")
-
-            # Metrics service is already initialized via import
             print("✅ Prometheus metrics service ready")
         except Exception as e:
             print(f"❌ Startup initialization failed: {e}")
@@ -126,19 +126,19 @@ def create_application() -> FastAPI:
             print(f"❌ Shutdown error: {e}")
         print("Application shutdown complete")
 
-    # Health check endpoint
+    # -------------------------------------------------------------------------
+    # SYSTEM ENDPOINTS
+    # -------------------------------------------------------------------------
+
     @app.get("/health")
     async def health_check():
-        # Get database health status
         db_health = await db_manager.health_check()
-
         return {
             "status": "healthy" if db_health["status"] == "healthy" else "degraded",
-            "service": "pesnsyarat-backend",
+            "service": "pensyarat-backend",
             "database": db_health,
         }
 
-    # Metrics endpoint (before middleware)
     @app.get("/metrics")
     async def metrics(request: Request):
         try:
@@ -148,6 +148,7 @@ def create_application() -> FastAPI:
 
             metrics_data = generate_latest()
             print(f"✅ [Metrics] Generated {len(metrics_data)} bytes of metrics data")
+
             return Response(
                 content=metrics_data,
                 media_type="text/plain; version=0.0.4; charset=utf-8",
@@ -155,7 +156,6 @@ def create_application() -> FastAPI:
         except Exception as e:
             print(f"❌ [Metrics] Error generating metrics: {e}")
             import traceback
-
             print(f"❌ [Metrics] Traceback: {traceback.format_exc()}")
             return Response(
                 content=f"Error generating metrics: {str(e)}",

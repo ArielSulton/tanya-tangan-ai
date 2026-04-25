@@ -29,6 +29,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
     Enhanced authentication middleware with Supabase JWT validation
     """
 
+    async def dispatch(self, request: Request, call_next):
+        # Always let CORS preflight pass through untouched
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
     def __init__(self, app):
         super().__init__(app)
         self._jwks_cache_time = 0
@@ -93,17 +98,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
         """
         Process request authentication
         """
-
-        # Handle CORS preflight requests early - don't require auth for OPTIONS
-        if request.method == "OPTIONS":
-            response = await call_next(request)
-            # Add CORS headers to preflight response
-            origin = request.headers.get("origin", "")
-            response.headers["Access-Control-Allow-Origin"] = origin or "*"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Session-Id"
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            return response
 
         # Skip authentication for public endpoints
         if request.url.path in self.PUBLIC_ENDPOINTS or request.url.path.startswith(
