@@ -23,6 +23,7 @@ const techStack = [
   { name: 'FastAPI', logo: '/assets/tech/fastapi.png' },
   { name: 'Supabase', logo: '/assets/tech/supabase.png' },
   { name: 'Docker', logo: '/assets/tech/docker.png' },
+  { name: 'Google Cloud', logo: '/assets/tech/gcp.svg' },
 ]
 
 const features = [
