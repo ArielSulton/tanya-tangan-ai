@@ -104,7 +104,7 @@ export function ConversationEnhancements({
       console.log('Generating summary for saved conversation:', requestPayload)
 
       // Use internal proxy to avoid CORS issues
-      const response = await fetch(`/api/backend/api/v1/summary/generate`, {
+      const response = await fetch(`/api/v1/summary/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -163,7 +163,7 @@ export function ConversationEnhancements({
     try {
       console.log('Downloading PDF with access token:', summaryData.qr_code.access_token)
 
-      const response = await fetch(`/api/backend/api/v1/summary/${summaryData.qr_code.access_token}?format=text`, {
+      const response = await fetch(`/api/v1/summary/${summaryData.qr_code.access_token}?format=text`, {
         method: 'GET',
       })
 
@@ -210,7 +210,7 @@ export function ConversationEnhancements({
         const cleanedSessionId = cleanSessionId(sessionId)
 
         // Use RAG endpoint for typo correction with dedicated correction function
-        const response = await fetch(`/api/backend/api/v1/rag/ask`, {
+        const response = await fetch(`/api/v1/rag/ask`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -74,7 +74,7 @@ export function ChatInterface({ institutionId, institutionName, institutionSlug 
       try {
         const cleanedSessionId = sessionId.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 255)
 
-        const response = await fetch('/api/backend/api/v1/rag/ask', {
+        const response = await fetch('/api/v1/rag/ask', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

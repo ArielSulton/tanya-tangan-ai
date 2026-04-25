@@ -29,7 +29,7 @@ export default function SummaryPage() {
       // Auto-download PDF and get basic info
       console.log('📥 Starting auto-download PDF for token:', token)
 
-      const response = await fetch(`/api/backend/api/v1/summary/${token}`, {
+      const response = await fetch(`/api/v1/summary/${token}`, {
         method: 'GET',
       })
 
@@ -73,7 +73,7 @@ export default function SummaryPage() {
     try {
       console.log('📥 Downloading PDF for token:', token)
 
-      const response = await fetch(`/api/backend/api/v1/summary/${token}?format=pdf`, {
+      const response = await fetch(`/api/v1/summary/${token}?format=pdf`, {
         method: 'GET',
       })
 

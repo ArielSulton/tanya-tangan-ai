@@ -347,11 +347,18 @@ services:
       - dokploy-network
     labels:
       - "traefik.enable=true"
+      # Existing router for api.pensyarat.my.id
       - "traefik.http.routers.pensyarat-backend.rule=Host(`api.pensyarat.my.id`)"
       - "traefik.http.routers.pensyarat-backend.entrypoints=websecure"
       - "traefik.http.routers.pensyarat-backend.tls.certResolver=letsencrypt"
       - "traefik.http.routers.pensyarat-backend.service=pensyarat-backend"
       - "traefik.http.routers.pensyarat-backend.middlewares=pensyarat-cors@file"
+      # New router for direct /api/v1 proxy on main domain
+      - "traefik.http.routers.pensyarat-api-direct.rule=Host(`pensyarat.my.id`) && PathPrefix(`/api/v1`)"
+      - "traefik.http.routers.pensyarat-api-direct.entrypoints=websecure"
+      - "traefik.http.routers.pensyarat-api-direct.tls.certResolver=letsencrypt"
+      - "traefik.http.routers.pensyarat-api-direct.service=pensyarat-backend"
+      - "traefik.http.routers.pensyarat-api-direct.middlewares=pensyarat-cors@file"
       - "traefik.http.services.pensyarat-backend.loadbalancer.server.port=8000"
       - "traefik.docker.network=dokploy-network"
     volumes:

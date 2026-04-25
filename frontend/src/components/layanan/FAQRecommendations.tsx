@@ -56,7 +56,7 @@ export function FAQRecommendations({ institutionId, institutionName }: FAQRecomm
     async (forceRefresh = false) => {
       try {
         // Use internal proxy to avoid CORS issues
-        const endpoint = `/api/backend/api/v1/faq/recommendations/${institutionId}${forceRefresh ? '?force_refresh=true' : ''}`
+        const endpoint = `/api/v1/faq/recommendations/${institutionId}${forceRefresh ? '?force_refresh=true' : ''}`
 
         const response = await fetch(endpoint, {
           method: 'GET',

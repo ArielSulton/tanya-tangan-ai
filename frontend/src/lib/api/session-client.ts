@@ -3,7 +3,7 @@
  * Handles session management for Prometheus metrics
  */
 
-const API_BASE_URL = '/api/backend/api/v1'
+const API_BASE_URL = '/api/v1'
 
 export interface SessionResponse {
   success: boolean

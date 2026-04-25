@@ -269,9 +269,7 @@ export function ImageMatchQuiz({ category, onComplete, onExit }: ImageMatchQuizP
         setError(null)
 
         // Fetch all words with images for this category
-        const res = await fetch(
-          `/api/backend/api/v1/vocab/words?category=${encodeURIComponent(category)}&has_image=true&limit=20`,
-        )
+        const res = await fetch(`/api/v1/vocab/words?category=${encodeURIComponent(category)}&has_image=true&limit=20`)
         if (!res.ok) throw new Error('Gagal memuat kata')
 
         const data = await res.json()

@@ -105,10 +105,7 @@ export function useSessionTracking(options: UseSessionTrackingOptions = {}) {
     const handleBeforeUnload = () => {
       if (isTrackingRef.current && sessionIdRef.current) {
         // Use synchronous approach for page unload
-        navigator.sendBeacon(
-          `/api/backend/api/v1/public-session/end-session/${sessionIdRef.current}`,
-          JSON.stringify({}),
-        )
+        navigator.sendBeacon(`/api/v1/public-session/end-session/${sessionIdRef.current}`, JSON.stringify({}))
       }
     }
 

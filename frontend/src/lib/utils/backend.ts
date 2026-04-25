@@ -18,7 +18,7 @@ export function getBackendUrl(): string {
   } else {
     // Client-side: Use Next.js API proxy
     const currentOrigin = window.location.origin
-    return `${currentOrigin}/api/backend`
+    return currentOrigin
   }
 }
 

@@ -41,7 +41,7 @@ export default function NotePage() {
       console.log('🔍 Fetching note for token:', token)
 
       // Fetch note via frontend proxy
-      const response = await fetch(`/api/backend/api/v1/summary/note/${token}`, {
+      const response = await fetch(`/api/v1/summary/note/${token}`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
