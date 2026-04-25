@@ -270,7 +270,7 @@ export function DragDropQuiz({ category, onComplete, onExit }: DragDropQuizProps
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="border-emerald-200 bg-emerald-100 text-emerald-800">
-              Keterangan Abstrak
+              Kata Keterangan Abstrak
             </Badge>
             <span className="text-sm text-slate-500">
               {currentIndex + 1} / {questions.length}

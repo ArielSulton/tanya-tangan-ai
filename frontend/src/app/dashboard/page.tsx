@@ -165,7 +165,7 @@ const VOCAB_CATEGORIES = [
   { value: 'benda', label: 'Benda' },
   { value: 'alam', label: 'Alam' },
   { value: 'perasaan', label: 'Perasaan' },
-  { value: 'kata_keterangan', label: 'Keterangan Abstrak' },
+  { value: 'kata_keterangan', label: 'Kata Keterangan Abstrak' },
 ]
 
 const ADVERB_SUBCATEGORIES = [

@@ -6,11 +6,11 @@ import Image from 'next/image'
 const CATEGORIES = [
   {
     slug: 'kata_keterangan',
-    label: 'Keterangan Abstrak',
+    label: 'Kata Keterangan Abstrak',
     count: '16 Kata',
     description:
-      'Pelajari keterangan abstrak untuk memberikan detail dan makna pada kalimat. Kata yang menjelaskan cara, tingkat, waktu, dan jumlah.',
-    tags: ['Utama', 'Tata Bahasa'],
+      'Pelajari kata keterangan abstrak untuk memberikan detail dan makna pada kalimat. Kategori ini berisi kata penjelasan cara, tingkat, waktu, dan jumlah.',
+    tags: ['Utama'],
     image: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80&w=600&h=800',
     overlayColor: 'from-emerald-950 via-emerald-900/90 to-transparent',
     btnColor: 'text-emerald-950 hover:bg-emerald-50',
@@ -20,7 +20,7 @@ const CATEGORIES = [
     slug: 'hewan',
     label: 'Hewan',
     count: '32 Kata',
-    description: 'Pelajari kosakata berbagai jenis hewan dan satwa dalam bahasa isyarat SIBI secara visual.',
+    description: 'Pelajari kosakata berbagai jenis hewan melalui isyarat SIBI secara visual.',
     tags: ['Makhluk Hidup', 'Populer'],
     image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=600&h=800',
     overlayColor: 'from-emerald-950 via-emerald-900/90 to-transparent',
@@ -30,7 +30,7 @@ const CATEGORIES = [
     slug: 'benda',
     label: 'Benda',
     count: '45 Kata',
-    description: 'Kenali benda-benda di sekitar kita mulai dari peralatan sekolah hingga perabotan rumah tangga.',
+    description: 'Kenali benda-benda di sekitar kita, mulai dari peralatan sekolah hingga perabotan rumah tangga.',
     tags: ['Sekitar Kita', 'Umum'],
     image: 'https://images.unsplash.com/photo-1581428982868-e410dd047a90?auto=format&fit=crop&q=80&w=600&h=800',
     overlayColor: 'from-blue-950 via-blue-900/90 to-transparent',
@@ -40,7 +40,7 @@ const CATEGORIES = [
     slug: 'alam',
     label: 'Alam',
     count: '28 Kata',
-    description: 'Kosakata terkait fenomena alam, kondisi cuaca, dan lingkungan sekitar.',
+    description: 'Pelajari kosakata terkait fenomena alam, kondisi cuaca, dan lingkungan sekitar.',
     tags: ['Lingkungan', 'Eksplorasi'],
     image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600&h=800',
     overlayColor: 'from-stone-900 via-stone-800/90 to-transparent',
@@ -58,7 +58,7 @@ export function CategoryGrid() {
         <Link
           key={featuredCategory.slug}
           href={`/vocab/${featuredCategory.slug}`}
-          className="group hover:shadow-3xl relative w-full overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-2xl transition-all duration-500 hover:-translate-y-1"
+          className="group hover:shadow-3xl relative w-full overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-2xl transition-all duration-500 hover:-translate-y-1 border-4 border-emerald-500/70 hover:border-emerald-400"
         >
           <div className="absolute inset-0 h-[55%]">
             <Image

@@ -28,7 +28,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   benda: 'Benda',
   alam: 'Alam',
   perasaan: 'Perasaan',
-  kata_keterangan: 'Keterangan Abstrak',
+  kata_keterangan: 'Kata Keterangan Abstrak',
 }
 
 interface WordComparison {

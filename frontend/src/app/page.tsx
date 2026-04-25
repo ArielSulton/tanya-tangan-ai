@@ -142,7 +142,7 @@ export default function Beranda() {
 
               <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-600 sm:text-xl">
                 Siswa memasukkan kata melalui gestur bahasa isyarat SIBI, lalu platform menampilkan gambar visual
-                maknanya. Dari kata konkret hingga keterangan abstrak abstrak dengan teknologi AI.
+                maknanya. Dari kata keterangan abstrak hingga kata konkret dengan teknologi AI.
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
