@@ -16,13 +16,12 @@ import {
 } from 'lucide-react'
 
 const techStack = [
-  { name: 'TensorFlow.js', logo: '/assets/tech/tensorflowjs.png' },
+  { name: 'YOLO Ultralytics', logo: '/assets/tech/ultralytics_yolo.svg' },
   { name: 'MediaPipe', logo: '/assets/tech/mediapipe.png' },
   { name: 'Next.js', logo: '/assets/tech/nextjs.png' },
   { name: 'LLaMA', logo: '/assets/tech/llama.png' },
   { name: 'FastAPI', logo: '/assets/tech/fastapi.png' },
   { name: 'Supabase', logo: '/assets/tech/supabase.png' },
-  { name: 'Scikit-learn', logo: '/assets/tech/sklearn.png' },
   { name: 'Docker', logo: '/assets/tech/docker.png' },
 ]
 
@@ -30,7 +29,7 @@ const features = [
   {
     title: 'Pengenalan Gestur SIBI Real-time',
     description:
-      'Siswa memasukkan kata melalui gestur bahasa isyarat SIBI via kamera browser, tanpa instalasi. MediaPipe Hands mengenali 21 landmark tangan secara langsung.',
+      'Siswa memasukkan kata melalui gestur bahasa isyarat SIBI via kamera browser, tanpa instalasi. YOLO Ultralytics mengenali gestur secara langsung dari frame.',
     icon: Hand,
     bgColor: 'bg-orange-50/50 hover:bg-orange-50',
     borderColor: 'border-orange-100',
