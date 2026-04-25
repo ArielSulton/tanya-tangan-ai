@@ -94,6 +94,17 @@ class AuthMiddleware(BaseHTTPMiddleware):
         Process request authentication
         """
 
+        # Handle CORS preflight requests early - don't require auth for OPTIONS
+        if request.method == "OPTIONS":
+            response = await call_next(request)
+            # Add CORS headers to preflight response
+            origin = request.headers.get("origin", "")
+            response.headers["Access-Control-Allow-Origin"] = origin or "*"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Session-Id"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            return response
+
         # Skip authentication for public endpoints
         if request.url.path in self.PUBLIC_ENDPOINTS or request.url.path.startswith(
             "/api/v1/summary/"
