@@ -6,6 +6,7 @@
 import { useState, useCallback, useRef } from 'react'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:8000'
+const PROXY_URL = '/api/backend'
 
 interface Bbox {
   x1: number
@@ -126,7 +127,7 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
 
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
 
-        const response = await fetch(`${BACKEND_URL}/api/v1/gesture/recognize`, {
+        const response = await fetch(`${PROXY_URL}/api/v1/gesture/recognize`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ frame: dataUrl, session_id: sessionIdRef.current }),
