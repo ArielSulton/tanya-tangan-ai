@@ -472,8 +472,8 @@ class GestureAPIClient {
       throw new ValidationError('gestureData', gestureData, 'object')
     }
 
-    if (typeof gestureData.letter !== 'string' || gestureData.letter.length !== 1) {
-      throw new ValidationError('gestureData.letter', gestureData.letter, 'single character string')
+    if (typeof gestureData.letter !== 'string' || gestureData.letter.length < 1) {
+      throw new ValidationError('gestureData.letter', gestureData.letter, 'non-empty string')
     }
 
     if (!isValidLandmarks(gestureData.landmarks)) {
@@ -516,8 +516,8 @@ class GestureAPIClient {
       throw new ValidationError('letters', request.letters, 'non-empty array')
     }
 
-    if (request.letters.some((letter) => typeof letter !== 'string' || letter.length !== 1)) {
-      throw new ValidationError('letters', request.letters, 'array of single characters')
+    if (request.letters.some((letter) => typeof letter !== 'string' || letter.length < 1)) {
+      throw new ValidationError('letters', request.letters, 'array of non-empty strings')
     }
   }
 }

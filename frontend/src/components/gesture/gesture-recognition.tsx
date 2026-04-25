@@ -40,6 +40,7 @@ interface GestureRecognitionProps {
   showAlternatives?: boolean
   enableWordFormation?: boolean
   maxWordLength?: number
+  letterMapping?: Record<string, string>
 }
 
 export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
@@ -52,6 +53,7 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
   showAlternatives: _showAlternatives = true,
   enableWordFormation = true,
   maxWordLength = 50,
+  letterMapping = {},
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -104,17 +106,18 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
   // Add letter to current word
   const addLetterToWord = useCallback(
     (letter: string) => {
+      const mappedLetter = letterMapping[letter] ?? letter
       setCurrentWord((prev) => {
         if (prev.length >= maxWordLength) return prev
-        const newWord = prev + letter
-        setDetectedLetters((p) => [...p, letter])
+        const newWord = prev + mappedLetter
+        setDetectedLetters((p) => [...p, mappedLetter])
         if (enableWordFormation && onWordFormed) {
           queueMicrotask(() => onWordFormed(newWord))
         }
         return newWord
       })
     },
-    [maxWordLength, enableWordFormation, onWordFormed],
+    [maxWordLength, enableWordFormation, onWordFormed, letterMapping],
   )
 
   const clearWord = useCallback(() => {
