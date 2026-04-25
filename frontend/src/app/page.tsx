@@ -265,12 +265,20 @@ export default function Beranda() {
                 className="group flex flex-col items-center justify-center rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:ring-emerald-100"
               >
                 <div className="relative mb-3 h-12 w-12 sm:h-14 sm:w-14">
-                  <Image
-                    src={tech.logo}
-                    alt={tech.name}
-                    fill
-                    className="object-contain opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
-                  />
+                  {tech.logo.endsWith('.svg') ? (
+                    <img
+                      src={tech.logo}
+                      alt={tech.name}
+                      className="h-full w-full object-contain opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
+                    />
+                  ) : (
+                    <Image
+                      src={tech.logo}
+                      alt={tech.name}
+                      fill
+                      className="object-contain opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
+                    />
+                  )}
                 </div>
                 <p className="text-center text-xs font-semibold text-slate-500 transition-colors group-hover:text-slate-900">
                   {tech.name}
