@@ -5,8 +5,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:8000'
-const PROXY_URL = '/api/backend'
+const PROXY_URL = ''
 
 interface Bbox {
   x1: number
