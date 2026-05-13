@@ -5,7 +5,7 @@
 
 export const SIBI_CONFIG = {
   // HandPose settings - Optimized for performance
-  MAX_NUM_HANDS: 2,
+  MAX_NUM_HANDS: 2, // Detector returns up to 2 hands. Fingerpose path uses only the most-confident one for SIBI alphabet; Phase 2A pipeline zero-fills slot 1 if only 1 hand present.
   MIN_DETECTION_CONFIDENCE: 0.7, // Reduced for faster detection
   SCORE_THRESHOLD: 5.0, // Reduced for better performance
   FLIP_HORIZONTAL: false, // mediapipe runtime: false because the <video> is already CSS-mirrored for natural display; flipping again double-flips keypoints onto the wrong side
