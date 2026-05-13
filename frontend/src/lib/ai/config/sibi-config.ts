@@ -5,7 +5,7 @@
 
 export const SIBI_CONFIG = {
   // HandPose settings - Optimized for performance
-  MAX_NUM_HANDS: 1,
+  MAX_NUM_HANDS: 2,
   MIN_DETECTION_CONFIDENCE: 0.7, // Reduced for faster detection
   SCORE_THRESHOLD: 5.0, // Reduced for better performance
   FLIP_HORIZONTAL: true, // Mirror camera for natural gestures
