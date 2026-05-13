@@ -142,10 +142,24 @@ export class HandPoseService {
       }
 
       return predictions.map((prediction) => {
-        const landmarks: HandLandmark[] = prediction.keypoints.map((kp) => ({
+        // Combine 2D pixel-space x,y (from keypoints) with 3D world-space z
+        // (from keypoints3D, in meters). Fingerpose curl detection uses 3D
+        // angles and produces degenerate output (always one letter, e.g. "H")
+        // when z is all zero. Scale z by palm-pixel-size so its order of
+        // magnitude matches x,y. Palm size ≈ wrist→middle-MCP distance.
+        const kp2d = prediction.keypoints
+        const kp3d = prediction.keypoints3D ?? []
+        const wristPx = kp2d[0]
+        const middleMcpPx = kp2d[9]
+        const palmPx = Math.hypot(middleMcpPx.x - wristPx.x, middleMcpPx.y - wristPx.y) || 100
+        // keypoints3D z is in meters; palm in 3D is ~0.1m. Scale factor
+        // palmPx/0.1 = palmPx*10 maps meters to pixel-similar units.
+        const zScale = palmPx * 10
+
+        const landmarks: HandLandmark[] = kp2d.map((kp, i) => ({
           x: kp.x,
           y: kp.y,
-          z: kp.z ?? 0,
+          z: kp3d[i] && typeof kp3d[i].z === 'number' ? kp3d[i].z * zScale : 0,
         }))
 
         return {
@@ -185,10 +199,22 @@ export class HandPoseService {
       flipHorizontal: this.config.flipHorizontal,
     })
 
-    return predictions.map((p) => ({
-      landmarks: p.keypoints.map((kp) => ({ x: kp.x, y: kp.y, z: kp.z ?? 0 })),
-      confidence: p.score ?? 0.8,
-    }))
+    return predictions.map((p) => {
+      const kp2d = p.keypoints
+      const kp3d = p.keypoints3D ?? []
+      const wristPx = kp2d[0]
+      const middleMcpPx = kp2d[9]
+      const palmPx = Math.hypot(middleMcpPx.x - wristPx.x, middleMcpPx.y - wristPx.y) || 100
+      const zScale = palmPx * 10
+      return {
+        landmarks: kp2d.map((kp, i) => ({
+          x: kp.x,
+          y: kp.y,
+          z: kp3d[i] && typeof kp3d[i].z === 'number' ? kp3d[i].z * zScale : 0,
+        })),
+        confidence: p.score ?? 0.8,
+      }
+    })
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
