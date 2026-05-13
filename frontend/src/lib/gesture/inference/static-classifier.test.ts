@@ -20,8 +20,9 @@ describe('softmaxToResult', () => {
     const probs = [0.1, 0.7, 0.2]
     const labels = ['A', 'B', 'C']
     const r = softmaxToResult(probs, labels)
-    expect(r.label).toBe('B')
-    expect(r.confidence).toBeCloseTo(0.7, 6)
+    expect(r).not.toBeNull()
+    expect(r!.label).toBe('B')
+    expect(r!.confidence).toBeCloseTo(0.7, 6)
   })
 
   test('returns null when max confidence is below threshold', () => {
