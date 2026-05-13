@@ -5,7 +5,7 @@
 
 import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-backend-webgl'
-import * as handpose from '@tensorflow-models/handpose'
+import * as handPoseDetection from '@tensorflow-models/hand-pose-detection'
 import { GestureEstimator } from 'fingerpose'
 import { SIBI_CONFIG } from '../config/sibi-config'
 import Handsigns from '../../../components/handsigns'
@@ -54,7 +54,7 @@ class SIBIGestures {
 }
 
 export class HandPoseService {
-  private model: handpose.HandPose | null = null
+  private detector: handPoseDetection.HandDetector | null = null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private allGestures: any[] = []
   private isInitialized = false
@@ -82,13 +82,18 @@ export class HandPoseService {
       ])
       console.log('✅ TensorFlow.js ready with backend:', tf.getBackend())
 
-      // Load HandPose model with timeout
-      console.log('📥 Loading HandPose model...')
-      this.model = await Promise.race([
-        handpose.load(),
+      // Load HandPose detector via @tensorflow-models/hand-pose-detection
+      // (MediaPipeHands model, TFJS runtime — supports up to 2 hands natively).
+      console.log('📥 Loading HandPose detector (MediaPipe model, TFJS runtime)...')
+      this.detector = await Promise.race([
+        handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands, {
+          runtime: 'tfjs',
+          modelType: 'lite',
+          maxHands: this.config.maxNumHands,
+        }),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('HandPose model loading timeout')), 30000)),
       ])
-      console.log('✅ HandPose model loaded successfully')
+      console.log('✅ HandPose detector loaded successfully')
 
       // Store gestures for creating new GestureEstimator instances (match reference pattern)
       this.allGestures = SIBIGestures.getAllGestures()
@@ -103,7 +108,7 @@ export class HandPoseService {
   }
 
   async detectHands(videoElement: HTMLVideoElement): Promise<HandPoseDetection[]> {
-    if (!this.isInitialized || !this.model) {
+    if (!this.isInitialized || !this.detector) {
       throw new Error('HandPose service not initialized')
     }
 
@@ -117,35 +122,35 @@ export class HandPoseService {
     }
 
     try {
-      // HandPose v0.1.0 API fix: Use object config but cast to avoid TypeScript error
-      const predictions = await this.model.estimateHands(videoElement, {
+      const predictions = await this.detector.estimateHands(videoElement, {
         flipHorizontal: this.config.flipHorizontal,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      })
 
-      // Debug: Check if hand detection is working properly
+      // Debug: log first detection occasionally
       if (predictions.length > 0) {
         const firstHand = predictions[0]
-        const wrist = firstHand.landmarks[0]
-        const thumb = firstHand.landmarks[4]
+        const wrist = firstHand.keypoints[0]
+        const thumb = firstHand.keypoints[4]
         console.log(
-          '👋 Hand detected - Wrist:',
-          wrist.map((n) => n.toFixed(1)),
+          '👋 Hand detected -',
+          firstHand.handedness,
+          'Wrist:',
+          `(${wrist.x.toFixed(1)}, ${wrist.y.toFixed(1)})`,
           'Thumb tip:',
-          thumb.map((n) => n.toFixed(1)),
+          `(${thumb.x.toFixed(1)}, ${thumb.y.toFixed(1)})`,
         )
       }
 
       return predictions.map((prediction) => {
-        const landmarks: HandLandmark[] = prediction.landmarks.map((landmark) => ({
-          x: landmark[0],
-          y: landmark[1],
-          z: landmark[2] || 0,
+        const landmarks: HandLandmark[] = prediction.keypoints.map((kp) => ({
+          x: kp.x,
+          y: kp.y,
+          z: kp.z ?? 0,
         }))
 
         return {
           landmarks,
-          confidence: prediction.handInViewConfidence || 0.8,
+          confidence: prediction.score ?? 0.8,
           timestamp: Date.now(),
         }
       })
@@ -162,10 +167,11 @@ export class HandPoseService {
    * normalizing.
    *
    * Returns an empty array if no hand is detected. Up to `MAX_NUM_HANDS`
-   * (2 in Phase 2) hands are returned.
+   * (2 in Phase 2) hands are returned. With `@tensorflow-models/hand-pose-detection`
+   * the underlying MediaPipe model natively supports multi-hand detection.
    */
   async detectRawHands(videoElement: HTMLVideoElement): Promise<import('../../gesture/types').RawHand[]> {
-    if (!this.isInitialized || !this.model) {
+    if (!this.isInitialized || !this.detector) {
       throw new Error('HandPose service not initialized')
     }
     if (!videoElement || videoElement.readyState < 2) {
@@ -175,14 +181,13 @@ export class HandPoseService {
       throw new Error('Video dimensions not available')
     }
 
-    const predictions = await this.model.estimateHands(videoElement, {
+    const predictions = await this.detector.estimateHands(videoElement, {
       flipHorizontal: this.config.flipHorizontal,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
+    })
 
     return predictions.map((p) => ({
-      landmarks: p.landmarks.map((lm) => ({ x: lm[0], y: lm[1], z: lm[2] ?? 0 })),
-      confidence: p.handInViewConfidence ?? 0.8,
+      landmarks: p.keypoints.map((kp) => ({ x: kp.x, y: kp.y, z: kp.z ?? 0 })),
+      confidence: p.score ?? 0.8,
     }))
   }
 
@@ -312,7 +317,7 @@ export class HandPoseService {
   }
 
   isReady(): boolean {
-    return this.isInitialized && this.model !== null && this.allGestures.length > 0
+    return this.isInitialized && this.detector !== null && this.allGestures.length > 0
   }
 
   updateConfig(config: Partial<HandPoseConfig>): void {
@@ -374,7 +379,10 @@ export class HandPoseService {
   }
 
   dispose(): void {
-    this.model = null
+    if (this.detector) {
+      this.detector.dispose()
+    }
+    this.detector = null
     this.allGestures = []
     this.isInitialized = false
   }
