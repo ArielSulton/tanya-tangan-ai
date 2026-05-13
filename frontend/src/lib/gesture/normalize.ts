@@ -1,4 +1,4 @@
-import type { RawHand, NormalizedHand } from './types'
+import type { RawHand, NormalizedHand, HandPair } from './types'
 
 const WRIST_INDEX = 0
 const MIDDLE_MCP_INDEX = 9
@@ -30,4 +30,24 @@ export function normalizeHand(hand: RawHand): NormalizedHand {
   }))
 
   return { landmarks, confidence: hand.confidence }
+}
+
+/**
+ * Take up to N raw hand observations, sort them by wrist x-position
+ * (ascending: leftmost first), normalize each, and return a [slot0, slot1]
+ * pair. Missing slots are null. If more than 2 hands are detected, only
+ * the 2 leftmost are kept.
+ *
+ * The ordering is positional only — slot 0 is "the hand that appears further
+ * left in the image", which is NOT necessarily the user's left hand
+ * (especially when the camera is flipped). Stability is what the classifier
+ * needs; biological handedness can be encoded later if required.
+ */
+export function sortHandsByXPosition(hands: RawHand[]): HandPair {
+  if (hands.length === 0) return [null, null]
+
+  const sorted = [...hands].sort((a, b) => a.landmarks[WRIST_INDEX].x - b.landmarks[WRIST_INDEX].x)
+  const slot0 = sorted[0] ? normalizeHand(sorted[0]) : null
+  const slot1 = sorted[1] ? normalizeHand(sorted[1]) : null
+  return [slot0, slot1]
 }
