@@ -154,6 +154,7 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
         const e = err instanceof Error ? err : new Error(String(err))
         console.error('[gesture] engine stop failed:', e)
         setError(e)
+        optionsRef.current.onError?.(e)
       })
   }, [])
 
