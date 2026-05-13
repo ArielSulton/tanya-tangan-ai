@@ -6,10 +6,7 @@
  * running, last status) so the hook can stay declarative.
  */
 
-import {
-  GestureRecognitionService,
-  type GestureRecognitionResult,
-} from '../ai/services/gesture-recognition'
+import { GestureRecognitionService, type GestureRecognitionResult } from '../ai/services/gesture-recognition'
 import type { BrowserGestureResult, EngineStatus } from './types'
 
 export interface BrowserGestureEngineCallbacks {
@@ -40,8 +37,14 @@ export class BrowserGestureEngine {
     this.service.setOnError((e) => this.callbacks.onError?.(e))
     this.service.setOnStatus((s) => this.callbacks.onStatus?.(s))
 
-    await this.service.initialize(video, canvas)
-    this.setState('ready')
+    try {
+      await this.service.initialize(video, canvas)
+      this.setState('ready')
+    } catch (err) {
+      this.service = null
+      this.setState('uninitialized')
+      throw err
+    }
   }
 
   async start(): Promise<void> {
@@ -57,7 +60,10 @@ export class BrowserGestureEngine {
   }
 
   dispose(): void {
-    void this.stop()
+    if (this.service) {
+      void this.service.stop()
+      this.service.dispose()
+    }
     this.service = null
     this.setState('uninitialized')
   }
