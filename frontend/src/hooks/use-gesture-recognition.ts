@@ -1,11 +1,16 @@
 /**
  * useGestureRecognition Hook
- * React hook for A-Z gesture recognition via backend API (YOLO + MediaPipe)
+ *
+ * Browser-side A-Z gesture recognition using the existing
+ * BrowserGestureEngine (HandPose + Fingerpose). The browser engine is
+ * the only inference path in Phase 1 — there is no YOLO fallback.
+ * If initialization fails, the hook surfaces the error and stays in
+ * a non-running state; the page should communicate this to the user.
  */
 
-import { useState, useCallback, useRef } from 'react'
-
-const PROXY_URL = ''
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { BrowserGestureEngine } from '@/lib/gesture/engine'
+import type { BrowserGestureResult } from '@/lib/gesture/types'
 
 interface Bbox {
   x1: number
@@ -33,7 +38,6 @@ export interface UseGestureRecognitionOptions {
 }
 
 export interface UseGestureRecognitionReturn {
-  // State
   isInitialized: boolean
   isRunning: boolean
   isLoading: boolean
@@ -41,15 +45,21 @@ export interface UseGestureRecognitionReturn {
   status: string
   lastResult: GestureResult | null
 
-  // Controls
   start: () => void
   stop: () => void
   initialize: (videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement) => Promise<void>
   captureAndRecognize: (videoElement: HTMLVideoElement) => Promise<GestureResult | null>
   stopRecognition: () => void
-
-  // Utility
   dispose: () => void
+}
+
+function toGestureResult(r: BrowserGestureResult): GestureResult {
+  return {
+    letter: r.letter,
+    confidence: r.confidence,
+    alternatives: r.alternatives,
+    processing_time_ms: r.processingTimeMs,
+  }
 }
 
 export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}): UseGestureRecognitionReturn => {
@@ -57,53 +67,61 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
   const [isRunning, setIsRunning] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  const [status, setStatus] = useState<string>('Not initialized')
+  const [status, setStatus] = useState('Not initialized')
   const [lastResult, setLastResult] = useState<GestureResult | null>(null)
 
-  const videoElementRef = useRef<HTMLVideoElement | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const recognitionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const streamRef = useRef<MediaStream | null>(null)
-  const isRunningRef = useRef(false)
-  const sessionIdRef = useRef<string>(crypto.randomUUID())
+  const engineRef = useRef<BrowserGestureEngine | null>(null)
+  const optionsRef = useRef(options)
+  optionsRef.current = options
 
-  // Initialize the system — opens the camera and pipes stream to the video element
   const initialize = useCallback(
     async (videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement): Promise<void> => {
+      if (engineRef.current) {
+        console.warn('[gesture] initialize called while an engine already exists; skipping')
+        return
+      }
+
+      setIsLoading(true)
+      setError(null)
+      setStatus('Initializing browser engine...')
+
+      const engine = new BrowserGestureEngine({
+        onResult: (r) => {
+          const result = toGestureResult(r)
+          setLastResult(result)
+          optionsRef.current.onResult?.(result)
+        },
+        onError: (e) => {
+          setError(e)
+          optionsRef.current.onError?.(e)
+        },
+        onStatus: (s) => {
+          setStatus(s)
+          optionsRef.current.onStatus?.(s)
+        },
+      })
+
+      // Set ref immediately so a concurrent initialize() call bails out
+      // instead of constructing a second engine.
+      engineRef.current = engine
+
       try {
-        setIsLoading(true)
-        setError(null)
-        setStatus('Starting camera...')
-
-        videoElementRef.current = videoElement
-        canvasRef.current = canvasElement
-
-        // Request camera access
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { min: 640, ideal: 640 }, height: { min: 480, ideal: 480 }, facingMode: 'user' },
-          audio: false,
-        })
-
-        streamRef.current = stream
-        videoElement.srcObject = stream
-
-        // Wait for video metadata to load
-        await new Promise<void>((resolve, reject) => {
-          videoElement.onloadedmetadata = () => resolve()
-          videoElement.onerror = () => reject(new Error('Video element error'))
-        })
-
-        await videoElement.play()
-
+        await engine.initialize(videoElement, canvasElement)
         setIsInitialized(true)
-        setStatus('Camera ready')
+        setStatus('Browser engine ready')
+
+        if (optionsRef.current.autoStart) {
+          await engine.start()
+          setIsRunning(true)
+        }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : String(err)
-        console.error('Initialization failed:', errorMessage)
-        setError(new Error(`Initialization failed: ${errorMessage}`))
+        const e = err instanceof Error ? err : new Error(String(err))
+        console.error('[gesture] Browser engine init failed:', e)
+        engineRef.current = null
+        setError(e)
+        optionsRef.current.onError?.(e)
         setIsInitialized(false)
-        setStatus('Initialization failed')
-        throw err
+        setStatus('Browser engine initialization failed')
       } finally {
         setIsLoading(false)
       }
@@ -111,176 +129,76 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
     [],
   )
 
-  // Capture frame and send to backend API
+  const start = useCallback(() => {
+    if (!engineRef.current) return
+    engineRef.current
+      .start()
+      .then(() => setIsRunning(true))
+      .catch((err) => {
+        const e = err instanceof Error ? err : new Error(String(err))
+        console.error('[gesture] engine start failed:', e)
+        setError(e)
+        optionsRef.current.onError?.(e)
+      })
+  }, [])
+
+  const stop = useCallback(() => {
+    if (!engineRef.current) {
+      setIsRunning(false)
+      return
+    }
+    engineRef.current
+      .stop()
+      .then(() => setIsRunning(false))
+      .catch((err) => {
+        const e = err instanceof Error ? err : new Error(String(err))
+        console.error('[gesture] engine stop failed:', e)
+        setError(e)
+        optionsRef.current.onError?.(e)
+      })
+  }, [])
+
   const captureAndRecognize = useCallback(
-    async (videoElement: HTMLVideoElement): Promise<GestureResult | null> => {
-      try {
-        const canvas = canvasRef.current ?? document.createElement('canvas')
-        canvas.width = videoElement.videoWidth ?? 640
-        canvas.height = videoElement.videoHeight ?? 480
-        const ctx = canvas.getContext('2d')
-        if (!ctx) {
-          return null
-        }
-        ctx.drawImage(videoElement, 0, 0)
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
-
-        const response = await fetch(`${PROXY_URL}/api/v1/gesture/recognize`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ frame: dataUrl, session_id: sessionIdRef.current }),
-        })
-
-        if (!response.ok) {
-          return null
-        }
-
-        const result: GestureResult & { detected?: boolean } = await response.json()
-
-        if (result.detected === false || !result.letter) {
-          setLastResult(null)
-          return null
-        }
-
-        setLastResult(result)
-
-        if (options.onResult) {
-          options.onResult(result)
-        }
-
-        return result
-      } catch {
-        return null
-      }
+    async (_videoElement: HTMLVideoElement): Promise<GestureResult | null> => {
+      // The browser engine streams results via callbacks; this method exists
+      // for backward compatibility with the previous API. Returns the last
+      // known result rather than capturing a fresh frame on demand.
+      return lastResult
     },
-    [options],
+    [lastResult],
   )
 
-  // Start continuous recognition
-  const start = useCallback((): void => {
-    if (!isInitialized) {
-      throw new Error('Not initialized')
-    }
-
-    if (!videoElementRef.current) {
-      throw new Error('Video element not available')
-    }
-
-    try {
-      setIsLoading(true)
-      setError(null)
-      setStatus('Recognition started')
-      isRunningRef.current = true
-      setIsRunning(true)
-
-      const MIN_IDLE_DELAY_MS = 50 // Prevent tight spin when no hand in frame
-
-      const runLoop = async () => {
-        while (isRunningRef.current && videoElementRef.current) {
-          if (videoElementRef.current.readyState >= 2) {
-            // Await directly — loop rate = YOLO inference time automatically
-            const result = await captureAndRecognize(videoElementRef.current)
-
-            // If no hand detected (fast return ~10ms), add small delay
-            // to avoid spinning the event loop capturing empty frames
-            if (!result) {
-              await new Promise((resolve) => setTimeout(resolve, MIN_IDLE_DELAY_MS))
-            }
-          } else {
-            // Video not ready yet, wait briefly
-            await new Promise((resolve) => setTimeout(resolve, MIN_IDLE_DELAY_MS))
-          }
-        }
-      }
-
-      void runLoop().catch((err) => console.error('Recognition loop error:', err))
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)))
-      isRunningRef.current = false
-      setIsRunning(false)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }, [isInitialized, captureAndRecognize])
-
-  // Stop recognition
-  const stop = useCallback((): void => {
-    isRunningRef.current = false
-    setIsRunning(false)
-
-    if (recognitionIntervalRef.current) {
-      clearInterval(recognitionIntervalRef.current)
-      recognitionIntervalRef.current = null
-    }
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
-    }
-
-    if (videoElementRef.current) {
-      videoElementRef.current.srcObject = null
-    }
-    setIsInitialized(false)
-    setStatus('Recognition stopped')
-  }, [])
-
-  // Stop recognition (alias for internal use)
   const stopRecognition = useCallback(() => {
-    if (recognitionIntervalRef.current) {
-      clearInterval(recognitionIntervalRef.current)
-      recognitionIntervalRef.current = null
-    }
-    setIsRunning(false)
-    setLastResult(null)
-    setStatus('Stopped')
-  }, [])
+    stop()
+  }, [stop])
 
-  // Dispose of resources
-  const dispose = useCallback((): void => {
-    if (recognitionIntervalRef.current) {
-      clearInterval(recognitionIntervalRef.current)
-      recognitionIntervalRef.current = null
-    }
-
-    // Stop camera stream tracks
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
-    }
-
-    if (videoElementRef.current) {
-      videoElementRef.current.srcObject = null
-    }
-
+  const dispose = useCallback(() => {
+    engineRef.current?.dispose()
+    engineRef.current = null
     setIsInitialized(false)
     setIsRunning(false)
-    setError(null)
     setStatus('Disposed')
-    setLastResult(null)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      engineRef.current?.dispose()
+      engineRef.current = null
+    }
   }, [])
 
   return {
-    // State
     isInitialized,
     isRunning,
     isLoading,
     error,
     status,
     lastResult,
-
-    // Controls
     start,
     stop,
     initialize,
     captureAndRecognize,
     stopRecognition,
-
-    // Utility
     dispose,
   }
 }
-
-export default useGestureRecognition
