@@ -9,7 +9,7 @@ export const gSign = new GestureDescription('G')
 //     ],
 //     [
 //       "Index",
-//       "Half Curl",
+//       "No Curl",
 //       "Horizontal Right"
 //     ],
 //     [

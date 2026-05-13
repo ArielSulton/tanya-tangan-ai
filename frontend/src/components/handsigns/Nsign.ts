@@ -4,7 +4,7 @@ export const nSign = new GestureDescription('N')
 // [
 //     [
 //       "Thumb",
-//       "Half Curl",
+//       "Half Curl or Full Curl",
 //       "Diagonal Up Left"
 //     ],
 //     [

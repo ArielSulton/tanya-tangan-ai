@@ -25,7 +25,7 @@ export const uSign = new GestureDescription('U')
 //     [
 //       "Pinky",
 //       "Full Curl",
-//       "Vertical Up"
+//       "Diagonal Up Left"
 //     ]
 //   ]
 

@@ -10,7 +10,7 @@ export const rSign = new GestureDescription('R')
 //     [
 //       "Index",
 //       "No Curl",
-//       "Diagonal Up Right"
+//       "Vertical Up"
 //     ],
 //     [
 //       "Middle",

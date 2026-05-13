@@ -9,8 +9,8 @@ export const eSign = new GestureDescription('E')
 //     ],
 //     [
 //       "Index",
-//       "Half Curl",
-//       "Diagonal Up Right"
+//       "Full Curl",
+//       "Vertical Up"
 //     ],
 //     [
 //       "Middle",

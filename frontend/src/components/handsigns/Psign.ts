@@ -14,13 +14,13 @@ export const pSign = new GestureDescription('P')
 //     ],
 //     [
 //       "Middle",
-//       "Full Curl",
-//       "Horizontal Right"
+//       "Half Curl",
+//       "Diagonal Down Right"
 //     ],
 //     [
 //       "Ring",
 //       "Full Curl",
-//       "Horizontal Right"
+//       "Diagonal Down Right"
 //     ],
 //     [
 //       "Pinky",

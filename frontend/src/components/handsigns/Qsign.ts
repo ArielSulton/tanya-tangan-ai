@@ -10,22 +10,22 @@ export const qSign = new GestureDescription('Q')
 //     [
 //       "Index",
 //       "Half Curl",
-//       "Vertical Down"
+//       "Horizontal Right"
 //     ],
 //     [
 //       "Middle",
-//       "Half Curl",
-//       "Vertical Down"
+//       "Full Curl",
+//       "Horizontal Right"
 //     ],
 //     [
 //       "Ring",
-//       "Half Curl",
-//       "Vertical Down"
+//       "Full Curl",
+//       "Diagonal Down Right"
 //     ],
 //     [
 //       "Pinky",
-//       "Half Curl",
-//       "Diagonal Down Left"
+//       "Full Curl",
+//       "Diagonal Down Right"
 //     ]
 //   ]
 

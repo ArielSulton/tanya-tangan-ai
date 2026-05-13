@@ -14,7 +14,7 @@ export const xSign = new GestureDescription('X')
 //     ],
 //     [
 //       "Middle",
-//       "Half Curl",
+//       "Full Curl",
 //       "Vertical Up"
 //     ],
 //     [

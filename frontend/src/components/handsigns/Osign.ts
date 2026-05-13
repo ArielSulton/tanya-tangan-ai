@@ -19,12 +19,12 @@ export const oSign = new GestureDescription('O')
 //     ],
 //     [
 //       "Ring",
-//       "Half Curl",
+//       "Full Curl",
 //       "Diagonal Up Right"
 //     ],
 //     [
 //       "Pinky",
-//       "Half Curl",
+//       "Full Curl",
 //       "Diagonal Up Right"
 //     ]
 //   ]
