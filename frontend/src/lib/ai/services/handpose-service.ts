@@ -155,6 +155,37 @@ export class HandPoseService {
     }
   }
 
+  /**
+   * Like {@link detectHands}, but returns all detected hands in the shape
+   * consumed by the Phase 2 feature pipeline (`lib/gesture/*`). The
+   * `RawHand` shape is positional — caller is responsible for sorting and
+   * normalizing.
+   *
+   * Returns an empty array if no hand is detected. Up to `MAX_NUM_HANDS`
+   * (2 in Phase 2) hands are returned.
+   */
+  async detectRawHands(videoElement: HTMLVideoElement): Promise<import('../../gesture/types').RawHand[]> {
+    if (!this.isInitialized || !this.model) {
+      throw new Error('HandPose service not initialized')
+    }
+    if (!videoElement || videoElement.readyState < 2) {
+      throw new Error('Video element not ready')
+    }
+    if (videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
+      throw new Error('Video dimensions not available')
+    }
+
+    const predictions = await this.model.estimateHands(videoElement, {
+      flipHorizontal: this.config.flipHorizontal,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    return predictions.map((p) => ({
+      landmarks: p.landmarks.map((lm) => ({ x: lm[0], y: lm[1], z: lm[2] ?? 0 })),
+      confidence: p.handInViewConfidence ?? 0.8,
+    }))
+  }
+
   // eslint-disable-next-line @typescript-eslint/require-await
   async recognizeGesture(landmarks: HandLandmark[]): Promise<GestureRecognitionResult> {
     console.log('🚀 recognizeGesture called with', landmarks.length, 'landmarks')
