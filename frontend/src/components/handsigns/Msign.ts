@@ -31,6 +31,10 @@ export const mSign = new GestureDescription('M')
 
 //Thumb
 mSign.addCurl(Finger.Thumb, FingerCurl.HalfCurl, 1.0)
+// Tolerate FullCurl too — when thumb is tucked under 3 fingers, MediaPipe
+// often estimates it as fully curled rather than half. Without this M loses
+// to T (which has a strictly NoCurl thumb that scores too well on noise).
+mSign.addCurl(Finger.Thumb, FingerCurl.FullCurl, 1.0)
 mSign.addDirection(Finger.Thumb, FingerDirection.DiagonalUpLeft, 0.7)
 
 //Index

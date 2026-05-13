@@ -31,11 +31,15 @@ export const nSign = new GestureDescription('N')
 
 //Thumb
 nSign.addCurl(Finger.Thumb, FingerCurl.HalfCurl, 1.0)
+// Tolerate FullCurl too — when thumb is tucked under 2 fingers, MediaPipe
+// often estimates it as fully curled rather than half. Without this N loses
+// to T (which has a strictly NoCurl thumb that scores too well on noise).
+nSign.addCurl(Finger.Thumb, FingerCurl.FullCurl, 1.0)
 nSign.addDirection(Finger.Thumb, FingerDirection.DiagonalUpLeft, 0.7)
 
 //Index
 nSign.addCurl(Finger.Index, FingerCurl.FullCurl, 1)
-nSign.addDirection(Finger.Index, FingerDirection.DiagonalUpRight, 0.7)
+nSign.addDirection(Finger.Index, FingerDirection.VerticalUp, 0.7)
 
 //Middle
 nSign.addCurl(Finger.Middle, FingerCurl.FullCurl, 1)
