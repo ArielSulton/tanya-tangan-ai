@@ -31,7 +31,7 @@ export const qSign = new GestureDescription('Q')
 
 //Thumb
 qSign.addCurl(Finger.Thumb, FingerCurl.NoCurl, 1.0)
-qSign.addDirection(Finger.Index, FingerDirection.DiagonalDownRight, 0.7)
+qSign.addDirection(Finger.Thumb, FingerDirection.VerticalDown, 0.7)
 
 //Index
 qSign.addCurl(Finger.Index, FingerCurl.HalfCurl, 1)

@@ -31,7 +31,7 @@ export const xSign = new GestureDescription('X')
 
 //Thumb
 xSign.addCurl(Finger.Thumb, FingerCurl.HalfCurl, 1.0)
-xSign.addDirection(Finger.Index, FingerDirection.VerticalUp, 0.7)
+xSign.addDirection(Finger.Thumb, FingerDirection.VerticalUp, 0.7)
 
 //Index
 xSign.addCurl(Finger.Index, FingerCurl.HalfCurl, 1)
