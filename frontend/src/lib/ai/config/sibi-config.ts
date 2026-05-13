@@ -8,7 +8,7 @@ export const SIBI_CONFIG = {
   MAX_NUM_HANDS: 2,
   MIN_DETECTION_CONFIDENCE: 0.7, // Reduced for faster detection
   SCORE_THRESHOLD: 5.0, // Reduced for better performance
-  FLIP_HORIZONTAL: true, // Mirror camera for natural gestures
+  FLIP_HORIZONTAL: false, // mediapipe runtime: false because the <video> is already CSS-mirrored for natural display; flipping again double-flips keypoints onto the wrong side
 
   // Gesture classification settings - Balanced accuracy/speed
   CONFIDENCE_THRESHOLD: 0.75, // Reduced for faster validation

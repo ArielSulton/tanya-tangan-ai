@@ -36,6 +36,7 @@ export class GestureRecognitionService {
   private isInitialized = false
   private isRunning = false
   private lastProcessingTime = 0
+  private lastDrawTime = 0
   private processingQueue: HandPoseDetection[] = []
   private smoothingBuffer: GestureRecognitionResult[] = []
   private videoElement: HTMLVideoElement | null = null
@@ -282,6 +283,7 @@ export class GestureRecognitionService {
 
           // Draw hand landmarks on canvas (non-blocking)
           requestAnimationFrame(() => this.drawHandsOnCanvas(handDetections))
+          this.lastDrawTime = now
 
           // Apply smoothing if enabled
           if (this.config.processingOptions.enableSmoothing) {
@@ -293,8 +295,11 @@ export class GestureRecognitionService {
             this.emitResult(recognitionResult)
           }
         } else {
-          // Clear canvas if no hands detected (non-blocking)
-          requestAnimationFrame(() => this.clearCanvas())
+          // Clear canvas only if no hand has been drawn for a while
+          // (prevents flicker when detection skips a frame or two).
+          if (now - this.lastDrawTime > 500) {
+            requestAnimationFrame(() => this.clearCanvas())
+          }
         }
       } catch (error) {
         // Handle specific errors differently
