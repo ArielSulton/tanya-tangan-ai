@@ -64,6 +64,10 @@ export class BrowserGestureEngine {
       try {
         await this.rawHandPose.initialize()
         this.startRawHandPump()
+        if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ;(window as any).__gestureEngine = this
+        }
       } catch (err) {
         console.warn('[gesture] Phase 2A raw-hand pipeline init failed (non-fatal):', err)
         this.rawHandPose = null
