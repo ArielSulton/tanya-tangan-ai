@@ -76,6 +76,11 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
 
   const initialize = useCallback(
     async (videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement): Promise<void> => {
+      if (engineRef.current) {
+        console.warn('[gesture] initialize called while an engine already exists; skipping')
+        return
+      }
+
       setIsLoading(true)
       setError(null)
       setStatus('Initializing browser engine...')
@@ -96,9 +101,12 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
         },
       })
 
+      // Set ref immediately so a concurrent initialize() call bails out
+      // instead of constructing a second engine.
+      engineRef.current = engine
+
       try {
         await engine.initialize(videoElement, canvasElement)
-        engineRef.current = engine
         setIsInitialized(true)
         setStatus('Browser engine ready')
 
@@ -107,8 +115,9 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
           setIsRunning(true)
         }
       } catch (err) {
-        const e = err as Error
+        const e = err instanceof Error ? err : new Error(String(err))
         console.error('[gesture] Browser engine init failed:', e)
+        engineRef.current = null
         setError(e)
         optionsRef.current.onError?.(e)
         setIsInitialized(false)
@@ -122,7 +131,15 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
 
   const start = useCallback(() => {
     if (!engineRef.current) return
-    void engineRef.current.start().then(() => setIsRunning(true))
+    engineRef.current
+      .start()
+      .then(() => setIsRunning(true))
+      .catch((err) => {
+        const e = err instanceof Error ? err : new Error(String(err))
+        console.error('[gesture] engine start failed:', e)
+        setError(e)
+        optionsRef.current.onError?.(e)
+      })
   }, [])
 
   const stop = useCallback(() => {
@@ -130,7 +147,14 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
       setIsRunning(false)
       return
     }
-    void engineRef.current.stop().then(() => setIsRunning(false))
+    engineRef.current
+      .stop()
+      .then(() => setIsRunning(false))
+      .catch((err) => {
+        const e = err instanceof Error ? err : new Error(String(err))
+        console.error('[gesture] engine stop failed:', e)
+        setError(e)
+      })
   }, [])
 
   const captureAndRecognize = useCallback(
