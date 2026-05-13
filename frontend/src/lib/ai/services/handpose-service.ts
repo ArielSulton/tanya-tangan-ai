@@ -80,30 +80,23 @@ export class HandPoseService {
         tf.ready(),
         new Promise((_, reject) => setTimeout(() => reject(new Error('TensorFlow.js initialization timeout')), 30000)),
       ])
-      // Force webgl backend explicitly. With @tensorflow-models/hand-pose-detection
-      // v2 + runtime:'tfjs', if the backend defaults to anything else (cpu,
-      // wasm) the model loads but estimateHands returns all-NaN keypoints.
-      try {
-        await tf.setBackend('webgl')
-        await tf.ready()
-      } catch (e) {
-        console.warn('⚠️ Failed to set webgl backend, using default:', tf.getBackend(), e)
-      }
       console.log('✅ TensorFlow.js ready with backend:', tf.getBackend())
 
-      // Load HandPose detector via @tensorflow-models/hand-pose-detection
-      // (MediaPipeHands model, TFJS runtime — supports up to 2 hands natively).
-      // 'full' is more reliable than 'lite' for keypoint quality.
-      console.log('📥 Loading HandPose detector (MediaPipe model, TFJS runtime, full)...')
+      // Load HandPose detector with the 'mediapipe' runtime — uses
+      // @mediapipe/hands (WASM/JS solution loaded from JSDelivr CDN) rather
+      // than running inference through TF.js. More reliable across browsers:
+      // the tfjs runtime returned all-NaN keypoints in our test environment.
+      console.log('📥 Loading HandPose detector (MediaPipeHands model, mediapipe runtime)...')
       this.detector = await Promise.race([
         handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands, {
-          runtime: 'tfjs',
+          runtime: 'mediapipe',
+          solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands',
           modelType: 'full',
           maxHands: this.config.maxNumHands,
         }),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('HandPose model loading timeout')), 30000)),
       ])
-      console.log('✅ HandPose detector loaded successfully')
+      console.log('✅ HandPose detector loaded successfully (mediapipe runtime)')
 
       // Store gestures for creating new GestureEstimator instances (match reference pattern)
       this.allGestures = SIBIGestures.getAllGestures()
