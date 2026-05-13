@@ -6,6 +6,7 @@
 
 import { HandPoseService, HandPoseDetection, drawHand } from './handpose-service'
 import { SIBI_CONFIG } from '../config/sibi-config'
+import type { RawHand } from '../../gesture/types'
 
 export interface GestureRecognitionResult {
   letter: string
@@ -45,6 +46,7 @@ export class GestureRecognitionService {
   private onResultCallback: ((result: GestureRecognitionResult) => void) | null = null
   private onErrorCallback: ((error: Error) => void) | null = null
   private onStatusCallback: ((status: string) => void) | null = null
+  private onRawHandsCallback: ((raws: RawHand[]) => void) | null = null
 
   // Configuration
   private config: Required<GestureRecognitionConfig> = {
@@ -205,6 +207,17 @@ export class GestureRecognitionService {
   }
 
   /**
+   * Set callback for raw multi-hand detections (Phase 2A pipeline consumer).
+   * Fires every processed frame with all detected hands in `RawHand` shape
+   * (positional, before sort/normalize). Used by BrowserGestureEngine to
+   * feed the 2-hand feature pipeline without spinning up a second
+   * HandPoseService — single model load, multiple consumers.
+   */
+  setOnRawHands(callback: (raws: RawHand[]) => void): void {
+    this.onRawHandsCallback = callback
+  }
+
+  /**
    * Start the processing loop for hand detection and gesture recognition
    */
   private startProcessingLoop(): void {
@@ -231,6 +244,17 @@ export class GestureRecognitionService {
           this.handPose.detectHands(this.videoElement),
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Hand detection timeout')), 1000)),
         ])
+
+        // Phase 2A: publish raw hands to any subscribed pipeline before
+        // running fingerpose classification. Reusing the single HandPose
+        // model load — no second inference call.
+        if (this.onRawHandsCallback) {
+          const raws: RawHand[] = handDetections.map((d) => ({
+            landmarks: d.landmarks.map((lm) => ({ x: lm.x, y: lm.y, z: lm.z })),
+            confidence: d.confidence,
+          }))
+          this.onRawHandsCallback(raws)
+        }
 
         if (handDetections.length > 0) {
           // Take the most confident hand detection
