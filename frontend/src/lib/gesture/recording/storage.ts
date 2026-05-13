@@ -33,10 +33,21 @@ async function txAll<T>(store: string, mode: IDBTransactionMode, op: (s: IDBObje
   return new Promise<T>((resolve, reject) => {
     const tx = db.transaction(store, mode)
     const req = op(tx.objectStore(store))
-    req.onsuccess = () => resolve(req.result)
+    let result: T | undefined
+    req.onsuccess = () => {
+      result = req.result
+    }
     req.onerror = () => reject(new Error(req.error?.message ?? 'IDB error'))
-    tx.oncomplete = () => db.close()
-    tx.onerror = () => db.close()
+    // Resolve on transaction commit (not just request success) so writes are
+    // durable before the caller acts on them.
+    tx.oncomplete = () => {
+      db.close()
+      resolve(result as T)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(new Error(tx.error?.message ?? 'IDB transaction error'))
+    }
   })
 }
 

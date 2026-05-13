@@ -144,12 +144,15 @@ export function GestureRecorder() {
 
     void start()
 
+    // Snapshot the <video> ref so cleanup stops the stream on the same DOM
+    // node we attached it to, even if React swaps the element later.
+    const videoElForCleanup = videoRef.current
     return () => {
       cancelled = true
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
       handposeRef.current?.dispose()
       handposeRef.current = null
-      const stream = videoRef.current?.srcObject as MediaStream | null
+      const stream = videoElForCleanup?.srcObject as MediaStream | null
       stream?.getTracks().forEach((t) => t.stop())
     }
     // Empty deps: camera + handpose set up once. Live state read via refs above.
@@ -159,7 +162,9 @@ export function GestureRecorder() {
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
       if (ev.code !== 'Space') return
-      if ((ev.target as HTMLElement | null)?.tagName === 'INPUT') return
+      const target = ev.target as HTMLElement | null
+      const tag = target?.tagName ?? ''
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || target?.isContentEditable) return
       ev.preventDefault()
       if (mode === 'static') void handleRecordStatic()
       else void handleSaveDynamicTake()
