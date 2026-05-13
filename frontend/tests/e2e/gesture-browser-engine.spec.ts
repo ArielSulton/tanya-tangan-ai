@@ -16,10 +16,17 @@ test.describe('Browser gesture engine (Phase 1)', () => {
 
     await page.goto('/vocab/hewan')
 
-    // The page should mount and reach a steady state.
-    // Camera init takes a moment; allow up to 3s for any incidental request.
-    await page.waitForTimeout(3000)
+    // Wait deterministically for the idle-state UI to render — this confirms
+    // hydration completed and the hook's initialize effect had a chance to run.
+    // Avoids fixed-timeout flakiness on slow CI.
+    await page.getByText('Ayo, tunjukkan isyaratmu!').waitFor({ state: 'visible' })
 
+    // Drain any incidental post-mount async activity before asserting.
+    await page.waitForLoadState('networkidle')
+
+    // Note: this test covers mount-time only. A separate spec is needed if we
+    // also want to verify that start()/captureAndRecognize never hit YOLO once
+    // the user actively engages the camera (out of scope for Phase 1 smoke).
     expect(yoloCalls, 'browser engine should not call YOLO on page mount').toEqual([])
   })
 })
