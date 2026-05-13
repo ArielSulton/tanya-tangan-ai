@@ -12,6 +12,8 @@ import { sortHandsByXPosition } from './normalize'
 import { extractFrameFeatures } from './feature-extractor'
 import { MotionDetector } from './motion-detector'
 import type { FrameFeatures, MotionState, RawHand } from './types'
+import { dynamicClassifier } from './inference/dynamic-classifier'
+import type { HistoryPoint } from './recording/types'
 
 export interface BrowserGestureEngineCallbacks {
   onResult?: (result: BrowserGestureResult) => void
@@ -26,6 +28,8 @@ export class BrowserGestureEngine {
   private state: EngineStatus = 'uninitialized'
   private frameBuffer: FrameFeatures[] = []
   private motionDetector = new MotionDetector()
+  private dynamicHistory: HistoryPoint[] = []
+  private readonly DYNAMIC_HISTORY_SIZE = 24
   private readonly FRAME_BUFFER_SIZE = 24
 
   constructor(callbacks: BrowserGestureEngineCallbacks = {}) {
@@ -101,12 +105,39 @@ export class BrowserGestureEngine {
     const sortedRawByX = [...raws].sort((a, b) => a.landmarks[0].x - b.landmarks[0].x)
     const rawSlot0 = sortedRawByX[0]
     if (rawSlot0) {
-      this.motionDetector.update({
-        x: rawSlot0.landmarks[0].x,
-        y: rawSlot0.landmarks[0].y,
-      })
+      const point = { x: rawSlot0.landmarks[0].x, y: rawSlot0.landmarks[0].y }
+      this.motionDetector.update(point)
+      // Maintain a rolling 24-point history for dynamic classification.
+      this.dynamicHistory.push(point)
+      if (this.dynamicHistory.length > this.DYNAMIC_HISTORY_SIZE) {
+        this.dynamicHistory.shift()
+      }
     } else {
       this.motionDetector.update(null)
+    }
+
+    // On motion_end, dispatch dynamic inference asynchronously.
+    if (this.motionDetector.state === 'motion_end' && this.dynamicHistory.length === this.DYNAMIC_HISTORY_SIZE) {
+      void this.runDynamicInference([...this.dynamicHistory])
+    }
+  }
+
+  private async runDynamicInference(history: HistoryPoint[]): Promise<void> {
+    try {
+      const result = await dynamicClassifier.classify(history)
+      if (result) {
+        const adapted: BrowserGestureResult = {
+          letter: result.label,
+          confidence: result.confidence,
+          alternatives: [],
+          timestamp: Date.now(),
+          processingTimeMs: 0,
+          source: 'browser',
+        }
+        this.callbacks.onResult?.(adapted)
+      }
+    } catch (err) {
+      console.warn('[engine] dynamic inference error:', err)
     }
   }
 
