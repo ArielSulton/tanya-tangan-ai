@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SIBI Gesture Recorder</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; }
+  header { background: white; border-bottom: 1px solid #e2e8f0; padding: 12px 16px; }
+  header h1 { font-size: 18px; font-weight: 600; color: #1e293b; }
+  header p { font-size: 12px; color: #64748b; margin-top: 2px; }
+  main { padding: 16px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; max-width: 1400px; margin: 0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .panel { background: white; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
+  .video-wrap { position: relative; aspect-ratio: 4/3; background: #0f172a; border-radius: 6px; overflow: hidden; border: 1px solid #cbd5e1; }
+  .video-wrap video, .video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .status { margin-top: 8px; font-size: 12px; color: #475569; }
+  .section { padding: 12px; }
+  .section + .section { border-top: 1px solid #f1f5f9; }
+  .label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
+  .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; padding: 6px 12px; border: 1px solid #cbd5e1; background: white; color: #334155; border-radius: 6px; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .btn:hover:not(:disabled) { border-color: #94a3b8; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: #10b981; border-color: #10b981; color: white; font-weight: 600; }
+  .btn-primary:hover:not(:disabled) { background: #059669; border-color: #059669; }
+  .btn-danger { background: #ef4444; border-color: #ef4444; color: white; }
+  .btn-danger:hover:not(:disabled) { background: #dc2626; border-color: #dc2626; }
+  .btn-sm { padding: 4px 8px; font-size: 12px; }
+  .toggle { display: inline-flex; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
+  .toggle button { padding: 6px 12px; border: none; background: white; color: #475569; cursor: pointer; font-size: 13px; font-family: inherit; }
+  .toggle button.active { background: #10b981; color: white; font-weight: 600; }
+  .class-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .class-chip { padding: 4px 10px; border: 1px solid #cbd5e1; background: white; color: #475569; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 12px; cursor: pointer; }
+  .class-chip:hover { border-color: #94a3b8; }
+  .class-chip.active { border-color: #10b981; background: #d1fae5; color: #065f46; }
+  .class-chip-count { margin-left: 4px; padding: 0 5px; background: #f1f5f9; border-radius: 9999px; font-size: 10px; color: #64748b; }
+  input[type=text] { flex: 1; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 13px; outline: none; }
+  input[type=text]:focus { border-color: #10b981; }
+  select { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 11px; background: white; outline: none; }
+  select:focus { border-color: #10b981; }
+  .sample-list { display: flex; flex-direction: column; max-height: 300px; min-height: 0; border: 1px solid #cbd5e1; border-radius: 6px; background: white; overflow: hidden; }
+  .sample-list-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; color: #334155; }
+  .sample-list-header .count { font-size: 11px; font-weight: 400; color: #64748b; }
+  .sample-list-body { flex: 1; min-height: 0; overflow-y: auto; }
+  .sample-row { display: grid; grid-template-columns: 1fr 50px 70px 24px; align-items: center; gap: 6px; padding: 4px 12px; border-bottom: 1px solid #f1f5f9; font-size: 11px; }
+  .sample-row .lbl { font-family: ui-monospace, monospace; }
+  .sample-row .ago { color: #64748b; text-align: right; }
+  .sample-row .src { padding: 2px 4px; background: #f1f5f9; color: #64748b; border-radius: 3px; text-align: center; font-size: 10px; }
+  .sample-row .del { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; }
+  .empty { padding: 20px; text-align: center; color: #94a3b8; font-size: 13px; }
+  .info { margin-top: 4px; font-size: 11px; color: #64748b; }
+  .buffer-bar { display: inline-block; height: 4px; width: 100px; background: #e2e8f0; border-radius: 2px; overflow: hidden; vertical-align: middle; margin-left: 6px; }
+  .buffer-bar > span { display: block; height: 100%; background: #10b981; transition: width 0.1s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SIBI Gesture Recorder</h1>
+  <p>Rekam sample bahasa isyarat untuk training model. Data tersimpan di IndexedDB browser-mu. Klik <b>Export CSV</b> untuk kirim ke teman pemilik project.</p>
+</header>
+
+<main>
+  <section>
+    <div class="video-wrap">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas"></canvas>
+    </div>
+    <div class="status" id="status">Memuat…</div>
+  </section>
+
+  <section class="panel">
+    <div class="section">
+      <div class="label">Mode</div>
+      <div class="toggle">
+        <button id="mode-static" class="active">Static (alfabet)</button>
+        <button id="mode-dynamic">Dynamic (gerakan/kata)</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="label" id="class-label">Alphabet class</div>
+      <div id="class-static" class="class-grid"></div>
+      <div id="class-dynamic" style="display:none;">
+        <div class="row" style="margin-bottom:8px;">
+          <input id="dyn-input" type="text" placeholder="ketik nama kelas (e.g. jeruk)" autocomplete="off" spellcheck="false" />
+          <button id="dyn-use" class="btn btn-primary btn-sm">Use</button>
+        </div>
+        <div id="dyn-recorded" class="class-grid" style="margin-bottom:8px;"></div>
+        <div id="dyn-suggestions" class="class-grid"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="label">Controls</div>
+      <div id="controls-static" class="row">
+        <button id="record-static" class="btn btn-primary">Record frame</button>
+        <span class="info">Pegang sign, tekan tombol — 1 sample.</span>
+      </div>
+      <div id="controls-dynamic" class="row" style="display:none;">
+        <button id="save-dynamic" class="btn btn-primary">Save take</button>
+        <button id="reset-buffer" class="btn btn-sm">Reset</button>
+        <span class="info">Buffer: <span id="buf-size">0</span>/<span id="buf-cap">32</span><span class="buffer-bar"><span id="buf-bar" style="width:0%"></span></span></span>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <button id="export-csv" class="btn">Export CSV</button>
+        <button id="clear-all" class="btn btn-danger btn-sm">Clear all</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sample-list">
+        <div class="sample-list-header">
+          <span>Static samples <span id="static-count" class="count">(0)</span></span>
+          <select id="static-filter" aria-label="Filter static class">
+            <option value="__all__">all</option>
+          </select>
+        </div>
+        <ul id="static-body" class="sample-list-body"></ul>
+      </div>
+    </div>
+    <div class="section">
+      <div class="sample-list">
+        <div class="sample-list-header">
+          <span>Dynamic samples <span id="dynamic-count" class="count">(0)</span></span>
+          <select id="dynamic-filter" aria-label="Filter dynamic class">
+            <option value="__all__">all</option>
+          </select>
+        </div>
+        <ul id="dynamic-body" class="sample-list-body"></ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script>
+'use strict'
+// ============================================================================
+// SIBI Gesture Recorder — standalone, vanilla JS, single HTML.
+// Mirrors the data shape used by the project's training pipeline so the
+// exported CSVs slot straight into training/keypoint_csv/sibi.csv and
+// training/point_history_csv/dynamic.csv.
+// ============================================================================
+
+// Constants must stay in lockstep with frontend/src/lib/gesture/recording/types.ts
+const STATIC_CLASSES = ['A','B','C','D','E','F','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
+const DYNAMIC_SUGGESTIONS = ['jeruk','kucing','besar','kecil','sangat','j','z']
+const DYNAMIC_HISTORY_SIZE = 32
+const STATIC_FEATURE_LENGTH = 84 // 2 hands × 21 landmarks × 2 coords
+const DB_NAME = 'sibi-recorder'
+const DB_VERSION = 1
+const STORE_STATIC = 'static'
+const STORE_DYNAMIC = 'dynamic'
+const ALL = '__all__'
+
+// MediaPipe landmark connectivity (hand skeleton).
+const FINGER_CHAINS = [
+  [0,1,2,3,4],     // thumb
+  [0,5,6,7,8],     // index
+  [0,9,10,11,12],  // middle
+  [0,13,14,15,16], // ring
+  [0,17,18,19,20], // pinky
+]
+
+// ----------------------------------------------------------------------------
+// IndexedDB helpers
+// ----------------------------------------------------------------------------
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION)
+    req.onupgradeneeded = () => {
+      const db = req.result
+      if (!db.objectStoreNames.contains(STORE_STATIC)) db.createObjectStore(STORE_STATIC, { keyPath: 'id' })
+      if (!db.objectStoreNames.contains(STORE_DYNAMIC)) db.createObjectStore(STORE_DYNAMIC, { keyPath: 'id' })
+    }
+    req.onsuccess = () => resolve(req.result)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+async function dbAdd(store, value) {
+  const db = await openDB()
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite')
+    tx.objectStore(store).put(value)
+    tx.oncomplete = resolve
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+async function dbList(store) {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly')
+    const req = tx.objectStore(store).getAll()
+    req.onsuccess = () => resolve(req.result || [])
+    req.onerror = () => reject(req.error)
+  })
+}
+
+async function dbDelete(store, id) {
+  const db = await openDB()
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite')
+    tx.objectStore(store).delete(id)
+    tx.oncomplete = resolve
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+async function dbClear() {
+  const db = await openDB()
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE_STATIC, STORE_DYNAMIC], 'readwrite')
+    tx.objectStore(STORE_STATIC).clear()
+    tx.objectStore(STORE_DYNAMIC).clear()
+    tx.oncomplete = resolve
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+// ----------------------------------------------------------------------------
+// Hand normalization — must match frontend/src/lib/gesture/normalize.ts
+//   1. Sort detected hands by wrist x (leftmost = slot 0)
+//   2. Translate each hand so wrist is at origin
+//   3. Scale so wrist→middleMCP distance = 1 (scale-invariant)
+// Missing hand slots → zero-filled 42 floats.
+// ----------------------------------------------------------------------------
+function normalizeHand(landmarks) {
+  const wrist = landmarks[0]
+  const mcp = landmarks[9]
+  const dx = mcp.x - wrist.x
+  const dy = mcp.y - wrist.y
+  const palm = Math.sqrt(dx*dx + dy*dy)
+  const scale = palm > 1e-6 ? 1 / palm : 1
+  return landmarks.map(p => ({ x: (p.x - wrist.x) * scale, y: (p.y - wrist.y) * scale }))
+}
+
+function sortAndNormalize(hands) {
+  if (hands.length === 0) return [null, null]
+  const sorted = [...hands].sort((a, b) => a[0].x - b[0].x)
+  return [sorted[0] ? normalizeHand(sorted[0]) : null, sorted[1] ? normalizeHand(sorted[1]) : null]
+}
+
+function extractFrameFeatures(pair) {
+  const out = []
+  for (const hand of pair) {
+    if (hand === null) {
+      for (let i = 0; i < 42; i++) out.push(0)
+    } else {
+      for (const p of hand) out.push(p.x, p.y)
+    }
+  }
+  return out
+}
+
+// ----------------------------------------------------------------------------
+// CSV export (must match frontend/src/lib/gesture/recording/csv-export.ts)
+// ----------------------------------------------------------------------------
+function staticToCsv(samples) {
+  const headers = ['label']
+  for (let i = 0; i < STATIC_FEATURE_LENGTH; i++) headers.push('f' + i)
+  const lines = [headers.join(',')]
+  for (const s of samples) {
+    if (s.features.length !== STATIC_FEATURE_LENGTH) continue
+    lines.push([s.label, ...s.features].join(','))
+  }
+  return lines.join('\n')
+}
+
+function dynamicToCsv(samples) {
+  const headers = ['label']
+  for (let i = 0; i < DYNAMIC_HISTORY_SIZE; i++) headers.push('x' + i, 'y' + i)
+  const lines = [headers.join(',')]
+  for (const s of samples) {
+    if (s.history.length !== DYNAMIC_HISTORY_SIZE) continue
+    const flat = []
+    for (const p of s.history) flat.push(p.x, p.y)
+    lines.push([s.label, ...flat].join(','))
+  }
+  return lines.join('\n')
+}
+
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+function genId() { return crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2) }
+function timeAgo(ms) {
+  const d = Date.now() - ms
+  if (d < 60_000) return Math.floor(d / 1000) + 's'
+  if (d < 3_600_000) return Math.floor(d / 60_000) + 'm'
+  return Math.floor(d / 3_600_000) + 'h'
+}
+function normLabel(s) { return s.trim().toLowerCase().replace(/\s+/g, '_') }
+
+// ----------------------------------------------------------------------------
+// App state
+// ----------------------------------------------------------------------------
+const state = {
+  mode: 'static',
+  activeClass: null,
+  staticSamples: [],
+  dynamicSamples: [],
+  dynamicBuffer: [], // rolling [{x,y}] of length up to DYNAMIC_HISTORY_SIZE
+  latestPair: [null, null], // last normalized pair (for static capture)
+  staticFilter: ALL,
+  dynamicFilter: ALL,
+}
+
+const sessionId = genId()
+
+// ----------------------------------------------------------------------------
+// MediaPipe Hands setup
+// ----------------------------------------------------------------------------
+const video = document.getElementById('video')
+const canvas = document.getElementById('canvas')
+const ctx = canvas.getContext('2d')
+const statusEl = document.getElementById('status')
+
+function setStatus(msg) { statusEl.textContent = msg }
+
+const hands = new Hands({
+  locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+})
+hands.setOptions({
+  modelComplexity: 1,
+  selfieMode: false,
+  maxNumHands: 2,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5,
+})
+hands.onResults(onHandsResults)
+
+function drawSkeleton(detections) {
+  if (!video.videoWidth) return
+  if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  for (const hand of detections) {
+    ctx.strokeStyle = '#00ff00'
+    ctx.lineWidth = 2
+    for (const chain of FINGER_CHAINS) {
+      ctx.beginPath()
+      for (let i = 0; i < chain.length; i++) {
+        const lm = hand[chain[i]]
+        const x = lm.x * canvas.width
+        const y = lm.y * canvas.height
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+      }
+      ctx.stroke()
+    }
+    for (let i = 0; i < hand.length; i++) {
+      const lm = hand[i]
+      const x = lm.x * canvas.width
+      const y = lm.y * canvas.height
+      ctx.beginPath()
+      ctx.arc(x, y, 4, 0, Math.PI * 2)
+      ctx.fillStyle = i < 4 ? '#ff3030' : '#3070ff'
+      ctx.fill()
+    }
+  }
+}
+
+// Dedupe overlapping detections (MediaPipe sometimes emits 2 detections for 1 hand)
+function dedupeHands(hands) {
+  if (hands.length <= 1) return hands
+  const DEDUP_DIST = 0.10 // normalized space; ~10% of frame width
+  const kept = []
+  for (const h of hands) {
+    const w = h[0]
+    const dup = kept.some(k => {
+      const kw = k[0]
+      return Math.hypot(kw.x - w.x, kw.y - w.y) < DEDUP_DIST
+    })
+    if (!dup) kept.push(h)
+  }
+  return kept
+}
+
+function onHandsResults(results) {
+  let detected = (results.multiHandLandmarks || []).map(arr => arr.map(p => ({ x: p.x, y: p.y })))
+  detected = dedupeHands(detected)
+  drawSkeleton(detected)
+
+  // Normalize + cache for static capture
+  state.latestPair = sortAndNormalize(detected)
+
+  // Dynamic buffer push (use leftmost wrist in normalized [0,1] coords)
+  if (detected.length > 0) {
+    const sorted = [...detected].sort((a, b) => a[0].x - b[0].x)
+    state.dynamicBuffer.push({ x: sorted[0][0].x, y: sorted[0][0].y })
+    if (state.dynamicBuffer.length > DYNAMIC_HISTORY_SIZE) state.dynamicBuffer.shift()
+  }
+  renderBuffer()
+}
+
+async function initCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+      audio: false,
+    })
+    video.srcObject = stream
+    await new Promise((resolve, reject) => {
+      video.onloadedmetadata = resolve
+      video.onerror = reject
+    })
+    await video.play()
+    setStatus('Kamera siap, memulai detector…')
+    // Pump frames into MediaPipe
+    async function tick() {
+      if (video.readyState >= 2) {
+        await hands.send({ image: video })
+      }
+      requestAnimationFrame(() => { tick().catch(e => console.warn(e)) })
+    }
+    tick()
+    setStatus('Ready')
+  } catch (e) {
+    setStatus('Init failed: ' + e.message)
+    console.error(e)
+  }
+}
+
+// ----------------------------------------------------------------------------
+// UI rendering
+// ----------------------------------------------------------------------------
+function renderModeToggle() {
+  document.getElementById('mode-static').classList.toggle('active', state.mode === 'static')
+  document.getElementById('mode-dynamic').classList.toggle('active', state.mode === 'dynamic')
+  document.getElementById('class-static').style.display = state.mode === 'static' ? '' : 'none'
+  document.getElementById('class-dynamic').style.display = state.mode === 'dynamic' ? '' : 'none'
+  document.getElementById('controls-static').style.display = state.mode === 'static' ? '' : 'none'
+  document.getElementById('controls-dynamic').style.display = state.mode === 'dynamic' ? '' : 'none'
+  document.getElementById('class-label').textContent = state.mode === 'static' ? 'Alphabet class (A–Y, J & Z dinamis)' : 'Dynamic class'
+}
+
+function classCounts(samples) {
+  const c = {}
+  for (const s of samples) c[s.label] = (c[s.label] || 0) + 1
+  return c
+}
+
+function renderStaticClasses() {
+  const counts = classCounts(state.staticSamples)
+  const wrap = document.getElementById('class-static')
+  wrap.innerHTML = ''
+  for (const cls of STATIC_CLASSES) {
+    const b = document.createElement('button')
+    b.type = 'button'
+    b.className = 'class-chip' + (state.activeClass === cls ? ' active' : '')
+    b.textContent = cls
+    if (counts[cls]) {
+      const cnt = document.createElement('span')
+      cnt.className = 'class-chip-count'
+      cnt.textContent = counts[cls]
+      b.appendChild(cnt)
+    }
+    b.onclick = () => { state.activeClass = cls; renderStaticClasses() }
+    wrap.appendChild(b)
+  }
+}
+
+function renderDynamicClasses() {
+  const counts = classCounts(state.dynamicSamples)
+  const recordedWrap = document.getElementById('dyn-recorded')
+  const suggestWrap = document.getElementById('dyn-suggestions')
+  recordedWrap.innerHTML = ''
+  suggestWrap.innerHTML = ''
+  const recorded = Object.keys(counts).sort()
+  if (recorded.length > 0) {
+    const lbl = document.createElement('span')
+    lbl.className = 'label'
+    lbl.style.cssText = 'margin:0 6px 0 0;align-self:center;'
+    lbl.textContent = 'Recorded:'
+    recordedWrap.appendChild(lbl)
+    for (const cls of recorded) {
+      const b = document.createElement('button')
+      b.type = 'button'
+      b.className = 'class-chip' + (state.activeClass === cls ? ' active' : '')
+      b.textContent = cls
+      const cnt = document.createElement('span')
+      cnt.className = 'class-chip-count'
+      cnt.textContent = counts[cls]
+      b.appendChild(cnt)
+      b.onclick = () => { state.activeClass = cls; renderDynamicClasses() }
+      recordedWrap.appendChild(b)
+    }
+  }
+  const remaining = DYNAMIC_SUGGESTIONS.filter(s => !recorded.includes(s))
+  if (remaining.length > 0) {
+    const lbl = document.createElement('span')
+    lbl.className = 'label'
+    lbl.style.cssText = 'margin:0 6px 0 0;align-self:center;'
+    lbl.textContent = 'Suggested:'
+    suggestWrap.appendChild(lbl)
+    for (const cls of remaining) {
+      const b = document.createElement('button')
+      b.type = 'button'
+      b.className = 'class-chip'
+      b.textContent = cls
+      b.onclick = () => { state.activeClass = cls; document.getElementById('dyn-input').value = ''; renderDynamicClasses() }
+      suggestWrap.appendChild(b)
+    }
+  }
+}
+
+function renderBuffer() {
+  if (state.mode !== 'dynamic') return
+  document.getElementById('buf-size').textContent = state.dynamicBuffer.length
+  document.getElementById('buf-cap').textContent = DYNAMIC_HISTORY_SIZE
+  const pct = Math.min(100, (state.dynamicBuffer.length / DYNAMIC_HISTORY_SIZE) * 100)
+  document.getElementById('buf-bar').style.width = pct + '%'
+  document.getElementById('save-dynamic').disabled = !state.activeClass || state.dynamicBuffer.length !== DYNAMIC_HISTORY_SIZE
+}
+
+function renderSampleList(kind) {
+  const samples = kind === 'static' ? state.staticSamples : state.dynamicSamples
+  const filter = kind === 'static' ? state.staticFilter : state.dynamicFilter
+  const body = document.getElementById(kind + '-body')
+  const countEl = document.getElementById(kind + '-count')
+  const filterEl = document.getElementById(kind + '-filter')
+
+  const counts = classCounts(samples)
+  const classes = Object.keys(counts).sort()
+  // Rebuild filter options preserving current value
+  const currentVal = filterEl.value
+  filterEl.innerHTML = '<option value="' + ALL + '">all</option>'
+  for (const cls of classes) {
+    const opt = document.createElement('option')
+    opt.value = cls
+    opt.textContent = cls + ' (' + counts[cls] + ')'
+    filterEl.appendChild(opt)
+  }
+  // If active filter no longer exists, fall back to all
+  if (currentVal !== ALL && !classes.includes(currentVal)) {
+    if (kind === 'static') state.staticFilter = ALL; else state.dynamicFilter = ALL
+    filterEl.value = ALL
+  } else {
+    filterEl.value = currentVal
+  }
+
+  const activeFilter = kind === 'static' ? state.staticFilter : state.dynamicFilter
+  const visible = activeFilter === ALL ? samples : samples.filter(s => s.label === activeFilter)
+  countEl.textContent = activeFilter === ALL ? '(' + samples.length + ')' : '(' + visible.length + ' of ' + samples.length + ')'
+
+  const wasAtBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 5
+  body.innerHTML = ''
+  if (visible.length === 0) {
+    const li = document.createElement('li')
+    li.className = 'empty'
+    li.textContent = samples.length === 0 ? 'No samples yet' : 'No samples in "' + activeFilter + '"'
+    body.appendChild(li)
+    return
+  }
+  for (const s of visible) {
+    const li = document.createElement('li')
+    li.className = 'sample-row'
+    li.innerHTML =
+      '<span class="lbl"></span>' +
+      '<span class="ago"></span>' +
+      '<span class="src">manual</span>' +
+      '<button class="del" title="Delete">×</button>'
+    li.querySelector('.lbl').textContent = s.label
+    li.querySelector('.ago').textContent = timeAgo(s.capturedAt)
+    li.querySelector('.del').onclick = async () => {
+      await dbDelete(kind === 'static' ? STORE_STATIC : STORE_DYNAMIC, s.id)
+      await reloadFromDb()
+    }
+    body.appendChild(li)
+  }
+  // Auto-scroll to bottom if user was at bottom (or list just got bigger)
+  if (wasAtBottom) body.scrollTop = body.scrollHeight
+}
+
+function renderAll() {
+  renderModeToggle()
+  renderStaticClasses()
+  renderDynamicClasses()
+  renderBuffer()
+  renderSampleList('static')
+  renderSampleList('dynamic')
+}
+
+async function reloadFromDb() {
+  try {
+    state.staticSamples = await dbList(STORE_STATIC)
+    state.dynamicSamples = await dbList(STORE_DYNAMIC)
+  } catch (e) {
+    console.warn('reload db failed:', e)
+  }
+  renderAll()
+}
+
+// ----------------------------------------------------------------------------
+// Event handlers
+// ----------------------------------------------------------------------------
+document.getElementById('mode-static').onclick = () => { state.mode = 'static'; state.activeClass = null; renderAll() }
+document.getElementById('mode-dynamic').onclick = () => { state.mode = 'dynamic'; state.activeClass = null; renderAll() }
+
+document.getElementById('dyn-use').onclick = () => {
+  const v = normLabel(document.getElementById('dyn-input').value)
+  if (!v) return
+  state.activeClass = v
+  document.getElementById('dyn-input').value = ''
+  renderDynamicClasses()
+  renderBuffer()
+}
+document.getElementById('dyn-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('dyn-use').click() }
+})
+
+document.getElementById('record-static').onclick = async () => {
+  if (!state.activeClass) { alert('Pilih huruf dulu'); return }
+  const features = extractFrameFeatures(state.latestPair)
+  // Sanity: must be exactly 84 floats
+  if (features.length !== STATIC_FEATURE_LENGTH) return
+  // Reject if both slots are zero-fill (no hand detected)
+  const allZero = features.every(v => v === 0)
+  if (allZero) { setStatus('Tidak ada tangan terdeteksi — skip.'); return }
+  const sample = { id: genId(), label: state.activeClass, features, capturedAt: Date.now(), source: 'manual', session: sessionId }
+  await dbAdd(STORE_STATIC, sample)
+  state.staticSamples.push(sample)
+  renderSampleList('static')
+  renderStaticClasses()
+}
+
+document.getElementById('save-dynamic').onclick = async () => {
+  if (!state.activeClass) { alert('Ketik nama kelas dulu'); return }
+  if (state.dynamicBuffer.length !== DYNAMIC_HISTORY_SIZE) return
+  const sample = {
+    id: genId(),
+    label: state.activeClass,
+    history: state.dynamicBuffer.map(p => ({ x: p.x, y: p.y })),
+    capturedAt: Date.now(),
+    source: 'manual',
+    session: sessionId,
+  }
+  await dbAdd(STORE_DYNAMIC, sample)
+  state.dynamicSamples.push(sample)
+  state.dynamicBuffer = []
+  renderBuffer()
+  renderSampleList('dynamic')
+  renderDynamicClasses()
+}
+
+document.getElementById('reset-buffer').onclick = () => {
+  state.dynamicBuffer = []
+  renderBuffer()
+}
+
+document.getElementById('export-csv').onclick = () => {
+  if (state.staticSamples.length > 0) {
+    downloadText('sibi_static_' + sessionId.slice(0, 8) + '.csv', staticToCsv(state.staticSamples))
+  }
+  if (state.dynamicSamples.length > 0) {
+    downloadText('sibi_dynamic_' + sessionId.slice(0, 8) + '.csv', dynamicToCsv(state.dynamicSamples))
+  }
+  if (state.staticSamples.length === 0 && state.dynamicSamples.length === 0) {
+    alert('Belum ada sample untuk di-export.')
+  }
+}
+
+document.getElementById('clear-all').onclick = async () => {
+  if (!confirm('Hapus SEMUA sample? Tidak bisa di-undo.')) return
+  await dbClear()
+  state.staticSamples = []
+  state.dynamicSamples = []
+  state.dynamicBuffer = []
+  state.activeClass = null
+  renderAll()
+}
+
+document.getElementById('static-filter').onchange = e => { state.staticFilter = e.target.value; renderSampleList('static') }
+document.getElementById('dynamic-filter').onchange = e => { state.dynamicFilter = e.target.value; renderSampleList('dynamic') }
+
+// ----------------------------------------------------------------------------
+// Boot
+// ----------------------------------------------------------------------------
+;(async () => {
+  await reloadFromDb()
+  await initCamera()
+  // Refresh "Xs ago" timestamps periodically.
+  setInterval(() => { renderSampleList('static'); renderSampleList('dynamic') }, 10_000)
+})()
+</script>
+</body>
+</html>
