@@ -45,6 +45,7 @@ export class StaticClassifier {
   private model: tf.GraphModel | null = null
   private labels: string[] | null = null
   private loading: Promise<void> | null = null
+  private loadFailed = false
   private confidenceThreshold = DEFAULT_THRESHOLD
 
   setThreshold(t: number): void {
@@ -54,6 +55,9 @@ export class StaticClassifier {
   /** Returns true when model files load successfully. False if model missing/corrupt. */
   async load(): Promise<boolean> {
     if (this.model && this.labels) return true
+    // First load attempt failed — cache the failure so repeated callers don't
+    // retry and spam 404s.
+    if (this.loadFailed) return false
     if (this.loading) {
       await this.loading
       return this.model !== null && this.labels !== null
@@ -69,9 +73,10 @@ export class StaticClassifier {
         this.model = model
         this.labels = labels
       } catch (err) {
-        console.warn('[StaticClassifier] model not loaded (will fall back):', err)
+        console.warn('[StaticClassifier] model not loaded; subsequent calls will no-op:', err)
         this.model = null
         this.labels = null
+        this.loadFailed = true
       } finally {
         this.loading = null
       }

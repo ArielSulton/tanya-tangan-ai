@@ -6,6 +6,7 @@
 import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-backend-webgl'
 import * as handPoseDetection from '@tensorflow-models/hand-pose-detection'
+import { loadHandsScript } from '../../gesture/mediapipe-hands-shim'
 import { GestureEstimator } from 'fingerpose'
 import { SIBI_CONFIG } from '../config/sibi-config'
 import Handsigns from '../../../components/handsigns'
@@ -81,6 +82,12 @@ export class HandPoseService {
         new Promise((_, reject) => setTimeout(() => reject(new Error('TensorFlow.js initialization timeout')), 30000)),
       ])
       console.log('✅ TensorFlow.js ready with backend:', tf.getBackend())
+
+      // Load the @mediapipe/hands UMD script from CDN before constructing the
+      // detector. The bundler-time import is aliased to a shim (see
+      // mediapipe-hands-shim.ts); window.Hands must exist by the time
+      // createDetector instantiates Hands. loadHandsScript dedupes.
+      await loadHandsScript()
 
       // Load HandPose detector with the 'mediapipe' runtime — uses
       // @mediapipe/hands (WASM/JS solution loaded from JSDelivr CDN) rather
@@ -202,7 +209,7 @@ export class HandPoseService {
       flipHorizontal: this.config.flipHorizontal,
     })
 
-    return predictions.map((p) => {
+    const raw = predictions.map((p) => {
       const kp2d = p.keypoints
       const kp3d = p.keypoints3D ?? []
       const wristPx = kp2d[0]
@@ -218,6 +225,7 @@ export class HandPoseService {
         confidence: p.score ?? 0.8,
       }
     })
+    return dedupeOverlappingHands(raw)
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -415,6 +423,35 @@ export class HandPoseService {
     this.allGestures = []
     this.isInitialized = false
   }
+}
+
+/**
+ * MediaPipe sometimes emits two overlapping detections for one physical hand
+ * (palm + landmark stages disagreeing). Wrist landmarks within
+ * DEDUP_WRIST_DISTANCE_PX of each other are treated as duplicates; keep the
+ * one with higher confidence.
+ */
+const DEDUP_WRIST_DISTANCE_PX = 80
+
+function dedupeOverlappingHands<T extends { landmarks: { x: number; y: number }[]; confidence: number }>(
+  hands: T[],
+): T[] {
+  if (hands.length <= 1) return hands
+  const kept: T[] = []
+  // Iterate in confidence-desc order so the winner of each cluster is the
+  // best-scoring detection.
+  const sorted = [...hands].sort((a, b) => b.confidence - a.confidence)
+  for (const h of sorted) {
+    const w = h.landmarks[0]
+    const duplicate = kept.some((k) => {
+      const kw = k.landmarks[0]
+      const dx = kw.x - w.x
+      const dy = kw.y - w.y
+      return Math.hypot(dx, dy) < DEDUP_WRIST_DISTANCE_PX
+    })
+    if (!duplicate) kept.push(h)
+  }
+  return kept
 }
 
 // Drawing function for hand landmarks

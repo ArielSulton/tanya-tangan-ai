@@ -1,16 +1,16 @@
 import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-backend-webgl'
 import type { InferenceResult } from './types'
-import type { HistoryPoint } from '../recording/types'
+import { DYNAMIC_HISTORY_SIZE, DYNAMIC_FEATURE_LENGTH, type HistoryPoint } from '../recording/types'
 import { softmaxToResult } from './static-classifier'
 
 const MODEL_PATH = '/models/dynamic/model.json'
 const LABELS_PATH = '/models/dynamic/labels.json'
 const DEFAULT_THRESHOLD = 0.6
-const EXPECTED_HISTORY_LENGTH = 24
-const EXPECTED_FEATURE_LENGTH = EXPECTED_HISTORY_LENGTH * 2 // 48
+const EXPECTED_HISTORY_LENGTH = DYNAMIC_HISTORY_SIZE
+const EXPECTED_FEATURE_LENGTH = DYNAMIC_FEATURE_LENGTH
 
-/** Flatten a 24-frame HistoryPoint buffer into a 48-float feature vector. */
+/** Flatten an N-frame HistoryPoint buffer (N = DYNAMIC_HISTORY_SIZE) into a 2N-float feature vector. */
 export function historyToFeatures(history: HistoryPoint[]): number[] {
   if (history.length !== EXPECTED_HISTORY_LENGTH) {
     throw new Error(`historyToFeatures: expected ${EXPECTED_HISTORY_LENGTH} points, got ${history.length}`)
@@ -31,6 +31,7 @@ export class DynamicClassifier {
   private model: tf.GraphModel | null = null
   private labels: string[] | null = null
   private loading: Promise<void> | null = null
+  private loadFailed = false
   private confidenceThreshold = DEFAULT_THRESHOLD
 
   setThreshold(t: number): void {
@@ -39,6 +40,10 @@ export class DynamicClassifier {
 
   async load(): Promise<boolean> {
     if (this.model && this.labels) return true
+    // First load attempt failed — assume model files aren't deployed yet.
+    // Cache the failure so engine doesn't retry on every motion_end and spam
+    // 404s into the console / server log.
+    if (this.loadFailed) return false
     if (this.loading) {
       await this.loading
       return this.model !== null && this.labels !== null
@@ -54,9 +59,10 @@ export class DynamicClassifier {
         this.model = model
         this.labels = labels
       } catch (err) {
-        console.warn('[DynamicClassifier] model not loaded (will fall back):', err)
+        console.warn('[DynamicClassifier] model not loaded; subsequent calls will no-op:', err)
         this.model = null
         this.labels = null
+        this.loadFailed = true
       } finally {
         this.loading = null
       }
@@ -65,8 +71,8 @@ export class DynamicClassifier {
     return this.model !== null && this.labels !== null
   }
 
-  /** Run inference on a 24-frame point-history. Returns null on absent model
-   *  or below-threshold confidence. */
+  /** Run inference on a DYNAMIC_HISTORY_SIZE-frame point-history. Returns
+   *  null on absent model or below-threshold confidence. */
   async classify(history: HistoryPoint[]): Promise<InferenceResult | null> {
     const features = historyToFeatures(history) // throws if wrong length
     const ok = await this.load()
@@ -87,6 +93,7 @@ export class DynamicClassifier {
     this.model?.dispose()
     this.model = null
     this.labels = null
+    this.loadFailed = false
   }
 }
 

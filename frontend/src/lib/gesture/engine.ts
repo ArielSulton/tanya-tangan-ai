@@ -13,7 +13,10 @@ import { extractFrameFeatures } from './feature-extractor'
 import { MotionDetector } from './motion-detector'
 import type { FrameFeatures, MotionState, RawHand } from './types'
 import { dynamicClassifier } from './inference/dynamic-classifier'
-import type { HistoryPoint } from './recording/types'
+import { staticClassifier } from './inference/static-classifier'
+import { DYNAMIC_HISTORY_SIZE, type HistoryPoint } from './recording/types'
+
+type StaticEngineMode = 'fingerpose' | 'mlp'
 
 export interface BrowserGestureEngineCallbacks {
   onResult?: (result: BrowserGestureResult) => void
@@ -29,8 +32,14 @@ export class BrowserGestureEngine {
   private frameBuffer: FrameFeatures[] = []
   private motionDetector = new MotionDetector()
   private dynamicHistory: HistoryPoint[] = []
-  private readonly DYNAMIC_HISTORY_SIZE = 24
+  private readonly DYNAMIC_HISTORY_SIZE = DYNAMIC_HISTORY_SIZE
   private readonly FRAME_BUFFER_SIZE = 24
+  // Static-engine selection. Read from NEXT_PUBLIC_STATIC_ENGINE at init.
+  // 'mlp' attempts to load the trained classifier; falls back to fingerpose
+  // (mlpReady stays false) if model files are missing.
+  private staticEngineMode: StaticEngineMode = 'fingerpose'
+  private mlpReady = false
+  private mlpInflight = false
 
   constructor(callbacks: BrowserGestureEngineCallbacks = {}) {
     this.callbacks = callbacks
@@ -43,6 +52,26 @@ export class BrowserGestureEngine {
   async initialize(video: HTMLVideoElement, canvas: HTMLCanvasElement): Promise<void> {
     this.setState('initializing')
     this.service = new GestureRecognitionService()
+
+    // Resolve static engine selection from env. Validate explicitly — anything
+    // other than 'mlp' falls back to fingerpose.
+    const envChoice = process.env.NEXT_PUBLIC_STATIC_ENGINE
+    this.staticEngineMode = envChoice === 'mlp' ? 'mlp' : 'fingerpose'
+    if (this.staticEngineMode === 'mlp') {
+      // Try to load the TFJS classifier. Fire-and-await later via a flag;
+      // detection itself doesn't block on this. If the model files aren't
+      // deployed, mlpReady stays false → fingerpose remains the live path.
+      void staticClassifier.load().then((ok) => {
+        if (ok) {
+          this.mlpReady = true
+          this.callbacks.onStatus?.('Static engine: MLP ready')
+        } else {
+          console.warn(
+            '[engine] NEXT_PUBLIC_STATIC_ENGINE=mlp but model failed to load; falling back to fingerpose',
+          )
+        }
+      })
+    }
 
     this.service.setOnResult((r) => this.handleServiceResult(r))
     this.service.setOnError((e) => this.callbacks.onError?.(e))
@@ -101,6 +130,16 @@ export class BrowserGestureEngine {
     if (this.frameBuffer.length > this.FRAME_BUFFER_SIZE) {
       this.frameBuffer.shift()
     }
+
+    // If MLP mode is active and the model is loaded, run static inference on
+    // this frame's features. fingerpose path's handleServiceResult emit is
+    // suppressed when mlpReady is true to avoid duplicate result events.
+    if (this.mlpReady && !this.mlpInflight) {
+      this.mlpInflight = true
+      void this.runStaticInference(features).finally(() => {
+        this.mlpInflight = false
+      })
+    }
     // MotionDetector tracks raw image-space wrist of slot 0 (pre-normalize).
     const sortedRawByX = [...raws].sort((a, b) => a.landmarks[0].x - b.landmarks[0].x)
     const rawSlot0 = sortedRawByX[0]
@@ -119,6 +158,25 @@ export class BrowserGestureEngine {
     // On motion_end, dispatch dynamic inference asynchronously.
     if (this.motionDetector.state === 'motion_end' && this.dynamicHistory.length === this.DYNAMIC_HISTORY_SIZE) {
       void this.runDynamicInference([...this.dynamicHistory])
+    }
+  }
+
+  private async runStaticInference(features: FrameFeatures): Promise<void> {
+    try {
+      const result = await staticClassifier.classify(features)
+      if (result) {
+        const adapted: BrowserGestureResult = {
+          letter: result.label,
+          confidence: result.confidence,
+          alternatives: [],
+          timestamp: Date.now(),
+          processingTimeMs: 0,
+          source: 'browser',
+        }
+        this.callbacks.onResult?.(adapted)
+      }
+    } catch (err) {
+      console.warn('[engine] static MLP inference error:', err)
     }
   }
 
@@ -153,6 +211,9 @@ export class BrowserGestureEngine {
   }
 
   private handleServiceResult(r: GestureRecognitionResult): void {
+    // Suppress fingerpose results when MLP is the active static engine —
+    // otherwise both paths would emit and the hook would see duplicate letters.
+    if (this.mlpReady) return
     const adapted: BrowserGestureResult = {
       letter: r.letter,
       confidence: r.confidence,
