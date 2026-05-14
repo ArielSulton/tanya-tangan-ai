@@ -19,12 +19,72 @@ import {
   clearAll as clearAllStorage,
 } from '@/lib/gesture/recording/storage'
 import { labelFrameViaYolo } from '@/lib/gesture/recording/yolo-labeler'
-import { STATIC_CLASSES, DYNAMIC_CLASSES, type StaticSample, type DynamicSample } from '@/lib/gesture/recording/types'
+import {
+  STATIC_CLASSES,
+  DYNAMIC_CLASS_SUGGESTIONS,
+  type StaticSample,
+  type DynamicSample,
+} from '@/lib/gesture/recording/types'
+import { DynamicClassInput } from './DynamicClassInput'
 
 const AUTO_LABEL_INTERVAL_MS = 600 // throttle YOLO calls so we don't flood backend
 
+// Hand landmark connectivity (MediaPipe indices) — same skeleton vocab uses.
+const FINGER_CHAINS: ReadonlyArray<readonly number[]> = [
+  [0, 1, 2, 3, 4], // thumb
+  [0, 5, 6, 7, 8], // index
+  [0, 9, 10, 11, 12], // middle
+  [0, 13, 14, 15, 16], // ring
+  [0, 17, 18, 19, 20], // pinky
+]
+
+interface LandmarkPoint {
+  x: number
+  y: number
+}
+
+function drawSkeleton(
+  canvas: HTMLCanvasElement | null,
+  video: HTMLVideoElement,
+  hands: ReadonlyArray<{ landmarks: LandmarkPoint[] }>,
+): void {
+  if (!canvas) return
+  // Sync canvas backing-store to video native resolution so landmark pixel
+  // coords (already in video pixel space from mediapipe) line up.
+  if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+  }
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  for (const hand of hands) {
+    const lm = hand.landmarks
+    ctx.strokeStyle = '#00ff00'
+    ctx.lineWidth = 2
+    for (const chain of FINGER_CHAINS) {
+      ctx.beginPath()
+      for (let i = 0; i < chain.length; i++) {
+        const p = lm[chain[i]]
+        if (!p) continue
+        if (i === 0) ctx.moveTo(p.x, p.y)
+        else ctx.lineTo(p.x, p.y)
+      }
+      ctx.stroke()
+    }
+    for (let i = 0; i < lm.length; i++) {
+      const p = lm[i]
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2)
+      ctx.fillStyle = i < 4 ? '#ff3030' : '#3070ff'
+      ctx.fill()
+    }
+  }
+}
+
 export function GestureRecorder() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const handposeRef = useRef<HandPoseService | null>(null)
   const sessionIdRef = useRef<string>(
     typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `rec-${Date.now()}`,
@@ -107,6 +167,7 @@ export function GestureRecorder() {
             const raws = await hp.detectRawHands(video)
             const pair = sortHandsByXPosition(raws)
             setLatestPair(pair)
+            drawSkeleton(canvasRef.current, video, raws)
             if (raws.length > 0) {
               recorderRef.current.push({
                 x: raws[0].landmarks[0].x,
@@ -241,15 +302,15 @@ export function GestureRecorder() {
   return (
     <div className="grid grid-cols-12 gap-4 p-4">
       <div className="col-span-7">
-        <div className="aspect-[4/3] w-full overflow-hidden rounded-md bg-slate-900">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-slate-900">
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className="h-full w-full object-cover"
-            style={{ transform: 'scaleX(-1)' }}
+            className="absolute inset-0 h-full w-full object-cover"
           />
+          <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
         </div>
         <div className="mt-2 text-xs text-slate-600">{status}</div>
         <div className="mt-4">
@@ -271,12 +332,21 @@ export function GestureRecorder() {
           <div className="mb-1 text-xs font-semibold text-slate-500 uppercase">
             {mode === 'static' ? 'Alphabet class' : 'Dynamic class'}
           </div>
-          <ClassPicker
-            classes={mode === 'static' ? STATIC_CLASSES : DYNAMIC_CLASSES}
-            active={activeClass}
-            onSelect={setActiveClass}
-            counts={mode === 'static' ? staticCounts : dynamicCounts}
-          />
+          {mode === 'static' ? (
+            <ClassPicker
+              classes={STATIC_CLASSES}
+              active={activeClass}
+              onSelect={setActiveClass}
+              counts={staticCounts}
+            />
+          ) : (
+            <DynamicClassInput
+              active={activeClass}
+              onSelect={setActiveClass}
+              suggestions={DYNAMIC_CLASS_SUGGESTIONS}
+              counts={dynamicCounts}
+            />
+          )}
         </div>
       </div>
       <div className="col-span-5 grid grid-rows-2 gap-4">

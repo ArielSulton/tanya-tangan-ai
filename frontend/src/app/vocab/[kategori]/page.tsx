@@ -240,7 +240,7 @@ export default function VocabKategoriPage() {
                     }}
                     enableWordFormation={true}
                     showAlternatives={false}
-                    letterMapping={kategori === 'kata_keterangan' ? { D: 'DAN' } : {}}
+                    letterMapping={kategori === 'kata_keterangan' ? { D: 'DAN', O: 'DAN' } : {}}
                   />
                 </div>
 

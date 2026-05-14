@@ -1,6 +1,7 @@
 'use client'
 
 import { type ReactNode } from 'react'
+import { DYNAMIC_HISTORY_SIZE } from '@/lib/gesture/recording/types'
 
 interface Props {
   mode: 'static' | 'dynamic'
@@ -82,12 +83,12 @@ export function RecordingControls(props: Props): ReactNode {
       ) : (
         <div className="flex flex-wrap items-center gap-2">
           <div className="text-sm text-slate-700">
-            Buffer: <span className="font-mono">{dynamicBufferSize}/24</span>
+            Buffer: <span className="font-mono">{dynamicBufferSize}/{DYNAMIC_HISTORY_SIZE}</span>
           </div>
           <button
             type="button"
             onClick={onSaveDynamicTake}
-            disabled={!classSelected || dynamicBufferSize !== 24}
+            disabled={!classSelected || dynamicBufferSize !== DYNAMIC_HISTORY_SIZE}
             className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-40"
           >
             Save take (Space)

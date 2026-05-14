@@ -53,12 +53,22 @@ export interface UseGestureRecognitionReturn {
   dispose: () => void
 }
 
-function toGestureResult(r: BrowserGestureResult): GestureResult {
+// Validation tuning. Engine runs at ~30fps; ~24 frames ≈ 0.8s hold.
+const VALIDATION_FRAMES = 24
+const VALIDATION_MIN_CONFIDENCE = 0.7
+
+// Clear lastResult if engine hasn't emitted in this many ms — i.e., hand is
+// gone or no gesture matched. Prevents the UI from showing a stale letter
+// badge after the user lowers their hand.
+const RESULT_STALE_MS = 600
+
+function toGestureResult(r: BrowserGestureResult, validated: boolean): GestureResult {
   return {
     letter: r.letter,
     confidence: r.confidence,
     alternatives: r.alternatives,
     processing_time_ms: r.processingTimeMs,
+    validated,
   }
 }
 
@@ -74,6 +84,21 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
   const optionsRef = useRef(options)
   optionsRef.current = options
 
+  // Dwell-time validation: same letter held for VALIDATION_FRAMES consecutive
+  // results (above confidence threshold) → emit one validated=true result. We
+  // only validate once per hold streak, so the consumer adds the letter once;
+  // it won't fire again until the user releases and re-forms a different sign.
+  const streakLetterRef = useRef<string | null>(null)
+  const streakCountRef = useRef(0)
+  const lastEmittedLetterRef = useRef<string | null>(null)
+  const staleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const resetStreak = useCallback(() => {
+    streakLetterRef.current = null
+    streakCountRef.current = 0
+    lastEmittedLetterRef.current = null
+  }, [])
+
   const initialize = useCallback(
     async (videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement): Promise<void> => {
       if (engineRef.current) {
@@ -87,9 +112,31 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
 
       const engine = new BrowserGestureEngine({
         onResult: (r) => {
-          const result = toGestureResult(r)
+          // Compute validated flag based on consecutive-frame hold detection.
+          let validated = false
+          if (r.letter === streakLetterRef.current) {
+            streakCountRef.current += 1
+          } else {
+            streakLetterRef.current = r.letter
+            streakCountRef.current = 1
+            lastEmittedLetterRef.current = null
+          }
+          if (
+            streakCountRef.current >= VALIDATION_FRAMES &&
+            r.confidence >= VALIDATION_MIN_CONFIDENCE &&
+            lastEmittedLetterRef.current !== r.letter
+          ) {
+            validated = true
+            lastEmittedLetterRef.current = r.letter
+          }
+          const result = toGestureResult(r, validated)
           setLastResult(result)
           optionsRef.current.onResult?.(result)
+          if (staleTimerRef.current !== null) clearTimeout(staleTimerRef.current)
+          staleTimerRef.current = setTimeout(() => {
+            setLastResult(null)
+            resetStreak()
+          }, RESULT_STALE_MS)
         },
         onError: (e) => {
           setError(e)
@@ -182,6 +229,7 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
 
   useEffect(() => {
     return () => {
+      if (staleTimerRef.current !== null) clearTimeout(staleTimerRef.current)
       engineRef.current?.dispose()
       engineRef.current = null
     }
