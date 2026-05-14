@@ -1,6 +1,6 @@
-import type { HistoryPoint, DynamicSample } from './types'
+import { DYNAMIC_HISTORY_SIZE, type HistoryPoint, type DynamicSample } from './types'
 
-const BUFFER_SIZE = 24
+const BUFFER_SIZE = DYNAMIC_HISTORY_SIZE
 
 function genId(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -9,7 +9,8 @@ function genId(): string {
 }
 
 /**
- * Rolling 24-frame buffer of wrist positions for dynamic gesture sampling.
+ * Rolling buffer of wrist positions for dynamic gesture sampling
+ * (capacity = DYNAMIC_HISTORY_SIZE).
  * Callers push the slot-0 wrist position each frame (or null when no hand
  * is visible — null pushes are skipped so the buffer only contains valid
  * observations). takeSample(label) snapshots the buffer as a DynamicSample.

@@ -1,7 +1,7 @@
-import type { StaticSample, DynamicSample } from './types'
+import { DYNAMIC_HISTORY_SIZE, type StaticSample, type DynamicSample } from './types'
 
 const STATIC_FEATURE_LENGTH = 84
-const DYNAMIC_HISTORY_LENGTH = 24
+const DYNAMIC_HISTORY_LENGTH = DYNAMIC_HISTORY_SIZE
 
 /**
  * Serialize a list of static samples to CSV.
@@ -24,7 +24,7 @@ export function staticSamplesToCsv(samples: StaticSample[]): string {
 
 /**
  * Serialize a list of dynamic samples to CSV.
- * Format: label,x0,y0,x1,y1,...,x23,y23  (49 columns)
+ * Format: label,x0,y0,x1,y1,...,x{N-1},y{N-1} where N = DYNAMIC_HISTORY_SIZE.
  */
 export function dynamicSamplesToCsv(samples: DynamicSample[]): string {
   const headers = [

@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import { staticSamplesToCsv, dynamicSamplesToCsv } from './csv-export'
-import type { StaticSample, DynamicSample } from './types'
+import { DYNAMIC_HISTORY_SIZE, type StaticSample, type DynamicSample } from './types'
+
+const N = DYNAMIC_HISTORY_SIZE
+const COLS = 1 + N * 2 // label + 2N coords
 
 describe('staticSamplesToCsv', () => {
   test('empty list → header-only CSV', () => {
@@ -62,15 +65,15 @@ describe('dynamicSamplesToCsv', () => {
     const csv = dynamicSamplesToCsv([])
     const lines = csv.split('\n')
     expect(lines[0].startsWith('label,')).toBe(true)
-    expect(lines[0].split(',')).toHaveLength(49) // label + 24×2
+    expect(lines[0].split(',')).toHaveLength(COLS)
     expect(lines.length).toBe(1)
   })
 
-  test('one sample → 49-column row with label first', () => {
+  test('one sample → row with label first and 2N coord columns', () => {
     const sample: DynamicSample = {
       id: 'd1',
       label: 'jeruk',
-      history: Array.from({ length: 24 }, (_, i) => ({ x: i, y: i * 2 })),
+      history: Array.from({ length: N }, (_, i) => ({ x: i, y: i * 2 })),
       capturedAt: 0,
       source: 'manual',
     }
@@ -78,15 +81,16 @@ describe('dynamicSamplesToCsv', () => {
     const lines = csv.split('\n')
     expect(lines.length).toBe(2)
     const row = lines[1].split(',')
-    expect(row).toHaveLength(49)
+    expect(row).toHaveLength(COLS)
     expect(row[0]).toBe('jeruk')
     expect(parseFloat(row[1])).toBe(0) // x0
     expect(parseFloat(row[2])).toBe(0) // y0
-    expect(parseFloat(row[47])).toBe(23) // x23
-    expect(parseFloat(row[48])).toBe(46) // y23
+    const lastIdx = N - 1
+    expect(parseFloat(row[1 + 2 * lastIdx])).toBe(lastIdx)
+    expect(parseFloat(row[2 + 2 * lastIdx])).toBe(lastIdx * 2)
   })
 
-  test('refuses sample whose history length is not 24', () => {
+  test(`refuses sample whose history length is not ${N}`, () => {
     const bad: DynamicSample = {
       id: 'x',
       label: 'jeruk',
@@ -94,6 +98,6 @@ describe('dynamicSamplesToCsv', () => {
       capturedAt: 0,
       source: 'manual',
     }
-    expect(() => dynamicSamplesToCsv([bad])).toThrow(/24/)
+    expect(() => dynamicSamplesToCsv([bad])).toThrow(new RegExp(String(N)))
   })
 })

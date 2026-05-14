@@ -44,13 +44,19 @@ describe('MotionDetector', () => {
 
   test('point disappears mid-stream → idle', () => {
     const d = new MotionDetector()
-    feed(d, Array.from({ length: 15 }, () => ({ x: 10, y: 10 })))
+    feed(
+      d,
+      Array.from({ length: 15 }, () => ({ x: 10, y: 10 })),
+    )
     expect(d.update(null)).toBe('idle')
   })
 
   test('hysteresis: brief tiny motion in still state does not flip to moving', () => {
     const d = new MotionDetector()
-    feed(d, Array.from({ length: 15 }, () => ({ x: 10, y: 10 })))
+    feed(
+      d,
+      Array.from({ length: 15 }, () => ({ x: 10, y: 10 })),
+    )
     const jitter = d.update({ x: 10.01, y: 10.01 })
     expect(jitter).toBe('still')
   })

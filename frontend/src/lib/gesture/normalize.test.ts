@@ -12,10 +12,7 @@ function makeHand(points: Array<[number, number]>): RawHand {
 describe('normalizeHand', () => {
   test('places wrist (landmark 0) at the origin', () => {
     // 21 landmarks, all with z=0, arbitrary positions but wrist at (100, 200)
-    const points: Array<[number, number]> = Array.from({ length: 21 }, (_, i) => [
-      100 + i,
-      200 + i,
-    ])
+    const points: Array<[number, number]> = Array.from({ length: 21 }, (_, i) => [100 + i, 200 + i])
     const result = normalizeHand(makeHand(points))
     expect(result.landmarks[0].x).toBeCloseTo(0, 6)
     expect(result.landmarks[0].y).toBeCloseTo(0, 6)

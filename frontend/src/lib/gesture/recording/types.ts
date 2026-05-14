@@ -8,6 +8,18 @@
 
 import type { FrameFeatures } from '../types'
 
+/**
+ * Length of the rolling wrist-trajectory buffer for dynamic gestures.
+ * At ~30fps this gives a ~1.1s window — balance between covering motion
+ * words (jeruk-mengupas, kucing, etc.) and keeping motion_end latency low.
+ *
+ * CHANGING THIS REQUIRES retraining the dynamic model (input shape changes),
+ * regenerating point-history CSVs, and updating training/train_dynamic.ipynb
+ * (FEATURE_LENGTH = DYNAMIC_HISTORY_SIZE * 2).
+ */
+export const DYNAMIC_HISTORY_SIZE = 32
+export const DYNAMIC_FEATURE_LENGTH = DYNAMIC_HISTORY_SIZE * 2
+
 /** Static keypoint sample: one frame, 84 floats, labelled. */
 export interface StaticSample {
   /** Stable unique id (uuid). */
@@ -40,17 +52,21 @@ export interface DynamicSample {
 }
 
 /** Static class set (SIBI alphabet, J excluded as per existing convention). */
+// J and Z are traced in the air (motion gestures), so they belong in the
+// dynamic class set, not static. 24 static alphabet classes total.
 export const STATIC_CLASSES = [
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
   'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-  'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  'T', 'U', 'V', 'W', 'X', 'Y',
 ] as const
 
 export type StaticClass = (typeof STATIC_CLASSES)[number]
 
-/** Initial dynamic class set (extend as needed in Phase 2E). */
-export const DYNAMIC_CLASSES = [
-  'jeruk', 'kucing', 'besar', 'kecil', 'sangat',
-] as const
+/**
+ * Suggested dynamic-class names. Shown in the recorder UI as quick-pick chips,
+ * but the user is free to type any label — DynamicClass is plain string and
+ * the trained model's label set is whatever appears in the exported CSV.
+ */
+export const DYNAMIC_CLASS_SUGGESTIONS = ['jeruk', 'kucing', 'besar', 'kecil', 'sangat', 'j', 'z'] as const
 
-export type DynamicClass = (typeof DYNAMIC_CLASSES)[number]
+export type DynamicClass = string
