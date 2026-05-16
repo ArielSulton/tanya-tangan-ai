@@ -16,6 +16,8 @@ import {
   listDynamic,
   deleteStatic,
   deleteDynamic,
+  clearStatic as clearStaticStorage,
+  clearDynamic as clearDynamicStorage,
   clearAll as clearAllStorage,
 } from '@/lib/gesture/recording/storage'
 import { labelFrameViaYolo } from '@/lib/gesture/recording/yolo-labeler'
@@ -26,6 +28,7 @@ import {
   type DynamicSample,
 } from '@/lib/gesture/recording/types'
 import { DynamicClassInput } from './DynamicClassInput'
+import { ImageImporter } from './ImageImporter'
 
 const AUTO_LABEL_INTERVAL_MS = 600 // throttle YOLO calls so we don't flood backend
 
@@ -168,10 +171,16 @@ export function GestureRecorder() {
             const pair = sortHandsByXPosition(raws)
             setLatestPair(pair)
             drawSkeleton(canvasRef.current, video, raws)
+            // Push wrist of leftmost hand to dynamic recorder. Normalize to
+            // [0,1] by dividing by video dimensions — matches the production
+            // engine + standalone recorder so a single trained dynamic model
+            // works regardless of which UI collected the data.
             if (raws.length > 0) {
+              const vw = video.videoWidth || 1
+              const vh = video.videoHeight || 1
               recorderRef.current.push({
-                x: raws[0].landmarks[0].x,
-                y: raws[0].landmarks[0].y,
+                x: raws[0].landmarks[0].x / vw,
+                y: raws[0].landmarks[0].y / vh,
               })
             } else {
               recorderRef.current.push(null)
@@ -278,6 +287,18 @@ export function GestureRecorder() {
     setDynamicSamples([])
   }, [])
 
+  const handleClearStatic = useCallback(async () => {
+    if (!confirm('Delete all STATIC samples? This cannot be undone.')) return
+    await clearStaticStorage()
+    setStaticSamples([])
+  }, [])
+
+  const handleClearDynamic = useCallback(async () => {
+    if (!confirm('Delete all DYNAMIC samples? This cannot be undone.')) return
+    await clearDynamicStorage()
+    setDynamicSamples([])
+  }, [])
+
   const handleDeleteStatic = useCallback(async (id: string) => {
     await deleteStatic(id)
     setStaticSamples((prev) => prev.filter((s) => s.id !== id))
@@ -300,17 +321,19 @@ export function GestureRecorder() {
   }, [dynamicSamples])
 
   return (
-    <div className="grid grid-cols-12 gap-4 p-4">
-      <div className="col-span-7">
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-slate-900">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+    <div className="mx-auto grid max-w-7xl grid-cols-1 items-stretch gap-4 p-4 lg:grid-cols-12">
+      <div className="flex min-w-0 flex-col lg:col-span-7">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2.5rem] bg-slate-50 p-2 shadow-inner ring-1 ring-black/5">
+          <div className="relative h-full w-full overflow-hidden rounded-[2rem] bg-slate-900">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+          </div>
         </div>
         <div className="mt-2 text-xs text-slate-600">{status}</div>
         <div className="mt-4">
@@ -327,6 +350,15 @@ export function GestureRecorder() {
             onClearAll={() => void handleClearAll()}
             classSelected={activeClass !== null}
           />
+          {mode === 'static' && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+              <ImageImporter
+                handpose={handposeRef.current}
+                onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
+              />
+              <span>Bulk-label dari folder (subfolder/filename pattern). Static only.</span>
+            </div>
+          )}
         </div>
         <div className="mt-4">
           <div className="mb-1 text-xs font-semibold text-slate-500 uppercase">
@@ -349,9 +381,19 @@ export function GestureRecorder() {
           )}
         </div>
       </div>
-      <div className="col-span-5 grid grid-rows-2 gap-4">
-        <SampleList title="Static samples" samples={staticSamples} onDelete={(id) => void handleDeleteStatic(id)} />
-        <SampleList title="Dynamic samples" samples={dynamicSamples} onDelete={(id) => void handleDeleteDynamic(id)} />
+      <div className="flex min-w-0 flex-col gap-4 lg:col-span-5">
+        <SampleList
+          title="Static samples"
+          samples={staticSamples}
+          onDelete={(id) => void handleDeleteStatic(id)}
+          onClear={() => void handleClearStatic()}
+        />
+        <SampleList
+          title="Dynamic samples"
+          samples={dynamicSamples}
+          onDelete={(id) => void handleDeleteDynamic(id)}
+          onClear={() => void handleClearDynamic()}
+        />
       </div>
     </div>
   )

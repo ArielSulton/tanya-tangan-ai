@@ -7,14 +7,37 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; }
-  header { background: white; border-bottom: 1px solid #e2e8f0; padding: 12px 16px; }
+  header { background: white; border-bottom: 1px solid #e2e8f0; }
+  header .header-inner { max-width: 1280px; margin: 0 auto; padding: 12px 16px; }
   header h1 { font-size: 18px; font-weight: 600; color: #1e293b; }
   header p { font-size: 12px; color: #64748b; margin-top: 2px; }
-  main { padding: 16px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; max-width: 1400px; margin: 0 auto; }
+  main {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 7fr 5fr;
+    gap: 16px;
+    max-width: 1280px;
+    margin: 0 auto;
+    align-items: stretch;
+  }
   @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .col-left { display: flex; flex-direction: column; min-width: 0; }
+  .col-right { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   .panel { background: white; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
-  .video-wrap { position: relative; aspect-ratio: 4/3; background: #0f172a; border-radius: 6px; overflow: hidden; border: 1px solid #cbd5e1; }
-  .video-wrap video, .video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* Camera wrap — matches /vocab styling (double rounded layer + shadow-inner + ring) */
+  .video-wrap {
+    position: relative;
+    aspect-ratio: 4/3;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 2.5rem;
+    background: #f8fafc;
+    padding: 8px;
+    box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+    border: 1px solid rgb(0 0 0 / 0.05);
+  }
+  .video-inner { position: relative; height: 100%; width: 100%; overflow: hidden; border-radius: 2rem; background: #0f172a; }
+  .video-inner video, .video-inner canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .status { margin-top: 8px; font-size: 12px; color: #475569; }
   .section { padding: 12px; }
   .section + .section { border-top: 1px solid #f1f5f9; }
@@ -40,10 +63,11 @@
   input[type=text]:focus { border-color: #10b981; }
   select { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 11px; background: white; outline: none; }
   select:focus { border-color: #10b981; }
-  .sample-list { display: flex; flex-direction: column; max-height: 300px; min-height: 0; border: 1px solid #cbd5e1; border-radius: 6px; background: white; overflow: hidden; }
+  /* Sample list — flex-1 so they share parent height evenly. */
+  .sample-list { display: flex; flex-direction: column; flex: 1; min-height: 180px; min-width: 0; border: 1px solid #cbd5e1; border-radius: 6px; background: white; overflow: hidden; }
   .sample-list-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; color: #334155; }
   .sample-list-header .count { font-size: 11px; font-weight: 400; color: #64748b; }
-  .sample-list-body { flex: 1; min-height: 0; overflow-y: auto; }
+  .sample-list-body { flex: 1; min-height: 0; overflow-y: auto; list-style: none; padding: 0; }
   .sample-row { display: grid; grid-template-columns: 1fr 50px 70px 24px; align-items: center; gap: 6px; padding: 4px 12px; border-bottom: 1px solid #f1f5f9; font-size: 11px; }
   .sample-row .lbl { font-family: ui-monospace, monospace; }
   .sample-row .ago { color: #64748b; text-align: right; }
@@ -53,87 +77,181 @@
   .info { margin-top: 4px; font-size: 11px; color: #64748b; }
   .buffer-bar { display: inline-block; height: 4px; width: 100px; background: #e2e8f0; border-radius: 2px; overflow: hidden; vertical-align: middle; margin-left: 6px; }
   .buffer-bar > span { display: block; height: 100%; background: #10b981; transition: width 0.1s ease; }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgb(0 0 0 / 0.5); }
+  .modal { width: 100%; max-width: 480px; max-height: 80vh; background: white; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+  .modal-header { border-bottom: 1px solid #e2e8f0; padding: 12px 16px; }
+  .modal-header h2 { font-size: 16px; font-weight: 600; color: #1e293b; }
+  .modal-header p { font-size: 12px; color: #64748b; margin-top: 4px; }
+  .modal-body { flex: 1; overflow-y: auto; padding: 12px 16px; font-size: 13px; }
+  .modal-footer { display: flex; justify-content: flex-end; align-items: center; gap: 8px; border-top: 1px solid #e2e8f0; background: #f8fafc; padding: 12px 16px; }
+  .modal-footer .left { margin-right: auto; font-size: 12px; color: #475569; }
+  .check-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+  .check-row label { display: flex; flex: 1; align-items: center; gap: 8px; cursor: pointer; }
+  .check-row .cls-name { font-family: ui-monospace, monospace; font-size: 13px; }
+  .check-row .cls-count { font-size: 11px; color: #64748b; }
+  .progress-track { height: 8px; width: 100%; background: #e2e8f0; border-radius: 9999px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #10b981; transition: width 0.15s ease; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; text-align: center; }
+  .stat-box { padding: 8px; border-radius: 6px; font-size: 11px; }
+  .stat-box .stat-val { font-family: ui-monospace, monospace; font-size: 18px; font-weight: 600; }
+  .stat-imported { background: #ecfdf5; color: #047857; }
+  .stat-imported .stat-val { color: #047857; }
+  .stat-nohands { background: #fffbeb; color: #b45309; }
+  .stat-nohands .stat-val { color: #b45309; }
+  .stat-error { background: #fef2f2; color: #b91c1c; }
+  .stat-error .stat-val { color: #b91c1c; }
+  .per-class-list { margin-top: 12px; padding-left: 0; list-style: none; }
+  .per-class-list li { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+  .per-class-list .cls { font-family: ui-monospace, monospace; }
+  .per-class-list .cnt { color: #64748b; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>SIBI Gesture Recorder</h1>
-  <p>Rekam sample bahasa isyarat untuk training model. Data tersimpan di IndexedDB browser-mu. Klik <b>Export CSV</b> untuk kirim ke teman pemilik project.</p>
+  <div class="header-inner">
+    <h1>SIBI Gesture Recorder</h1>
+    <p>Rekam sample bahasa isyarat untuk training model. Data tersimpan di IndexedDB browser-mu. Klik <b>Export CSV</b> untuk kirim ke teman pemilik project. <b>Import images</b> di mode static untuk bulk-label dari folder/file (label dari subfolder atau filename pattern).</p>
+  </div>
 </header>
 
 <main>
-  <section>
+  <section class="col-left">
     <div class="video-wrap">
-      <video id="video" autoplay playsinline muted></video>
-      <canvas id="canvas"></canvas>
+      <div class="video-inner">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas"></canvas>
+      </div>
     </div>
     <div class="status" id="status">Memuat…</div>
+
+    <div class="panel" style="margin-top:16px;">
+      <div class="section">
+        <div class="label">Mode</div>
+        <div class="toggle">
+          <button id="mode-static" class="active">Static (alfabet)</button>
+          <button id="mode-dynamic">Dynamic (gerakan/kata)</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label" id="class-label">Alphabet class</div>
+        <div id="class-static" class="class-grid"></div>
+        <div id="class-dynamic" style="display:none;">
+          <div class="row" style="margin-bottom:8px;">
+            <input id="dyn-input" type="text" placeholder="ketik nama kelas (e.g. jeruk)" autocomplete="off" spellcheck="false" />
+            <button id="dyn-use" class="btn btn-primary btn-sm">Use</button>
+          </div>
+          <div id="dyn-recorded" class="class-grid" style="margin-bottom:8px;"></div>
+          <div id="dyn-suggestions" class="class-grid"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label">Controls</div>
+        <div id="controls-static" class="row">
+          <button id="record-static" class="btn btn-primary">Record sample (Space)</button>
+          <span class="info">Pegang sign, tekan tombol atau Space — 1 sample.</span>
+        </div>
+        <div id="controls-dynamic" class="row" style="display:none;">
+          <button id="save-dynamic" class="btn btn-primary">Save take (Space)</button>
+          <button id="reset-buffer" class="btn btn-sm">Reset</button>
+          <span class="info">Buffer: <span id="buf-size">0</span>/<span id="buf-cap">32</span><span class="buffer-bar"><span id="buf-bar" style="width:0%"></span></span></span>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <button id="export-csv" class="btn">Export CSV</button>
+          <button id="clear-all" class="btn btn-danger btn-sm">Clear all</button>
+        </div>
+        <div id="import-controls" class="row" style="margin-top:8px;">
+          <button id="import-folder" class="btn btn-sm">Import folder</button>
+          <button id="import-files" class="btn btn-sm">Import files</button>
+          <span class="info">Bulk-label dari folder (subfolder/filename pattern). Static only.</span>
+          <input id="folder-input" type="file" multiple style="display:none;" />
+          <input id="files-input" type="file" multiple accept="image/jpeg,image/png,image/webp" style="display:none;" />
+        </div>
+      </div>
+    </div>
   </section>
 
-  <section class="panel">
-    <div class="section">
-      <div class="label">Mode</div>
-      <div class="toggle">
-        <button id="mode-static" class="active">Static (alfabet)</button>
-        <button id="mode-dynamic">Dynamic (gerakan/kata)</button>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="label" id="class-label">Alphabet class</div>
-      <div id="class-static" class="class-grid"></div>
-      <div id="class-dynamic" style="display:none;">
-        <div class="row" style="margin-bottom:8px;">
-          <input id="dyn-input" type="text" placeholder="ketik nama kelas (e.g. jeruk)" autocomplete="off" spellcheck="false" />
-          <button id="dyn-use" class="btn btn-primary btn-sm">Use</button>
-        </div>
-        <div id="dyn-recorded" class="class-grid" style="margin-bottom:8px;"></div>
-        <div id="dyn-suggestions" class="class-grid"></div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="label">Controls</div>
-      <div id="controls-static" class="row">
-        <button id="record-static" class="btn btn-primary">Record frame</button>
-        <span class="info">Pegang sign, tekan tombol — 1 sample.</span>
-      </div>
-      <div id="controls-dynamic" class="row" style="display:none;">
-        <button id="save-dynamic" class="btn btn-primary">Save take</button>
-        <button id="reset-buffer" class="btn btn-sm">Reset</button>
-        <span class="info">Buffer: <span id="buf-size">0</span>/<span id="buf-cap">32</span><span class="buffer-bar"><span id="buf-bar" style="width:0%"></span></span></span>
-      </div>
-      <div class="row" style="margin-top:8px;">
-        <button id="export-csv" class="btn">Export CSV</button>
-        <button id="clear-all" class="btn btn-danger btn-sm">Clear all</button>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="sample-list">
-        <div class="sample-list-header">
-          <span>Static samples <span id="static-count" class="count">(0)</span></span>
+  <section class="col-right">
+    <div class="sample-list">
+      <div class="sample-list-header">
+        <span>Static samples <span id="static-count" class="count">(0)</span></span>
+        <div style="display:flex;align-items:center;gap:8px;">
           <select id="static-filter" aria-label="Filter static class">
             <option value="__all__">all</option>
           </select>
+          <button id="static-clear" class="btn btn-sm" style="border-color:#fca5a5;color:#dc2626;" title="Clear all static samples">Clear</button>
         </div>
-        <ul id="static-body" class="sample-list-body"></ul>
       </div>
+      <ul id="static-body" class="sample-list-body"></ul>
     </div>
-    <div class="section">
-      <div class="sample-list">
-        <div class="sample-list-header">
-          <span>Dynamic samples <span id="dynamic-count" class="count">(0)</span></span>
+    <div class="sample-list">
+      <div class="sample-list-header">
+        <span>Dynamic samples <span id="dynamic-count" class="count">(0)</span></span>
+        <div style="display:flex;align-items:center;gap:8px;">
           <select id="dynamic-filter" aria-label="Filter dynamic class">
             <option value="__all__">all</option>
           </select>
+          <button id="dynamic-clear" class="btn btn-sm" style="border-color:#fca5a5;color:#dc2626;" title="Clear all dynamic samples">Clear</button>
         </div>
-        <ul id="dynamic-body" class="sample-list-body"></ul>
       </div>
+      <ul id="dynamic-body" class="sample-list-body"></ul>
     </div>
   </section>
 </main>
+
+<!-- Import preview modal -->
+<div id="modal-preview" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Import preview</h2>
+      <p>Static menerima huruf A–Y (J & Z dynamic). Non-letter labels otomatis di-skip.</p>
+    </div>
+    <div class="modal-body" id="preview-body"></div>
+    <div class="modal-footer">
+      <span class="left">Akan di-import: <b id="preview-total">0</b></span>
+      <button id="preview-cancel" class="btn btn-sm">Cancel</button>
+      <button id="preview-start" class="btn btn-primary btn-sm">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import progress modal -->
+<div id="modal-progress" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Importing…</h2>
+      <p id="progress-text">0 / 0 files processed</p>
+    </div>
+    <div class="modal-body">
+      <div class="progress-track"><div id="progress-fill" class="progress-fill" style="width:0%"></div></div>
+      <div class="stats-grid">
+        <div class="stat-box stat-imported"><div class="stat-val" id="stat-imported">0</div>imported</div>
+        <div class="stat-box stat-nohands"><div class="stat-val" id="stat-nohands">0</div>no hands</div>
+        <div class="stat-box stat-error"><div class="stat-val" id="stat-error">0</div>error</div>
+      </div>
+      <div style="margin-top:12px; text-align:right;">
+        <button id="progress-cancel" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px;text-decoration:underline;">Cancel after current chunk</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Import done modal -->
+<div id="modal-done" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Import complete</h2>
+    </div>
+    <div class="modal-body" id="done-body"></div>
+    <div class="modal-footer">
+      <button id="done-close" class="btn btn-primary btn-sm">Done</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 <script>
@@ -147,6 +265,7 @@
 
 // Constants must stay in lockstep with frontend/src/lib/gesture/recording/types.ts
 const STATIC_CLASSES = ['A','B','C','D','E','F','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
+const STATIC_CLASS_SET = new Set(STATIC_CLASSES)
 const DYNAMIC_SUGGESTIONS = ['jeruk','kucing','besar','kecil','sangat','j','z']
 const DYNAMIC_HISTORY_SIZE = 32
 const STATIC_FEATURE_LENGTH = 84 // 2 hands × 21 landmarks × 2 coords
@@ -155,14 +274,11 @@ const DB_VERSION = 1
 const STORE_STATIC = 'static'
 const STORE_DYNAMIC = 'dynamic'
 const ALL = '__all__'
+const IMPORT_CHUNK_SIZE = 10
 
 // MediaPipe landmark connectivity (hand skeleton).
 const FINGER_CHAINS = [
-  [0,1,2,3,4],     // thumb
-  [0,5,6,7,8],     // index
-  [0,9,10,11,12],  // middle
-  [0,13,14,15,16], // ring
-  [0,17,18,19,20], // pinky
+  [0,1,2,3,4], [0,5,6,7,8], [0,9,10,11,12], [0,13,14,15,16], [0,17,18,19,20],
 ]
 
 // ----------------------------------------------------------------------------
@@ -211,6 +327,16 @@ async function dbDelete(store, id) {
   })
 }
 
+async function dbClearStore(store) {
+  const db = await openDB()
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite')
+    tx.objectStore(store).clear()
+    tx.oncomplete = resolve
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
 async function dbClear() {
   const db = await openDB()
   await new Promise((resolve, reject) => {
@@ -224,10 +350,6 @@ async function dbClear() {
 
 // ----------------------------------------------------------------------------
 // Hand normalization — must match frontend/src/lib/gesture/normalize.ts
-//   1. Sort detected hands by wrist x (leftmost = slot 0)
-//   2. Translate each hand so wrist is at origin
-//   3. Scale so wrist→middleMCP distance = 1 (scale-invariant)
-// Missing hand slots → zero-filled 42 floats.
 // ----------------------------------------------------------------------------
 function normalizeHand(landmarks) {
   const wrist = landmarks[0]
@@ -288,11 +410,8 @@ function downloadText(filename, text) {
   const blob = new Blob([text], { type: 'text/csv' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click(); document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
 
@@ -306,6 +425,34 @@ function timeAgo(ms) {
 function normLabel(s) { return s.trim().toLowerCase().replace(/\s+/g, '_') }
 
 // ----------------------------------------------------------------------------
+// Label extraction from filename / subfolder (mirrors ImageImporter.tsx)
+//   - File at `<root>/A/img1.jpg` → label "A"
+//   - File "A_19.jpg" → "A"
+//   - File "Besar1_05.jpg" → "Besar"
+//   - File "A2_09.jpg" → "A" (trailing digits before underscore stripped)
+//   - File "frame_00129.jpg" → "frame" (eligible label but filtered as non-letter)
+// Returns null if no label pattern matched.
+// ----------------------------------------------------------------------------
+function extractLabel(file) {
+  const relPath = file.webkitRelativePath || ''
+  const parts = relPath.split('/')
+  if (parts.length >= 3) {
+    const subfolder = parts[parts.length - 2]
+    if (subfolder) return subfolder
+  }
+  const name = file.name.replace(/\.[^/.]+$/, '')
+  const m = name.match(/^([A-Za-z]+?)\d*_\d+$/)
+  return m ? m[1] : null
+}
+
+function isValidStaticLabel(label) {
+  if (!/^[A-Za-z]$/.test(label)) return false
+  return STATIC_CLASS_SET.has(label.toUpperCase())
+}
+
+function normalizeStaticLabel(label) { return label.toUpperCase() }
+
+// ----------------------------------------------------------------------------
 // App state
 // ----------------------------------------------------------------------------
 const state = {
@@ -313,13 +460,23 @@ const state = {
   activeClass: null,
   staticSamples: [],
   dynamicSamples: [],
-  dynamicBuffer: [], // rolling [{x,y}] of length up to DYNAMIC_HISTORY_SIZE
-  latestPair: [null, null], // last normalized pair (for static capture)
+  dynamicBuffer: [],
+  latestPair: [null, null],
   staticFilter: ALL,
   dynamicFilter: ALL,
 }
 
 const sessionId = genId()
+
+// Importer state — separate so it survives between modal stages.
+const importer = {
+  parsed: [],       // [{ file, label }]
+  labelCounts: {},  // { label: count }
+  nonLetterSkipped: 0,
+  selected: new Set(),
+  cancel: false,
+  liveStats: { imported: 0, skippedNoHands: 0, skipped: 0, perClass: {} },
+}
 
 // ----------------------------------------------------------------------------
 // MediaPipe Hands setup
@@ -334,72 +491,24 @@ function setStatus(msg) { statusEl.textContent = msg }
 const hands = new Hands({
   locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
 })
-hands.setOptions({
-  modelComplexity: 1,
-  selfieMode: false,
-  maxNumHands: 2,
-  minDetectionConfidence: 0.5,
-  minTrackingConfidence: 0.5,
-})
-hands.onResults(onHandsResults)
+hands.setOptions({ modelComplexity: 1, selfieMode: false, maxNumHands: 2, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 })
 
-function drawSkeleton(detections) {
-  if (!video.videoWidth) return
-  if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-  }
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  for (const hand of detections) {
-    ctx.strokeStyle = '#00ff00'
-    ctx.lineWidth = 2
-    for (const chain of FINGER_CHAINS) {
-      ctx.beginPath()
-      for (let i = 0; i < chain.length; i++) {
-        const lm = hand[chain[i]]
-        const x = lm.x * canvas.width
-        const y = lm.y * canvas.height
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
-      }
-      ctx.stroke()
-    }
-    for (let i = 0; i < hand.length; i++) {
-      const lm = hand[i]
-      const x = lm.x * canvas.width
-      const y = lm.y * canvas.height
-      ctx.beginPath()
-      ctx.arc(x, y, 4, 0, Math.PI * 2)
-      ctx.fillStyle = i < 4 ? '#ff3030' : '#3070ff'
-      ctx.fill()
-    }
-  }
-}
-
-// Dedupe overlapping detections (MediaPipe sometimes emits 2 detections for 1 hand)
-function dedupeHands(hands) {
-  if (hands.length <= 1) return hands
-  const DEDUP_DIST = 0.10 // normalized space; ~10% of frame width
-  const kept = []
-  for (const h of hands) {
-    const w = h[0]
-    const dup = kept.some(k => {
-      const kw = k[0]
-      return Math.hypot(kw.x - w.x, kw.y - w.y) < DEDUP_DIST
-    })
-    if (!dup) kept.push(h)
-  }
-  return kept
-}
-
+// onResults is shared. When importing, we route results to a pending promise
+// instead of updating live state — and we pause the camera tick so calls don't
+// interleave.
+let cameraPaused = false
+let pendingImportResolve = null
 function onHandsResults(results) {
   let detected = (results.multiHandLandmarks || []).map(arr => arr.map(p => ({ x: p.x, y: p.y })))
   detected = dedupeHands(detected)
+  if (pendingImportResolve) {
+    const fn = pendingImportResolve
+    pendingImportResolve = null
+    fn(detected)
+    return
+  }
   drawSkeleton(detected)
-
-  // Normalize + cache for static capture
   state.latestPair = sortAndNormalize(detected)
-
-  // Dynamic buffer push (use leftmost wrist in normalized [0,1] coords)
   if (detected.length > 0) {
     const sorted = [...detected].sort((a, b) => a[0].x - b[0].x)
     state.dynamicBuffer.push({ x: sorted[0][0].x, y: sorted[0][0].y })
@@ -407,23 +516,58 @@ function onHandsResults(results) {
   }
   renderBuffer()
 }
+hands.onResults(onHandsResults)
+
+function drawSkeleton(detections) {
+  if (!video.videoWidth) return
+  if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  for (const hand of detections) {
+    ctx.strokeStyle = '#00ff00'; ctx.lineWidth = 2
+    for (const chain of FINGER_CHAINS) {
+      ctx.beginPath()
+      for (let i = 0; i < chain.length; i++) {
+        const lm = hand[chain[i]]
+        const x = lm.x * canvas.width, y = lm.y * canvas.height
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+      }
+      ctx.stroke()
+    }
+    for (let i = 0; i < hand.length; i++) {
+      const lm = hand[i]
+      ctx.beginPath()
+      ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 4, 0, Math.PI * 2)
+      ctx.fillStyle = i < 4 ? '#ff3030' : '#3070ff'
+      ctx.fill()
+    }
+  }
+}
+
+function dedupeHands(handsList) {
+  if (handsList.length <= 1) return handsList
+  const DEDUP_DIST = 0.10
+  const kept = []
+  for (const h of handsList) {
+    const w = h[0]
+    const dup = kept.some(k => Math.hypot(k[0].x - w.x, k[0].y - w.y) < DEDUP_DIST)
+    if (!dup) kept.push(h)
+  }
+  return kept
+}
 
 async function initCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
-      audio: false,
+      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false,
     })
     video.srcObject = stream
-    await new Promise((resolve, reject) => {
-      video.onloadedmetadata = resolve
-      video.onerror = reject
-    })
+    await new Promise((resolve, reject) => { video.onloadedmetadata = resolve; video.onerror = reject })
     await video.play()
     setStatus('Kamera siap, memulai detector…')
-    // Pump frames into MediaPipe
     async function tick() {
-      if (video.readyState >= 2) {
+      if (!cameraPaused && video.readyState >= 2) {
         await hands.send({ image: video })
       }
       requestAnimationFrame(() => { tick().catch(e => console.warn(e)) })
@@ -431,9 +575,33 @@ async function initCamera() {
     tick()
     setStatus('Ready')
   } catch (e) {
-    setStatus('Init failed: ' + e.message)
-    console.error(e)
+    setStatus('Init failed: ' + e.message); console.error(e)
   }
+}
+
+/** Send an HTMLImageElement through MediaPipe and resolve with the detected landmarks. */
+function detectImageHands(imageEl) {
+  return new Promise((resolve, reject) => {
+    pendingImportResolve = resolve
+    hands.send({ image: imageEl }).catch(err => {
+      pendingImportResolve = null
+      reject(err)
+    })
+  })
+}
+
+function loadImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => { img.__objectUrl = url; resolve(img) }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image load failed')) }
+    img.src = url
+  })
+}
+
+function releaseImage(img) {
+  if (img && img.__objectUrl) URL.revokeObjectURL(img.__objectUrl)
 }
 
 // ----------------------------------------------------------------------------
@@ -446,6 +614,7 @@ function renderModeToggle() {
   document.getElementById('class-dynamic').style.display = state.mode === 'dynamic' ? '' : 'none'
   document.getElementById('controls-static').style.display = state.mode === 'static' ? '' : 'none'
   document.getElementById('controls-dynamic').style.display = state.mode === 'dynamic' ? '' : 'none'
+  document.getElementById('import-controls').style.display = state.mode === 'static' ? '' : 'none'
   document.getElementById('class-label').textContent = state.mode === 'static' ? 'Alphabet class (A–Y, J & Z dinamis)' : 'Dynamic class'
 }
 
@@ -479,8 +648,7 @@ function renderDynamicClasses() {
   const counts = classCounts(state.dynamicSamples)
   const recordedWrap = document.getElementById('dyn-recorded')
   const suggestWrap = document.getElementById('dyn-suggestions')
-  recordedWrap.innerHTML = ''
-  suggestWrap.innerHTML = ''
+  recordedWrap.innerHTML = ''; suggestWrap.innerHTML = ''
   const recorded = Object.keys(counts).sort()
   if (recorded.length > 0) {
     const lbl = document.createElement('span')
@@ -494,8 +662,7 @@ function renderDynamicClasses() {
       b.className = 'class-chip' + (state.activeClass === cls ? ' active' : '')
       b.textContent = cls
       const cnt = document.createElement('span')
-      cnt.className = 'class-chip-count'
-      cnt.textContent = counts[cls]
+      cnt.className = 'class-chip-count'; cnt.textContent = counts[cls]
       b.appendChild(cnt)
       b.onclick = () => { state.activeClass = cls; renderDynamicClasses() }
       recordedWrap.appendChild(b)
@@ -510,9 +677,7 @@ function renderDynamicClasses() {
     suggestWrap.appendChild(lbl)
     for (const cls of remaining) {
       const b = document.createElement('button')
-      b.type = 'button'
-      b.className = 'class-chip'
-      b.textContent = cls
+      b.type = 'button'; b.className = 'class-chip'; b.textContent = cls
       b.onclick = () => { state.activeClass = cls; document.getElementById('dyn-input').value = ''; renderDynamicClasses() }
       suggestWrap.appendChild(b)
     }
@@ -530,23 +695,19 @@ function renderBuffer() {
 
 function renderSampleList(kind) {
   const samples = kind === 'static' ? state.staticSamples : state.dynamicSamples
-  const filter = kind === 'static' ? state.staticFilter : state.dynamicFilter
   const body = document.getElementById(kind + '-body')
   const countEl = document.getElementById(kind + '-count')
   const filterEl = document.getElementById(kind + '-filter')
 
   const counts = classCounts(samples)
   const classes = Object.keys(counts).sort()
-  // Rebuild filter options preserving current value
   const currentVal = filterEl.value
   filterEl.innerHTML = '<option value="' + ALL + '">all</option>'
   for (const cls of classes) {
     const opt = document.createElement('option')
-    opt.value = cls
-    opt.textContent = cls + ' (' + counts[cls] + ')'
+    opt.value = cls; opt.textContent = cls + ' (' + counts[cls] + ')'
     filterEl.appendChild(opt)
   }
-  // If active filter no longer exists, fall back to all
   if (currentVal !== ALL && !classes.includes(currentVal)) {
     if (kind === 'static') state.staticFilter = ALL; else state.dynamicFilter = ALL
     filterEl.value = ALL
@@ -570,40 +731,206 @@ function renderSampleList(kind) {
   for (const s of visible) {
     const li = document.createElement('li')
     li.className = 'sample-row'
-    li.innerHTML =
-      '<span class="lbl"></span>' +
-      '<span class="ago"></span>' +
-      '<span class="src">manual</span>' +
-      '<button class="del" title="Delete">×</button>'
+    li.innerHTML = '<span class="lbl"></span><span class="ago"></span><span class="src"></span><button class="del" title="Delete">×</button>'
     li.querySelector('.lbl').textContent = s.label
     li.querySelector('.ago').textContent = timeAgo(s.capturedAt)
+    li.querySelector('.src').textContent = s.source || 'manual'
     li.querySelector('.del').onclick = async () => {
       await dbDelete(kind === 'static' ? STORE_STATIC : STORE_DYNAMIC, s.id)
       await reloadFromDb()
     }
     body.appendChild(li)
   }
-  // Auto-scroll to bottom if user was at bottom (or list just got bigger)
   if (wasAtBottom) body.scrollTop = body.scrollHeight
 }
 
 function renderAll() {
-  renderModeToggle()
-  renderStaticClasses()
-  renderDynamicClasses()
-  renderBuffer()
-  renderSampleList('static')
-  renderSampleList('dynamic')
+  renderModeToggle(); renderStaticClasses(); renderDynamicClasses()
+  renderBuffer(); renderSampleList('static'); renderSampleList('dynamic')
 }
 
 async function reloadFromDb() {
   try {
     state.staticSamples = await dbList(STORE_STATIC)
     state.dynamicSamples = await dbList(STORE_DYNAMIC)
-  } catch (e) {
-    console.warn('reload db failed:', e)
-  }
+  } catch (e) { console.warn('reload db failed:', e) }
   renderAll()
+}
+
+// ----------------------------------------------------------------------------
+// Importer flow — preview modal → progress modal → done modal
+// ----------------------------------------------------------------------------
+function showModal(id) { document.getElementById(id).style.display = 'flex' }
+function hideModal(id) { document.getElementById(id).style.display = 'none' }
+function hideAllModals() { ['modal-preview','modal-progress','modal-done'].forEach(hideModal) }
+
+function handleFilesChosen(files) {
+  if (!files || files.length === 0) return
+  const rows = []
+  let nonLetter = 0
+  const counts = {}
+  for (const f of files) {
+    if (!/\.(jpe?g|png|webp)$/i.test(f.name)) continue
+    const label = extractLabel(f)
+    rows.push({ file: f, label })
+    if (label === null || !isValidStaticLabel(label)) {
+      nonLetter++
+      continue
+    }
+    const norm = normalizeStaticLabel(label)
+    counts[norm] = (counts[norm] || 0) + 1
+  }
+  importer.parsed = rows
+  importer.labelCounts = counts
+  importer.nonLetterSkipped = nonLetter
+  importer.selected = new Set(Object.keys(counts))
+  renderPreview()
+  showModal('modal-preview')
+}
+
+function renderPreview() {
+  const body = document.getElementById('preview-body')
+  const totalEl = document.getElementById('preview-total')
+  const startBtn = document.getElementById('preview-start')
+  const labels = Object.keys(importer.labelCounts).sort()
+  body.innerHTML = ''
+  if (labels.length === 0) {
+    body.textContent = 'Tidak ada file dengan label huruf valid. ' + (importer.nonLetterSkipped > 0 ? importer.nonLetterSkipped + ' file di-skip karena label non-letter.' : '')
+  } else {
+    const summary = document.createElement('p')
+    summary.style.cssText = 'margin-bottom:8px;font-size:12px;color:#475569;'
+    summary.innerHTML = importer.parsed.length + ' file total · ' + labels.length + ' kelas huruf valid' + (importer.nonLetterSkipped > 0 ? ' · ' + importer.nonLetterSkipped + ' di-skip (label non-letter)' : '')
+    body.appendChild(summary)
+    for (const label of labels) {
+      const row = document.createElement('div')
+      row.className = 'check-row'
+      const lbl = document.createElement('label')
+      const cb = document.createElement('input')
+      cb.type = 'checkbox'
+      cb.checked = importer.selected.has(label)
+      cb.onchange = () => {
+        if (cb.checked) importer.selected.add(label); else importer.selected.delete(label)
+        updatePreviewTotal()
+      }
+      const name = document.createElement('span')
+      name.className = 'cls-name'; name.textContent = label
+      lbl.appendChild(cb); lbl.appendChild(name)
+      const cnt = document.createElement('span')
+      cnt.className = 'cls-count'; cnt.textContent = importer.labelCounts[label]
+      row.appendChild(lbl); row.appendChild(cnt)
+      body.appendChild(row)
+    }
+  }
+  updatePreviewTotal()
+  function updatePreviewTotal() {
+    let total = 0
+    for (const l of labels) if (importer.selected.has(l)) total += importer.labelCounts[l]
+    totalEl.textContent = total
+    startBtn.disabled = total === 0
+  }
+}
+
+async function startImport() {
+  const queue = []
+  for (const r of importer.parsed) {
+    if (r.label === null) continue
+    if (!isValidStaticLabel(r.label)) continue
+    const norm = normalizeStaticLabel(r.label)
+    if (!importer.selected.has(norm)) continue
+    queue.push({ file: r.file, label: norm })
+  }
+  if (queue.length === 0) { alert('Tidak ada file yang dipilih.'); return }
+
+  importer.cancel = false
+  importer.liveStats = { imported: 0, skippedNoHands: 0, skipped: 0, perClass: {} }
+  hideModal('modal-preview')
+  showModal('modal-progress')
+  document.getElementById('progress-text').textContent = '0 / ' + queue.length + ' files processed'
+  document.getElementById('progress-fill').style.width = '0%'
+  document.getElementById('stat-imported').textContent = '0'
+  document.getElementById('stat-nohands').textContent = '0'
+  document.getElementById('stat-error').textContent = '0'
+
+  cameraPaused = true
+  try {
+    for (let i = 0; i < queue.length; i += IMPORT_CHUNK_SIZE) {
+      if (importer.cancel) break
+      const chunk = queue.slice(i, i + IMPORT_CHUNK_SIZE)
+      for (const item of chunk) {
+        let img = null
+        try {
+          img = await loadImageFile(item.file)
+          const raws = await detectImageHands(img)
+          if (raws.length === 0) {
+            importer.liveStats.skippedNoHands++
+          } else {
+            const pair = sortAndNormalize(raws)
+            const features = extractFrameFeatures(pair)
+            const allZero = features.every(v => v === 0)
+            if (allZero) {
+              importer.liveStats.skippedNoHands++
+            } else {
+              const sample = {
+                id: genId(), label: item.label, features,
+                capturedAt: Date.now(), source: 'image-upload', session: sessionId,
+                imageFilename: item.file.name,
+              }
+              await dbAdd(STORE_STATIC, sample)
+              state.staticSamples.push(sample)
+              importer.liveStats.imported++
+              importer.liveStats.perClass[item.label] = (importer.liveStats.perClass[item.label] || 0) + 1
+            }
+          }
+        } catch (err) {
+          importer.liveStats.skipped++
+          console.warn('[importer] ' + item.file.name + ' skipped:', err)
+        } finally {
+          if (img) releaseImage(img)
+        }
+      }
+      const done = Math.min(i + chunk.length, queue.length)
+      const pct = Math.round((done / queue.length) * 100)
+      document.getElementById('progress-text').textContent = done + ' / ' + queue.length + ' files processed'
+      document.getElementById('progress-fill').style.width = pct + '%'
+      document.getElementById('stat-imported').textContent = importer.liveStats.imported
+      document.getElementById('stat-nohands').textContent = importer.liveStats.skippedNoHands
+      document.getElementById('stat-error').textContent = importer.liveStats.skipped
+      await new Promise(r => setTimeout(r, 0))
+    }
+  } finally {
+    cameraPaused = false
+    pendingImportResolve = null
+  }
+  renderDoneModal()
+  hideModal('modal-progress')
+  showModal('modal-done')
+  renderSampleList('static')
+  renderStaticClasses()
+}
+
+function renderDoneModal() {
+  const body = document.getElementById('done-body')
+  body.innerHTML = ''
+  const top = document.createElement('p')
+  top.innerHTML = '<b>' + importer.liveStats.imported + '</b> sample imported · <b>' + importer.liveStats.skippedNoHands + '</b> tidak ada tangan · <b>' + importer.liveStats.skipped + '</b> error'
+  body.appendChild(top)
+  const labels = Object.keys(importer.liveStats.perClass).sort()
+  if (labels.length > 0) {
+    const head = document.createElement('p')
+    head.style.cssText = 'margin-top:12px;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;'
+    head.textContent = 'Per kelas'
+    body.appendChild(head)
+    const ul = document.createElement('ul')
+    ul.className = 'per-class-list'
+    for (const l of labels) {
+      const li = document.createElement('li')
+      li.innerHTML = '<span class="cls"></span><span class="cnt"></span>'
+      li.querySelector('.cls').textContent = l
+      li.querySelector('.cnt').textContent = importer.liveStats.perClass[l]
+      ul.appendChild(li)
+    }
+    body.appendChild(ul)
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -617,8 +944,7 @@ document.getElementById('dyn-use').onclick = () => {
   if (!v) return
   state.activeClass = v
   document.getElementById('dyn-input').value = ''
-  renderDynamicClasses()
-  renderBuffer()
+  renderDynamicClasses(); renderBuffer()
 }
 document.getElementById('dyn-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); document.getElementById('dyn-use').click() }
@@ -627,60 +953,40 @@ document.getElementById('dyn-input').addEventListener('keydown', e => {
 document.getElementById('record-static').onclick = async () => {
   if (!state.activeClass) { alert('Pilih huruf dulu'); return }
   const features = extractFrameFeatures(state.latestPair)
-  // Sanity: must be exactly 84 floats
   if (features.length !== STATIC_FEATURE_LENGTH) return
-  // Reject if both slots are zero-fill (no hand detected)
-  const allZero = features.every(v => v === 0)
-  if (allZero) { setStatus('Tidak ada tangan terdeteksi — skip.'); return }
+  if (features.every(v => v === 0)) { setStatus('Tidak ada tangan terdeteksi — skip.'); return }
   const sample = { id: genId(), label: state.activeClass, features, capturedAt: Date.now(), source: 'manual', session: sessionId }
   await dbAdd(STORE_STATIC, sample)
   state.staticSamples.push(sample)
-  renderSampleList('static')
-  renderStaticClasses()
+  renderSampleList('static'); renderStaticClasses()
 }
 
 document.getElementById('save-dynamic').onclick = async () => {
   if (!state.activeClass) { alert('Ketik nama kelas dulu'); return }
   if (state.dynamicBuffer.length !== DYNAMIC_HISTORY_SIZE) return
   const sample = {
-    id: genId(),
-    label: state.activeClass,
+    id: genId(), label: state.activeClass,
     history: state.dynamicBuffer.map(p => ({ x: p.x, y: p.y })),
-    capturedAt: Date.now(),
-    source: 'manual',
-    session: sessionId,
+    capturedAt: Date.now(), source: 'manual', session: sessionId,
   }
   await dbAdd(STORE_DYNAMIC, sample)
   state.dynamicSamples.push(sample)
   state.dynamicBuffer = []
-  renderBuffer()
-  renderSampleList('dynamic')
-  renderDynamicClasses()
+  renderBuffer(); renderSampleList('dynamic'); renderDynamicClasses()
 }
 
-document.getElementById('reset-buffer').onclick = () => {
-  state.dynamicBuffer = []
-  renderBuffer()
-}
+document.getElementById('reset-buffer').onclick = () => { state.dynamicBuffer = []; renderBuffer() }
 
 document.getElementById('export-csv').onclick = () => {
-  if (state.staticSamples.length > 0) {
-    downloadText('sibi_static_' + sessionId.slice(0, 8) + '.csv', staticToCsv(state.staticSamples))
-  }
-  if (state.dynamicSamples.length > 0) {
-    downloadText('sibi_dynamic_' + sessionId.slice(0, 8) + '.csv', dynamicToCsv(state.dynamicSamples))
-  }
-  if (state.staticSamples.length === 0 && state.dynamicSamples.length === 0) {
-    alert('Belum ada sample untuk di-export.')
-  }
+  if (state.staticSamples.length > 0) downloadText('sibi_static_' + sessionId.slice(0, 8) + '.csv', staticToCsv(state.staticSamples))
+  if (state.dynamicSamples.length > 0) downloadText('sibi_dynamic_' + sessionId.slice(0, 8) + '.csv', dynamicToCsv(state.dynamicSamples))
+  if (state.staticSamples.length === 0 && state.dynamicSamples.length === 0) alert('Belum ada sample untuk di-export.')
 }
 
 document.getElementById('clear-all').onclick = async () => {
   if (!confirm('Hapus SEMUA sample? Tidak bisa di-undo.')) return
   await dbClear()
-  state.staticSamples = []
-  state.dynamicSamples = []
-  state.dynamicBuffer = []
+  state.staticSamples = []; state.dynamicSamples = []; state.dynamicBuffer = []
   state.activeClass = null
   renderAll()
 }
@@ -688,13 +994,63 @@ document.getElementById('clear-all').onclick = async () => {
 document.getElementById('static-filter').onchange = e => { state.staticFilter = e.target.value; renderSampleList('static') }
 document.getElementById('dynamic-filter').onchange = e => { state.dynamicFilter = e.target.value; renderSampleList('dynamic') }
 
+document.getElementById('static-clear').onclick = async () => {
+  if (state.staticSamples.length === 0) return
+  if (!confirm('Hapus semua STATIC sample? Tidak bisa di-undo.')) return
+  await dbClearStore(STORE_STATIC)
+  state.staticSamples = []
+  if (state.mode === 'static') state.activeClass = null
+  renderAll()
+}
+document.getElementById('dynamic-clear').onclick = async () => {
+  if (state.dynamicSamples.length === 0) return
+  if (!confirm('Hapus semua DYNAMIC sample? Tidak bisa di-undo.')) return
+  await dbClearStore(STORE_DYNAMIC)
+  state.dynamicSamples = []
+  state.dynamicBuffer = []
+  if (state.mode === 'dynamic') state.activeClass = null
+  renderAll()
+}
+
+// Hotkey: Space → record sample (static) or save take (dynamic). Skip when
+// the focus is in a form control so users can still type class names freely.
+window.addEventListener('keydown', ev => {
+  if (ev.code !== 'Space') return
+  const t = ev.target
+  const tag = (t && t.tagName) || ''
+  if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(tag) || (t && t.isContentEditable)) return
+  // Don't intercept when any modal is open — the user might be focused there
+  if (document.getElementById('modal-preview').style.display === 'flex') return
+  if (document.getElementById('modal-progress').style.display === 'flex') return
+  if (document.getElementById('modal-done').style.display === 'flex') return
+  ev.preventDefault()
+  if (state.mode === 'static') document.getElementById('record-static').click()
+  else document.getElementById('save-dynamic').click()
+})
+
+// Image importer
+const folderInput = document.getElementById('folder-input')
+// webkitdirectory attribute applied via JS so the folder picker opens in
+// directory mode (HTML attribute alone is non-standard; setAttribute is the
+// canonical workaround).
+folderInput.setAttribute('webkitdirectory', '')
+folderInput.setAttribute('directory', '')
+folderInput.setAttribute('mozdirectory', '')
+document.getElementById('import-folder').onclick = () => folderInput.click()
+document.getElementById('import-files').onclick = () => document.getElementById('files-input').click()
+folderInput.addEventListener('change', e => { handleFilesChosen(e.target.files); e.target.value = '' })
+document.getElementById('files-input').addEventListener('change', e => { handleFilesChosen(e.target.files); e.target.value = '' })
+document.getElementById('preview-cancel').onclick = () => hideModal('modal-preview')
+document.getElementById('preview-start').onclick = () => { void startImport() }
+document.getElementById('progress-cancel').onclick = () => { importer.cancel = true }
+document.getElementById('done-close').onclick = () => { hideAllModals() }
+
 // ----------------------------------------------------------------------------
 // Boot
 // ----------------------------------------------------------------------------
 ;(async () => {
   await reloadFromDb()
   await initCamera()
-  // Refresh "Xs ago" timestamps periodically.
   setInterval(() => { renderSampleList('static'); renderSampleList('dynamic') }, 10_000)
 })()
 </script>

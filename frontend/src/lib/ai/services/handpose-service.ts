@@ -76,10 +76,11 @@ export class HandPoseService {
     try {
       console.log('🔧 HandPoseService: Starting initialization...')
 
-      // Initialize TensorFlow.js backend with timeout
+      // Initialize TensorFlow.js backend with timeout. Generous bound — wasm
+      // backend init can be slow on first cold start on weaker hardware.
       await Promise.race([
         tf.ready(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('TensorFlow.js initialization timeout')), 30000)),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('TensorFlow.js initialization timeout (60s)')), 60_000)),
       ])
       console.log('✅ TensorFlow.js ready with backend:', tf.getBackend())
 
@@ -93,6 +94,9 @@ export class HandPoseService {
       // @mediapipe/hands (WASM/JS solution loaded from JSDelivr CDN) rather
       // than running inference through TF.js. More reliable across browsers:
       // the tfjs runtime returned all-NaN keypoints in our test environment.
+      // @mediapipe/hands pulls ~10MB of assets from CDN (wasm + .tflite +
+      // .data files) on first load — JSDelivr can be slow under load, so
+      // give 90s before bailing. After first load assets are HTTP-cached.
       console.log('📥 Loading HandPose detector (MediaPipeHands model, mediapipe runtime)...')
       this.detector = await Promise.race([
         handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands, {
@@ -101,7 +105,7 @@ export class HandPoseService {
           modelType: 'full',
           maxHands: this.config.maxNumHands,
         }),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('HandPose model loading timeout')), 30000)),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('HandPose model loading timeout (90s) — check network / try reload')), 90_000)),
       ])
       console.log('✅ HandPose detector loaded successfully (mediapipe runtime)')
 
@@ -209,6 +213,43 @@ export class HandPoseService {
       flipHorizontal: this.config.flipHorizontal,
     })
 
+    const raw = predictions.map((p) => {
+      const kp2d = p.keypoints
+      const kp3d = p.keypoints3D ?? []
+      const wristPx = kp2d[0]
+      const middleMcpPx = kp2d[9]
+      const palmPx = Math.hypot(middleMcpPx.x - wristPx.x, middleMcpPx.y - wristPx.y) || 100
+      const zScale = palmPx * 10
+      return {
+        landmarks: kp2d.map((kp, i) => ({
+          x: kp.x,
+          y: kp.y,
+          z: kp3d[i] && typeof kp3d[i].z === 'number' ? kp3d[i].z * zScale : 0,
+        })),
+        confidence: p.score ?? 0.8,
+      }
+    })
+    return dedupeOverlappingHands(raw)
+  }
+
+  /**
+   * Same as detectRawHands but accepts a loaded HTMLImageElement. Used by the
+   * bulk image-import flow in /dev/gesture-recorder. Image must have
+   * naturalWidth/Height > 0 (i.e., decode complete) — caller is responsible
+   * for awaiting the load event before invoking.
+   */
+  async detectRawHandsFromImage(
+    image: HTMLImageElement,
+  ): Promise<import('../../gesture/types').RawHand[]> {
+    if (!this.isInitialized || !this.detector) {
+      throw new Error('HandPose service not initialized')
+    }
+    if (!image || image.naturalWidth === 0 || image.naturalHeight === 0) {
+      throw new Error('Image not loaded or has zero dimensions')
+    }
+    const predictions = await this.detector.estimateHands(image, {
+      flipHorizontal: false,
+    })
     const raw = predictions.map((p) => {
       const kp2d = p.keypoints
       const kp3d = p.keypoints3D ?? []

@@ -13,6 +13,8 @@ interface Props {
   title: string
   samples: SampleRow[]
   onDelete: (id: string) => void
+  /** Optional: clear all samples in this bucket. Renders a "Clear" button. */
+  onClear?: () => void
 }
 
 const ALL = '__all__'
@@ -24,7 +26,7 @@ function timeAgo(ms: number): string {
   return `${Math.floor(diff / 3_600_000)}h`
 }
 
-export function SampleList({ title, samples, onDelete }: Props): ReactNode {
+export function SampleList({ title, samples, onDelete, onClear }: Props): ReactNode {
   const listRef = useRef<HTMLUListElement>(null)
   const prevLenRef = useRef(samples.length)
   const [filter, setFilter] = useState<string>(ALL)
@@ -61,7 +63,7 @@ export function SampleList({ title, samples, onDelete }: Props): ReactNode {
   const isFiltered = filter !== ALL
 
   return (
-    <div className="flex h-full max-h-[320px] min-h-0 flex-col rounded-md border border-slate-300 bg-white">
+    <div className="flex h-full min-h-[180px] min-w-0 flex-1 flex-col rounded-md border border-slate-300 bg-white">
       <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">
         <span>
           {title}{' '}
@@ -69,20 +71,33 @@ export function SampleList({ title, samples, onDelete }: Props): ReactNode {
             {isFiltered ? `(${visible.length} of ${samples.length})` : `(${samples.length})`}
           </span>
         </span>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs font-mono font-normal text-slate-700 focus:border-emerald-500 focus:outline-none"
-          aria-label="Filter by class"
-          disabled={classOptions.length === 0}
-        >
-          <option value={ALL}>all</option>
-          {classOptions.map(([label, count]) => (
-            <option key={label} value={label}>
-              {label} ({count})
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs font-mono font-normal text-slate-700 focus:border-emerald-500 focus:outline-none"
+            aria-label="Filter by class"
+            disabled={classOptions.length === 0}
+          >
+            <option value={ALL}>all</option>
+            {classOptions.map(([label, count]) => (
+              <option key={label} value={label}>
+                {label} ({count})
+              </option>
+            ))}
+          </select>
+          {onClear && (
+            <button
+              type="button"
+              onClick={onClear}
+              disabled={samples.length === 0}
+              className="rounded border border-red-300 bg-white px-1.5 py-0.5 text-xs font-normal text-red-600 hover:border-red-400 hover:bg-red-50 disabled:opacity-40"
+              title={`Clear all ${title.toLowerCase()}`}
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
       <ul ref={listRef} className="min-h-0 flex-1 overflow-y-auto">
         {visible.length === 0 && (

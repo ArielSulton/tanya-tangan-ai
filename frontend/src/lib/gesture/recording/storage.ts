@@ -75,6 +75,14 @@ export async function deleteDynamic(id: string): Promise<void> {
   await txAll(DYNAMIC_STORE, 'readwrite', (s) => s.delete(id) as IDBRequest<unknown> as IDBRequest<void>)
 }
 
+export async function clearStatic(): Promise<void> {
+  await txAll(STATIC_STORE, 'readwrite', (s) => s.clear() as IDBRequest<unknown> as IDBRequest<void>)
+}
+
+export async function clearDynamic(): Promise<void> {
+  await txAll(DYNAMIC_STORE, 'readwrite', (s) => s.clear() as IDBRequest<unknown> as IDBRequest<void>)
+}
+
 export async function clearAll(): Promise<void> {
   const db = await openDb()
   await new Promise<void>((resolve, reject) => {
