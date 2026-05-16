@@ -16,6 +16,13 @@ export interface BrowserGestureResult {
    * 'yolo-fallback' = legacy backend YOLO endpoint, used when browser init failed.
    */
   source: 'browser' | 'yolo-fallback'
+  /**
+   * 'static' for per-frame letter detection (fingerpose / static MLP),
+   * 'dynamic' for one-shot word detection from a motion trajectory.
+   * Hook uses this to bypass dwell-validation for dynamic results
+   * (which only fire once per motion_end and would never survive a streak).
+   */
+  gestureType: 'static' | 'dynamic'
 }
 
 export type EngineStatus =

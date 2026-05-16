@@ -112,22 +112,36 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
 
       const engine = new BrowserGestureEngine({
         onResult: (r) => {
-          // Compute validated flag based on consecutive-frame hold detection.
+          // Dynamic results fire ONCE per motion_end (not continuous per
+          // frame), so a frame-streak validator would never trigger them.
+          // Auto-validate dynamic results that clear the confidence floor;
+          // reset the static streak so the next static letter still has to
+          // build its own hold from scratch.
           let validated = false
-          if (r.letter === streakLetterRef.current) {
-            streakCountRef.current += 1
-          } else {
-            streakLetterRef.current = r.letter
-            streakCountRef.current = 1
+          if (r.gestureType === 'dynamic') {
+            if (r.confidence >= VALIDATION_MIN_CONFIDENCE) {
+              validated = true
+            }
+            streakLetterRef.current = null
+            streakCountRef.current = 0
             lastEmittedLetterRef.current = null
-          }
-          if (
-            streakCountRef.current >= VALIDATION_FRAMES &&
-            r.confidence >= VALIDATION_MIN_CONFIDENCE &&
-            lastEmittedLetterRef.current !== r.letter
-          ) {
-            validated = true
-            lastEmittedLetterRef.current = r.letter
+          } else {
+            // Static path: validate by consecutive-frame hold detection.
+            if (r.letter === streakLetterRef.current) {
+              streakCountRef.current += 1
+            } else {
+              streakLetterRef.current = r.letter
+              streakCountRef.current = 1
+              lastEmittedLetterRef.current = null
+            }
+            if (
+              streakCountRef.current >= VALIDATION_FRAMES &&
+              r.confidence >= VALIDATION_MIN_CONFIDENCE &&
+              lastEmittedLetterRef.current !== r.letter
+            ) {
+              validated = true
+              lastEmittedLetterRef.current = r.letter
+            }
           }
           const result = toGestureResult(r, validated)
           setLastResult(result)

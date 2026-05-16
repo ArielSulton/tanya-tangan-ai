@@ -34,6 +34,10 @@ export class BrowserGestureEngine {
   private dynamicHistory: HistoryPoint[] = []
   private readonly DYNAMIC_HISTORY_SIZE = DYNAMIC_HISTORY_SIZE
   private readonly FRAME_BUFFER_SIZE = 24
+  // Video reference retained so we can normalize wrist pixel coords to [0,1]
+  // before pushing to the dynamic history — matches the standalone recorder's
+  // coord space so a single trained model works in both contexts.
+  private video: HTMLVideoElement | null = null
   // Static-engine selection. Read from NEXT_PUBLIC_STATIC_ENGINE at init.
   // 'mlp' attempts to load the trained classifier; falls back to fingerpose
   // (mlpReady stays false) if model files are missing.
@@ -51,6 +55,7 @@ export class BrowserGestureEngine {
 
   async initialize(video: HTMLVideoElement, canvas: HTMLCanvasElement): Promise<void> {
     this.setState('initializing')
+    this.video = video
     this.service = new GestureRecognitionService()
 
     // Resolve static engine selection from env. Validate explicitly — anything
@@ -140,14 +145,21 @@ export class BrowserGestureEngine {
         this.mlpInflight = false
       })
     }
-    // MotionDetector tracks raw image-space wrist of slot 0 (pre-normalize).
+    // Wrist trajectory tracked twice for two different consumers:
+    //   - MotionDetector keeps PIXEL coords (its variance thresholds are tuned
+    //     for pixel-scale jitter/motion).
+    //   - dynamicHistory holds [0,1] NORMALIZED coords so the trained model
+    //     sees the same coord space whether trained from /dev/ recorder, the
+    //     standalone HTML, or live inference here.
     const sortedRawByX = [...raws].sort((a, b) => a.landmarks[0].x - b.landmarks[0].x)
     const rawSlot0 = sortedRawByX[0]
     if (rawSlot0) {
-      const point = { x: rawSlot0.landmarks[0].x, y: rawSlot0.landmarks[0].y }
-      this.motionDetector.update(point)
-      // Maintain a rolling 24-point history for dynamic classification.
-      this.dynamicHistory.push(point)
+      const px = { x: rawSlot0.landmarks[0].x, y: rawSlot0.landmarks[0].y }
+      this.motionDetector.update(px)
+      const vw = this.video?.videoWidth || 0
+      const vh = this.video?.videoHeight || 0
+      const norm = vw > 0 && vh > 0 ? { x: px.x / vw, y: px.y / vh } : px
+      this.dynamicHistory.push(norm)
       if (this.dynamicHistory.length > this.DYNAMIC_HISTORY_SIZE) {
         this.dynamicHistory.shift()
       }
@@ -172,6 +184,7 @@ export class BrowserGestureEngine {
           timestamp: Date.now(),
           processingTimeMs: 0,
           source: 'browser',
+          gestureType: 'static',
         }
         this.callbacks.onResult?.(adapted)
       }
@@ -191,6 +204,7 @@ export class BrowserGestureEngine {
           timestamp: Date.now(),
           processingTimeMs: 0,
           source: 'browser',
+          gestureType: 'dynamic',
         }
         this.callbacks.onResult?.(adapted)
       }
@@ -221,6 +235,7 @@ export class BrowserGestureEngine {
       timestamp: r.timestamp,
       processingTimeMs: r.processingTime,
       source: 'browser',
+      gestureType: 'static',
     }
     this.callbacks.onResult?.(adapted)
   }
