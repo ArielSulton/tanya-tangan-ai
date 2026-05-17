@@ -1,7 +1,7 @@
 'use client'
 
 import { type ReactNode } from 'react'
-import { DYNAMIC_HISTORY_SIZE } from '@/lib/gesture/recording/types'
+import { DYNAMIC_BUFFER_DURATION_MS } from '@/lib/gesture/recording/resample'
 
 interface Props {
   mode: 'static' | 'dynamic'
@@ -10,8 +10,9 @@ interface Props {
   onRecordStatic: () => void
   staticAutoLabel: boolean
   onToggleAutoLabel: () => void
-  // Dynamic mode
-  dynamicBufferSize: number
+  // Dynamic mode — wall-clock duration of the rolling time-windowed buffer.
+  // Save take enabled when this reaches DYNAMIC_BUFFER_DURATION_MS.
+  dynamicBufferDurationMs: number
   onSaveDynamicTake: () => void
   onResetDynamicBuffer: () => void
   // Common
@@ -28,7 +29,7 @@ export function RecordingControls(props: Props): ReactNode {
     onRecordStatic,
     staticAutoLabel,
     onToggleAutoLabel,
-    dynamicBufferSize,
+    dynamicBufferDurationMs,
     onSaveDynamicTake,
     onResetDynamicBuffer,
     onExportCsv,
@@ -82,13 +83,22 @@ export function RecordingControls(props: Props): ReactNode {
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
-          <div className="text-sm text-slate-700">
-            Buffer: <span className="font-mono">{dynamicBufferSize}/{DYNAMIC_HISTORY_SIZE}</span>
+          <div className="flex items-center gap-2 text-sm text-slate-700">
+            <span>Buffer:</span>
+            <span className="font-mono">
+              {(dynamicBufferDurationMs / 1000).toFixed(2)}s / {(DYNAMIC_BUFFER_DURATION_MS / 1000).toFixed(2)}s
+            </span>
+            <span className="inline-block h-1.5 w-24 overflow-hidden rounded bg-slate-200">
+              <span
+                className="block h-full bg-emerald-500 transition-all"
+                style={{ width: `${Math.min(100, (dynamicBufferDurationMs / DYNAMIC_BUFFER_DURATION_MS) * 100)}%` }}
+              />
+            </span>
           </div>
           <button
             type="button"
             onClick={onSaveDynamicTake}
-            disabled={!classSelected || dynamicBufferSize !== DYNAMIC_HISTORY_SIZE}
+            disabled={!classSelected || dynamicBufferDurationMs < DYNAMIC_BUFFER_DURATION_MS}
             className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-40"
           >
             Save take (Space)

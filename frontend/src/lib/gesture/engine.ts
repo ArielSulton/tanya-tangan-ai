@@ -15,6 +15,7 @@ import type { FrameFeatures, MotionState, RawHand } from './types'
 import { dynamicClassifier } from './inference/dynamic-classifier'
 import { staticClassifier } from './inference/static-classifier'
 import { DYNAMIC_HISTORY_SIZE, type HistoryPoint } from './recording/types'
+import { DYNAMIC_BUFFER_DURATION_MS, resampleToN, type TimedPoint } from './recording/resample'
 
 type StaticEngineMode = 'fingerpose' | 'mlp'
 
@@ -31,7 +32,10 @@ export class BrowserGestureEngine {
   private state: EngineStatus = 'uninitialized'
   private frameBuffer: FrameFeatures[] = []
   private motionDetector = new MotionDetector()
-  private dynamicHistory: HistoryPoint[] = []
+  // Timestamped wrist trajectory — kept under a rolling DYNAMIC_BUFFER_DURATION_MS
+  // window and resampled to DYNAMIC_HISTORY_SIZE uniform points at motion_end
+  // so model input shape is constant regardless of host laptop's framerate.
+  private dynamicHistory: TimedPoint[] = []
   private readonly DYNAMIC_HISTORY_SIZE = DYNAMIC_HISTORY_SIZE
   private readonly FRAME_BUFFER_SIZE = 24
   // Video reference retained so we can normalize wrist pixel coords to [0,1]
@@ -158,18 +162,36 @@ export class BrowserGestureEngine {
       this.motionDetector.update(px)
       const vw = this.video?.videoWidth || 0
       const vh = this.video?.videoHeight || 0
-      const norm = vw > 0 && vh > 0 ? { x: px.x / vw, y: px.y / vh } : px
-      this.dynamicHistory.push(norm)
-      if (this.dynamicHistory.length > this.DYNAMIC_HISTORY_SIZE) {
+      const normX = vw > 0 && vh > 0 ? px.x / vw : px.x
+      const normY = vw > 0 && vh > 0 ? px.y / vh : px.y
+      const t = Date.now()
+      this.dynamicHistory.push({ x: normX, y: normY, t })
+      // Same hysteresis as PointHistoryRecorder: drop oldest only if the
+      // second-oldest is still inside the window, so the buffer reliably
+      // reaches the target duration before we resample.
+      while (
+        this.dynamicHistory.length > 1 &&
+        this.dynamicHistory[this.dynamicHistory.length - 1].t - this.dynamicHistory[1].t >= DYNAMIC_BUFFER_DURATION_MS
+      ) {
         this.dynamicHistory.shift()
       }
     } else {
       this.motionDetector.update(null)
     }
 
-    // On motion_end, dispatch dynamic inference asynchronously.
-    if (this.motionDetector.state === 'motion_end' && this.dynamicHistory.length === this.DYNAMIC_HISTORY_SIZE) {
-      void this.runDynamicInference([...this.dynamicHistory])
+    // On motion_end, resample buffer to fixed N points spanning the fixed
+    // duration window, then dispatch async. The model only sees this shape;
+    // laptop FPS variation drops out.
+    if (this.motionDetector.state === 'motion_end' && this.dynamicHistory.length >= 2) {
+      const span = this.dynamicHistory[this.dynamicHistory.length - 1].t - this.dynamicHistory[0].t
+      if (span >= DYNAMIC_BUFFER_DURATION_MS * 0.5) {
+        const resampled: HistoryPoint[] = resampleToN(
+          [...this.dynamicHistory],
+          this.DYNAMIC_HISTORY_SIZE,
+          DYNAMIC_BUFFER_DURATION_MS,
+        )
+        void this.runDynamicInference(resampled)
+      }
     }
   }
 

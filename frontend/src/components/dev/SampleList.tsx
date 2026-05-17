@@ -63,7 +63,7 @@ export function SampleList({ title, samples, onDelete, onClear }: Props): ReactN
   const isFiltered = filter !== ALL
 
   return (
-    <div className="flex h-full min-h-[180px] min-w-0 flex-1 flex-col rounded-md border border-slate-300 bg-white">
+    <div className="flex h-full max-h-[420px] min-h-[180px] min-w-0 flex-1 flex-col rounded-md border border-slate-300 bg-white">
       <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">
         <span>
           {title}{' '}

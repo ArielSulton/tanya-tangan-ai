@@ -38,6 +38,20 @@
   }
   .video-inner { position: relative; height: 100%; width: 100%; overflow: hidden; border-radius: 2rem; background: #0f172a; }
   .video-inner video, .video-inner canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .countdown-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.3); pointer-events: none;
+  }
+  .countdown-overlay span {
+    font-family: ui-monospace, monospace; font-size: 14rem; font-weight: 700; line-height: 1;
+    color: white; text-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+  }
+  .delay-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; font-size: 11px; color: #475569; }
+  .delay-row input[type=number] {
+    width: 56px; padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 4px;
+    font-family: ui-monospace, monospace; font-size: 13px; text-align: center; outline: none;
+  }
+  .delay-row input[type=number]:focus { border-color: #10b981; }
   .status { margin-top: 8px; font-size: 12px; color: #475569; }
   .section { padding: 12px; }
   .section + .section { border-top: 1px solid #f1f5f9; }
@@ -63,8 +77,9 @@
   input[type=text]:focus { border-color: #10b981; }
   select { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 11px; background: white; outline: none; }
   select:focus { border-color: #10b981; }
-  /* Sample list — flex-1 so they share parent height evenly. */
-  .sample-list { display: flex; flex-direction: column; flex: 1; min-height: 180px; min-width: 0; border: 1px solid #cbd5e1; border-radius: 6px; background: white; overflow: hidden; }
+  /* Sample list — flex-1 so they share parent height evenly. max-height caps
+     growth so a long list scrolls internally instead of stretching the column. */
+  .sample-list { display: flex; flex-direction: column; flex: 1; min-height: 180px; max-height: 420px; min-width: 0; border: 1px solid #cbd5e1; border-radius: 6px; background: white; overflow: hidden; }
   .sample-list-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; color: #334155; }
   .sample-list-header .count { font-size: 11px; font-weight: 400; color: #64748b; }
   .sample-list-body { flex: 1; min-height: 0; overflow-y: auto; list-style: none; padding: 0; }
@@ -123,6 +138,7 @@
       <div class="video-inner">
         <video id="video" autoplay playsinline muted></video>
         <canvas id="canvas"></canvas>
+        <div id="countdown-overlay" class="countdown-overlay" style="display:none;"><span id="countdown-num">0</span></div>
       </div>
     </div>
     <div class="status" id="status">Memuat…</div>
@@ -137,9 +153,18 @@
       </div>
 
       <div class="section">
-        <div class="label" id="class-label">Alphabet class</div>
-        <div id="class-static" class="class-grid"></div>
-        <div id="class-dynamic" style="display:none;">
+        <div id="static-pane">
+          <div class="label">Alphabet class</div>
+          <div id="class-static" class="class-grid"></div>
+          <div class="label" style="margin-top:12px;">Or custom static class</div>
+          <div class="row" style="margin-bottom:8px;">
+            <input id="static-custom-input" type="text" placeholder="ketik nama kelas custom" autocomplete="off" spellcheck="false" />
+            <button id="static-custom-use" class="btn btn-primary btn-sm">Use</button>
+          </div>
+          <div id="static-custom-recorded" class="class-grid"></div>
+        </div>
+        <div id="dynamic-pane" style="display:none;">
+          <div class="label">Dynamic class</div>
           <div class="row" style="margin-bottom:8px;">
             <input id="dyn-input" type="text" placeholder="ketik nama kelas (e.g. jeruk)" autocomplete="off" spellcheck="false" />
             <button id="dyn-use" class="btn btn-primary btn-sm">Use</button>
@@ -155,10 +180,18 @@
           <button id="record-static" class="btn btn-primary">Record sample (Space)</button>
           <span class="info">Pegang sign, tekan tombol atau Space — 1 sample.</span>
         </div>
+        <div id="delay-row-static" class="delay-row">
+          <label>Delay
+            <input id="record-delay" type="number" min="0" max="30" value="5" aria-label="Recording delay in seconds" />
+            detik
+          </label>
+          <span style="color:#64748b;">— countdown sebelum capture (0 = langsung). Space lagi untuk cancel.</span>
+          <button id="cancel-countdown" class="btn btn-sm" style="display:none;border-color:#fca5a5;color:#dc2626;">Cancel</button>
+        </div>
         <div id="controls-dynamic" class="row" style="display:none;">
           <button id="save-dynamic" class="btn btn-primary">Save take (Space)</button>
           <button id="reset-buffer" class="btn btn-sm">Reset</button>
-          <span class="info">Buffer: <span id="buf-size">0</span>/<span id="buf-cap">32</span><span class="buffer-bar"><span id="buf-bar" style="width:0%"></span></span></span>
+          <span class="info">Buffer: <span id="buf-dur">0.00</span>s/<span id="buf-cap">1.50</span>s<span class="buffer-bar"><span id="buf-bar" style="width:0%"></span></span></span>
         </div>
         <div class="row" style="margin-top:8px;">
           <button id="export-csv" class="btn">Export CSV</button>
@@ -267,7 +300,8 @@
 const STATIC_CLASSES = ['A','B','C','D','E','F','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
 const STATIC_CLASS_SET = new Set(STATIC_CLASSES)
 const DYNAMIC_SUGGESTIONS = ['jeruk','kucing','besar','kecil','sangat','j','z']
-const DYNAMIC_HISTORY_SIZE = 32
+const DYNAMIC_HISTORY_SIZE = 32                  // output points after resample
+const DYNAMIC_BUFFER_DURATION_MS = 1500          // wall-clock window for raw collection
 const STATIC_FEATURE_LENGTH = 84 // 2 hands × 21 landmarks × 2 coords
 const DB_NAME = 'sibi-recorder'
 const DB_VERSION = 1
@@ -375,6 +409,29 @@ function extractFrameFeatures(pair) {
     } else {
       for (const p of hand) out.push(p.x, p.y)
     }
+  }
+  return out
+}
+
+// Linear-interpolate a timed buffer ({x,y,t}[]) into n uniformly-spaced
+// {x,y} points spanning durationMs (anchored to buffer[0].t). Output is
+// plain {x,y} so CSV/model see no schema change.
+function resampleToN(buffer, n, durationMs) {
+  if (buffer.length === 0) return []
+  if (buffer.length === 1) return Array.from({ length: n }, () => ({ x: buffer[0].x, y: buffer[0].y }))
+  const out = []
+  const tStart = buffer[0].t
+  const last = buffer[buffer.length - 1]
+  let j = 1
+  for (let i = 0; i < n; i++) {
+    const targetT = tStart + (i / (n - 1)) * durationMs
+    while (j < buffer.length && buffer[j].t < targetT) j++
+    if (j >= buffer.length) { out.push({ x: last.x, y: last.y }); continue }
+    const a = buffer[j - 1]
+    const b = buffer[j]
+    const span = b.t - a.t
+    const frac = span > 0 ? (targetT - a.t) / span : 0
+    out.push({ x: a.x + frac * (b.x - a.x), y: a.y + frac * (b.y - a.y) })
   }
   return out
 }
@@ -511,10 +568,25 @@ function onHandsResults(results) {
   state.latestPair = sortAndNormalize(detected)
   if (detected.length > 0) {
     const sorted = [...detected].sort((a, b) => a[0].x - b[0].x)
-    state.dynamicBuffer.push({ x: sorted[0][0].x, y: sorted[0][0].y })
-    if (state.dynamicBuffer.length > DYNAMIC_HISTORY_SIZE) state.dynamicBuffer.shift()
+    // Push timestamped wrist. Buffer is time-windowed (not frame-count) so
+    // the same gesture has the same temporal shape on slow & fast laptops.
+    const t = Date.now()
+    state.dynamicBuffer.push({ x: sorted[0][0].x, y: sorted[0][0].y, t })
+    // Trim: drop oldest only if SECOND-oldest is still within window, so
+    // span ends up slightly over (not under) the target duration.
+    while (
+      state.dynamicBuffer.length > 1 &&
+      state.dynamicBuffer[state.dynamicBuffer.length - 1].t - state.dynamicBuffer[1].t >= DYNAMIC_BUFFER_DURATION_MS
+    ) {
+      state.dynamicBuffer.shift()
+    }
   }
   renderBuffer()
+}
+
+function bufferDurationMs() {
+  if (state.dynamicBuffer.length < 2) return 0
+  return state.dynamicBuffer[state.dynamicBuffer.length - 1].t - state.dynamicBuffer[0].t
 }
 hands.onResults(onHandsResults)
 
@@ -610,12 +682,12 @@ function releaseImage(img) {
 function renderModeToggle() {
   document.getElementById('mode-static').classList.toggle('active', state.mode === 'static')
   document.getElementById('mode-dynamic').classList.toggle('active', state.mode === 'dynamic')
-  document.getElementById('class-static').style.display = state.mode === 'static' ? '' : 'none'
-  document.getElementById('class-dynamic').style.display = state.mode === 'dynamic' ? '' : 'none'
+  document.getElementById('static-pane').style.display = state.mode === 'static' ? '' : 'none'
+  document.getElementById('dynamic-pane').style.display = state.mode === 'dynamic' ? '' : 'none'
   document.getElementById('controls-static').style.display = state.mode === 'static' ? '' : 'none'
   document.getElementById('controls-dynamic').style.display = state.mode === 'dynamic' ? '' : 'none'
+  document.getElementById('delay-row-static').style.display = state.mode === 'static' ? '' : 'none'
   document.getElementById('import-controls').style.display = state.mode === 'static' ? '' : 'none'
-  document.getElementById('class-label').textContent = state.mode === 'static' ? 'Alphabet class (A–Y, J & Z dinamis)' : 'Dynamic class'
 }
 
 function classCounts(samples) {
@@ -639,8 +711,34 @@ function renderStaticClasses() {
       cnt.textContent = counts[cls]
       b.appendChild(cnt)
     }
-    b.onclick = () => { state.activeClass = cls; renderStaticClasses() }
+    b.onclick = () => { state.activeClass = cls; renderStaticClasses(); renderStaticCustom() }
     wrap.appendChild(b)
+  }
+}
+
+// Recorded chips for non-alphabet static labels — letting the user re-pick
+// previously-defined custom static classes without retyping.
+function renderStaticCustom() {
+  const allCounts = classCounts(state.staticSamples)
+  const recordedWrap = document.getElementById('static-custom-recorded')
+  recordedWrap.innerHTML = ''
+  const custom = Object.keys(allCounts).filter(l => !STATIC_CLASS_SET.has(l)).sort()
+  if (custom.length === 0) return
+  const lbl = document.createElement('span')
+  lbl.className = 'label'
+  lbl.style.cssText = 'margin:0 6px 0 0;align-self:center;'
+  lbl.textContent = 'Recorded:'
+  recordedWrap.appendChild(lbl)
+  for (const cls of custom) {
+    const b = document.createElement('button')
+    b.type = 'button'
+    b.className = 'class-chip' + (state.activeClass === cls ? ' active' : '')
+    b.textContent = cls
+    const cnt = document.createElement('span')
+    cnt.className = 'class-chip-count'; cnt.textContent = allCounts[cls]
+    b.appendChild(cnt)
+    b.onclick = () => { state.activeClass = cls; renderStaticClasses(); renderStaticCustom() }
+    recordedWrap.appendChild(b)
   }
 }
 
@@ -686,11 +784,12 @@ function renderDynamicClasses() {
 
 function renderBuffer() {
   if (state.mode !== 'dynamic') return
-  document.getElementById('buf-size').textContent = state.dynamicBuffer.length
-  document.getElementById('buf-cap').textContent = DYNAMIC_HISTORY_SIZE
-  const pct = Math.min(100, (state.dynamicBuffer.length / DYNAMIC_HISTORY_SIZE) * 100)
+  const dur = bufferDurationMs()
+  document.getElementById('buf-dur').textContent = (dur / 1000).toFixed(2)
+  document.getElementById('buf-cap').textContent = (DYNAMIC_BUFFER_DURATION_MS / 1000).toFixed(2)
+  const pct = Math.min(100, (dur / DYNAMIC_BUFFER_DURATION_MS) * 100)
   document.getElementById('buf-bar').style.width = pct + '%'
-  document.getElementById('save-dynamic').disabled = !state.activeClass || state.dynamicBuffer.length !== DYNAMIC_HISTORY_SIZE
+  document.getElementById('save-dynamic').disabled = !state.activeClass || dur < DYNAMIC_BUFFER_DURATION_MS
 }
 
 function renderSampleList(kind) {
@@ -745,7 +844,7 @@ function renderSampleList(kind) {
 }
 
 function renderAll() {
-  renderModeToggle(); renderStaticClasses(); renderDynamicClasses()
+  renderModeToggle(); renderStaticClasses(); renderStaticCustom(); renderDynamicClasses()
   renderBuffer(); renderSampleList('static'); renderSampleList('dynamic')
 }
 
@@ -950,23 +1049,89 @@ document.getElementById('dyn-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); document.getElementById('dyn-use').click() }
 })
 
-document.getElementById('record-static').onclick = async () => {
-  if (!state.activeClass) { alert('Pilih huruf dulu'); return }
+document.getElementById('static-custom-use').onclick = () => {
+  const v = normLabel(document.getElementById('static-custom-input').value)
+  if (!v) return
+  state.activeClass = v
+  document.getElementById('static-custom-input').value = ''
+  renderStaticClasses(); renderStaticCustom()
+}
+document.getElementById('static-custom-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('static-custom-use').click() }
+})
+
+// Countdown state for delayed-capture in static mode. Snapshot of latestPair
+// happens AT capture time (after countdown), not at trigger time, so the
+// user has the whole delay window to settle their pose.
+let countdownTimer = null
+let countdownRemaining = null
+
+function updateCountdownUi() {
+  const overlay = document.getElementById('countdown-overlay')
+  const cancelBtn = document.getElementById('cancel-countdown')
+  if (countdownRemaining === null) {
+    overlay.style.display = 'none'
+    cancelBtn.style.display = 'none'
+  } else {
+    overlay.style.display = 'flex'
+    document.getElementById('countdown-num').textContent = countdownRemaining
+    cancelBtn.style.display = ''
+    cancelBtn.textContent = 'Cancel (' + countdownRemaining + 's)'
+  }
+}
+
+function cancelCountdown() {
+  if (countdownTimer !== null) { clearInterval(countdownTimer); countdownTimer = null }
+  countdownRemaining = null
+  updateCountdownUi()
+}
+
+async function captureStaticNow() {
   const features = extractFrameFeatures(state.latestPair)
   if (features.length !== STATIC_FEATURE_LENGTH) return
   if (features.every(v => v === 0)) { setStatus('Tidak ada tangan terdeteksi — skip.'); return }
   const sample = { id: genId(), label: state.activeClass, features, capturedAt: Date.now(), source: 'manual', session: sessionId }
   await dbAdd(STORE_STATIC, sample)
   state.staticSamples.push(sample)
-  renderSampleList('static'); renderStaticClasses()
+  renderSampleList('static'); renderStaticClasses(); renderStaticCustom()
 }
+
+document.getElementById('record-static').onclick = () => {
+  if (!state.activeClass) { alert('Pilih huruf dulu'); return }
+  // Already counting? Treat as cancel toggle.
+  if (countdownRemaining !== null) { cancelCountdown(); return }
+  const delayInput = document.getElementById('record-delay')
+  let delay = Number.parseInt(delayInput.value, 10)
+  if (Number.isNaN(delay) || delay < 0) delay = 0
+  if (delay > 30) delay = 30
+  if (delay <= 0) { void captureStaticNow(); return }
+  countdownRemaining = delay
+  updateCountdownUi()
+  countdownTimer = setInterval(() => {
+    if (countdownRemaining === null) return
+    countdownRemaining -= 1
+    if (countdownRemaining <= 0) {
+      clearInterval(countdownTimer); countdownTimer = null
+      countdownRemaining = null
+      updateCountdownUi()
+      void captureStaticNow()
+    } else {
+      updateCountdownUi()
+    }
+  }, 1000)
+}
+document.getElementById('cancel-countdown').onclick = () => cancelCountdown()
 
 document.getElementById('save-dynamic').onclick = async () => {
   if (!state.activeClass) { alert('Ketik nama kelas dulu'); return }
-  if (state.dynamicBuffer.length !== DYNAMIC_HISTORY_SIZE) return
+  if (bufferDurationMs() < DYNAMIC_BUFFER_DURATION_MS) return
+  // Resample the timed buffer to a fixed-shape DYNAMIC_HISTORY_SIZE × 2
+  // trajectory spanning the target duration. Slow/fast laptops produce the
+  // same training-sample shape after this step.
+  const resampled = resampleToN(state.dynamicBuffer, DYNAMIC_HISTORY_SIZE, DYNAMIC_BUFFER_DURATION_MS)
   const sample = {
     id: genId(), label: state.activeClass,
-    history: state.dynamicBuffer.map(p => ({ x: p.x, y: p.y })),
+    history: resampled,
     capturedAt: Date.now(), source: 'manual', session: sessionId,
   }
   await dbAdd(STORE_DYNAMIC, sample)

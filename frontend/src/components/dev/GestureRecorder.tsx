@@ -99,11 +99,20 @@ export function GestureRecorder() {
   const [mode, setMode] = useState<'static' | 'dynamic'>('static')
   const [activeClass, setActiveClass] = useState<string | null>(null)
   const [autoLabel, setAutoLabel] = useState(false)
-  const [bufferSize, setBufferSize] = useState(0)
+  // Dynamic buffer progress reported in ms (wall-clock duration of recorder
+  // buffer). UI shows "X.XXs / 1.50s" so user knows when buffer is ready
+  // regardless of the host laptop's frame rate.
+  const [bufferDurationMs, setBufferDurationMs] = useState(0)
   const [staticSamples, setStaticSamples] = useState<StaticSample[]>([])
   const [dynamicSamples, setDynamicSamples] = useState<DynamicSample[]>([])
   const [status, setStatus] = useState('Initialising…')
   const [latestPair, setLatestPair] = useState<ReturnType<typeof sortHandsByXPosition> | null>(null)
+  // Delay (seconds) between pressing Record/Space and actually capturing the
+  // sample. Lets user position both hands or settle the pose before snapshot.
+  // 0 = capture immediately.
+  const [recordDelaySec, setRecordDelaySec] = useState(5)
+  const [countdown, setCountdown] = useState<number | null>(null)
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Refs mirror state so the long-lived rAF pump can read live values
   // without having useEffect re-mount the camera each time.
@@ -185,7 +194,7 @@ export function GestureRecorder() {
             } else {
               recorderRef.current.push(null)
             }
-            setBufferSize(recorderRef.current.size)
+            setBufferDurationMs(recorderRef.current.durationMs)
             // Auto-label tick (throttled). Read live values from refs so this
             // pump doesn't have to re-mount on every interaction.
             const currentMode = modeRef.current
@@ -244,9 +253,13 @@ export function GestureRecorder() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, activeClass, latestPair])
 
-  const handleRecordStatic = useCallback(async () => {
-    if (!activeClass || !latestPair) return
-    const sample = captureStaticSample(latestPair, activeClass, 'manual')
+  const captureStaticNow = useCallback(async () => {
+    if (!activeClass) return
+    // Snapshot the latest pair at capture time, not at trigger time — gives
+    // the countdown window a chance to settle / for the user to position.
+    const pair = latestPair
+    if (!pair) return
+    const sample = captureStaticSample(pair, activeClass, 'manual')
     try {
       await addStatic(sample)
       setStaticSamples((prev) => [...prev, sample])
@@ -255,6 +268,51 @@ export function GestureRecorder() {
     }
   }, [activeClass, latestPair])
 
+  const cancelCountdown = useCallback(() => {
+    if (countdownIntervalRef.current !== null) {
+      clearInterval(countdownIntervalRef.current)
+      countdownIntervalRef.current = null
+    }
+    setCountdown(null)
+  }, [])
+
+  const handleRecordStatic = useCallback(async () => {
+    if (!activeClass || !latestPair) return
+    // Already counting? Treat second press as cancel.
+    if (countdown !== null) {
+      cancelCountdown()
+      return
+    }
+    if (recordDelaySec <= 0) {
+      await captureStaticNow()
+      return
+    }
+    // Start countdown. Tick every second; capture at 0.
+    setCountdown(recordDelaySec)
+    countdownIntervalRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c === null) return null
+        if (c <= 1) {
+          if (countdownIntervalRef.current !== null) {
+            clearInterval(countdownIntervalRef.current)
+            countdownIntervalRef.current = null
+          }
+          // Capture on next microtask so the "0" state renders briefly.
+          void captureStaticNow()
+          return null
+        }
+        return c - 1
+      })
+    }, 1000)
+  }, [activeClass, latestPair, countdown, recordDelaySec, captureStaticNow, cancelCountdown])
+
+  // Make sure countdown cleans up if component unmounts.
+  useEffect(() => {
+    return () => {
+      if (countdownIntervalRef.current !== null) clearInterval(countdownIntervalRef.current)
+    }
+  }, [])
+
   const handleSaveDynamicTake = useCallback(async () => {
     if (!activeClass) return
     try {
@@ -262,7 +320,7 @@ export function GestureRecorder() {
       await addDynamic(sample)
       setDynamicSamples((prev) => [...prev, sample])
       recorderRef.current.reset()
-      setBufferSize(0)
+      setBufferDurationMs(0)
     } catch (e) {
       console.warn('[recorder] takeSample failed:', e)
     }
@@ -270,7 +328,7 @@ export function GestureRecorder() {
 
   const handleResetBuffer = useCallback(() => {
     recorderRef.current.reset()
-    setBufferSize(0)
+    setBufferDurationMs(0)
   }, [])
 
   const handleExportCsv = useCallback(() => {
@@ -314,11 +372,27 @@ export function GestureRecorder() {
     for (const s of staticSamples) c[s.label] = (c[s.label] ?? 0) + 1
     return c
   }, [staticSamples])
+  // Counts limited to non-alphabet (custom) static labels — feeds the
+  // typeable input next to the A-Y picker. Empty when only standard
+  // alphabet letters have been recorded.
+  const staticCustomCounts = useMemo(() => {
+    const alphabet = new Set<string>(STATIC_CLASSES)
+    const c: Record<string, number> = {}
+    for (const s of staticSamples) {
+      if (alphabet.has(s.label)) continue
+      c[s.label] = (c[s.label] ?? 0) + 1
+    }
+    return c
+  }, [staticSamples])
   const dynamicCounts = useMemo(() => {
     const c: Record<string, number> = {}
     for (const s of dynamicSamples) c[s.label] = (c[s.label] ?? 0) + 1
     return c
   }, [dynamicSamples])
+
+  // Highlight the active class in the right component: letter picker if it
+  // matches A-Y, custom input otherwise.
+  const isAlphabetActive = activeClass !== null && (STATIC_CLASSES as readonly string[]).includes(activeClass)
 
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 items-stretch gap-4 p-4 lg:grid-cols-12">
@@ -333,6 +407,11 @@ export function GestureRecorder() {
               className="absolute inset-0 h-full w-full object-cover"
             />
             <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+            {countdown !== null && (
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
+                <span className="font-mono text-[14rem] font-bold leading-none text-white drop-shadow-lg">{countdown}</span>
+              </div>
+            )}
           </div>
         </div>
         <div className="mt-2 text-xs text-slate-600">{status}</div>
@@ -343,7 +422,7 @@ export function GestureRecorder() {
             onRecordStatic={() => void handleRecordStatic()}
             staticAutoLabel={autoLabel}
             onToggleAutoLabel={() => setAutoLabel((v) => !v)}
-            dynamicBufferSize={bufferSize}
+            dynamicBufferDurationMs={bufferDurationMs}
             onSaveDynamicTake={() => void handleSaveDynamicTake()}
             onResetDynamicBuffer={handleResetBuffer}
             onExportCsv={handleExportCsv}
@@ -351,33 +430,74 @@ export function GestureRecorder() {
             classSelected={activeClass !== null}
           />
           {mode === 'static' && (
-            <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-              <ImageImporter
-                handpose={handposeRef.current}
-                onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
-              />
-              <span>Bulk-label dari folder (subfolder/filename pattern). Static only.</span>
-            </div>
+            <>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                <label className="flex items-center gap-1.5">
+                  Delay
+                  <input
+                    type="number"
+                    min={0}
+                    max={30}
+                    value={recordDelaySec}
+                    onChange={(e) => {
+                      const v = Number.parseInt(e.target.value, 10)
+                      if (!Number.isNaN(v)) setRecordDelaySec(Math.max(0, Math.min(30, v)))
+                    }}
+                    className="w-14 rounded border border-slate-300 px-1.5 py-0.5 text-center font-mono text-sm focus:border-emerald-500 focus:outline-none"
+                    aria-label="Recording delay in seconds"
+                    disabled={countdown !== null}
+                  />
+                  detik
+                </label>
+                <span className="text-slate-500">— countdown sebelum capture (0 = langsung). Press Space lagi untuk cancel.</span>
+                {countdown !== null && (
+                  <button
+                    type="button"
+                    onClick={cancelCountdown}
+                    className="rounded border border-red-300 px-2 py-0.5 text-xs text-red-600 hover:bg-red-50"
+                  >
+                    Cancel ({countdown}s)
+                  </button>
+                )}
+              </div>
+              <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                <ImageImporter
+                  handpose={handposeRef.current}
+                  onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
+                />
+                <span>Bulk-label dari folder (subfolder/filename pattern). Static only.</span>
+              </div>
+            </>
           )}
         </div>
         <div className="mt-4">
-          <div className="mb-1 text-xs font-semibold text-slate-500 uppercase">
-            {mode === 'static' ? 'Alphabet class' : 'Dynamic class'}
-          </div>
           {mode === 'static' ? (
-            <ClassPicker
-              classes={STATIC_CLASSES}
-              active={activeClass}
-              onSelect={setActiveClass}
-              counts={staticCounts}
-            />
+            <>
+              <div className="mb-1 text-xs font-semibold text-slate-500 uppercase">Alphabet class</div>
+              <ClassPicker
+                classes={STATIC_CLASSES}
+                active={isAlphabetActive ? activeClass : null}
+                onSelect={setActiveClass}
+                counts={staticCounts}
+              />
+              <div className="mb-1 mt-3 text-xs font-semibold text-slate-500 uppercase">Or custom static class</div>
+              <DynamicClassInput
+                active={!isAlphabetActive ? activeClass : null}
+                onSelect={setActiveClass}
+                suggestions={[]}
+                counts={staticCustomCounts}
+              />
+            </>
           ) : (
-            <DynamicClassInput
-              active={activeClass}
-              onSelect={setActiveClass}
-              suggestions={DYNAMIC_CLASS_SUGGESTIONS}
-              counts={dynamicCounts}
-            />
+            <>
+              <div className="mb-1 text-xs font-semibold text-slate-500 uppercase">Dynamic class</div>
+              <DynamicClassInput
+                active={activeClass}
+                onSelect={setActiveClass}
+                suggestions={DYNAMIC_CLASS_SUGGESTIONS}
+                counts={dynamicCounts}
+              />
+            </>
           )}
         </div>
       </div>
