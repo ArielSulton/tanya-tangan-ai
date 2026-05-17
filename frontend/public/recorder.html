@@ -216,6 +216,7 @@
           <select id="static-filter" aria-label="Filter static class">
             <option value="__all__">all</option>
           </select>
+          <button id="static-delete-class" class="btn btn-sm" style="display:none;border-color:#fca5a5;color:#dc2626;" title="Hapus semua sample pada kelas terpilih">Delete class</button>
           <button id="static-clear" class="btn btn-sm" style="border-color:#fca5a5;color:#dc2626;" title="Clear all static samples">Clear</button>
         </div>
       </div>
@@ -228,6 +229,7 @@
           <select id="dynamic-filter" aria-label="Filter dynamic class">
             <option value="__all__">all</option>
           </select>
+          <button id="dynamic-delete-class" class="btn btn-sm" style="display:none;border-color:#fca5a5;color:#dc2626;" title="Hapus semua sample pada kelas terpilih">Delete class</button>
           <button id="dynamic-clear" class="btn btn-sm" style="border-color:#fca5a5;color:#dc2626;" title="Clear all dynamic samples">Clear</button>
         </div>
       </div>
@@ -367,6 +369,29 @@ async function dbClearStore(store) {
     const tx = db.transaction(store, 'readwrite')
     tx.objectStore(store).clear()
     tx.oncomplete = resolve
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+// Delete every record in `store` whose label matches the given value via a
+// cursor scan. Returns number of rows actually removed.
+async function dbDeleteByLabel(store, label) {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite')
+    const objStore = tx.objectStore(store)
+    let deleted = 0
+    const req = objStore.openCursor()
+    req.onsuccess = () => {
+      const cursor = req.result
+      if (cursor === null) return
+      if (cursor.value && cursor.value.label === label) {
+        cursor.delete()
+        deleted++
+      }
+      cursor.continue()
+    }
+    tx.oncomplete = () => resolve(deleted)
     tx.onerror = () => reject(tx.error)
   })
 }
@@ -818,6 +843,10 @@ function renderSampleList(kind) {
   const visible = activeFilter === ALL ? samples : samples.filter(s => s.label === activeFilter)
   countEl.textContent = activeFilter === ALL ? '(' + samples.length + ')' : '(' + visible.length + ' of ' + samples.length + ')'
 
+  // Show "Delete class" button only when a specific class is filter-selected.
+  const deleteClassBtn = document.getElementById(kind + '-delete-class')
+  if (deleteClassBtn) deleteClassBtn.style.display = activeFilter === ALL ? 'none' : ''
+
   const wasAtBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 5
   body.innerHTML = ''
   if (visible.length === 0) {
@@ -1158,6 +1187,28 @@ document.getElementById('clear-all').onclick = async () => {
 
 document.getElementById('static-filter').onchange = e => { state.staticFilter = e.target.value; renderSampleList('static') }
 document.getElementById('dynamic-filter').onchange = e => { state.dynamicFilter = e.target.value; renderSampleList('dynamic') }
+
+document.getElementById('static-delete-class').onclick = async () => {
+  const label = state.staticFilter
+  if (label === ALL) return
+  if (!confirm(`Hapus semua sample static kelas "${label}"? Tidak bisa di-undo.`)) return
+  await dbDeleteByLabel(STORE_STATIC, label)
+  state.staticSamples = state.staticSamples.filter(s => s.label !== label)
+  // Filter dropdown will rebuild next render; reset to all since the class is gone.
+  state.staticFilter = ALL
+  if (state.mode === 'static' && state.activeClass === label) state.activeClass = null
+  renderAll()
+}
+document.getElementById('dynamic-delete-class').onclick = async () => {
+  const label = state.dynamicFilter
+  if (label === ALL) return
+  if (!confirm(`Hapus semua sample dynamic kelas "${label}"? Tidak bisa di-undo.`)) return
+  await dbDeleteByLabel(STORE_DYNAMIC, label)
+  state.dynamicSamples = state.dynamicSamples.filter(s => s.label !== label)
+  state.dynamicFilter = ALL
+  if (state.mode === 'dynamic' && state.activeClass === label) state.activeClass = null
+  renderAll()
+}
 
 document.getElementById('static-clear').onclick = async () => {
   if (state.staticSamples.length === 0) return

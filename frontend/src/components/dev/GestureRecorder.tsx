@@ -16,6 +16,8 @@ import {
   listDynamic,
   deleteStatic,
   deleteDynamic,
+  deleteStaticByLabel,
+  deleteDynamicByLabel,
   clearStatic as clearStaticStorage,
   clearDynamic as clearDynamicStorage,
   clearAll as clearAllStorage,
@@ -357,6 +359,18 @@ export function GestureRecorder() {
     setDynamicSamples([])
   }, [])
 
+  const handleDeleteStaticClass = useCallback(async (label: string) => {
+    if (!confirm(`Hapus semua sample static kelas "${label}"? Tidak bisa di-undo.`)) return
+    await deleteStaticByLabel(label)
+    setStaticSamples((prev) => prev.filter((s) => s.label !== label))
+  }, [])
+
+  const handleDeleteDynamicClass = useCallback(async (label: string) => {
+    if (!confirm(`Hapus semua sample dynamic kelas "${label}"? Tidak bisa di-undo.`)) return
+    await deleteDynamicByLabel(label)
+    setDynamicSamples((prev) => prev.filter((s) => s.label !== label))
+  }, [])
+
   const handleDeleteStatic = useCallback(async (id: string) => {
     await deleteStatic(id)
     setStaticSamples((prev) => prev.filter((s) => s.id !== id))
@@ -507,12 +521,14 @@ export function GestureRecorder() {
           samples={staticSamples}
           onDelete={(id) => void handleDeleteStatic(id)}
           onClear={() => void handleClearStatic()}
+          onDeleteClass={(label) => void handleDeleteStaticClass(label)}
         />
         <SampleList
           title="Dynamic samples"
           samples={dynamicSamples}
           onDelete={(id) => void handleDeleteDynamic(id)}
           onClear={() => void handleClearDynamic()}
+          onDeleteClass={(label) => void handleDeleteDynamicClass(label)}
         />
       </div>
     </div>

@@ -15,6 +15,11 @@ interface Props {
   onDelete: (id: string) => void
   /** Optional: clear all samples in this bucket. Renders a "Clear" button. */
   onClear?: () => void
+  /**
+   * Optional: delete all samples belonging to the currently-selected class
+   * filter. Button only appears while a specific class is selected.
+   */
+  onDeleteClass?: (label: string) => void
 }
 
 const ALL = '__all__'
@@ -26,7 +31,7 @@ function timeAgo(ms: number): string {
   return `${Math.floor(diff / 3_600_000)}h`
 }
 
-export function SampleList({ title, samples, onDelete, onClear }: Props): ReactNode {
+export function SampleList({ title, samples, onDelete, onClear, onDeleteClass }: Props): ReactNode {
   const listRef = useRef<HTMLUListElement>(null)
   const prevLenRef = useRef(samples.length)
   const [filter, setFilter] = useState<string>(ALL)
@@ -86,6 +91,16 @@ export function SampleList({ title, samples, onDelete, onClear }: Props): ReactN
               </option>
             ))}
           </select>
+          {onDeleteClass && isFiltered && (
+            <button
+              type="button"
+              onClick={() => onDeleteClass(filter)}
+              className="rounded border border-red-300 bg-white px-1.5 py-0.5 text-xs font-normal text-red-600 hover:border-red-400 hover:bg-red-50"
+              title={`Hapus semua sample kelas "${filter}"`}
+            >
+              Delete "{filter}"
+            </button>
+          )}
           {onClear && (
             <button
               type="button"

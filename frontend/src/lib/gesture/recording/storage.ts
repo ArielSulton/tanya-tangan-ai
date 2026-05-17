@@ -83,6 +83,42 @@ export async function clearDynamic(): Promise<void> {
   await txAll(DYNAMIC_STORE, 'readwrite', (s) => s.clear() as IDBRequest<unknown> as IDBRequest<void>)
 }
 
+async function deleteByLabel(store: string, label: string): Promise<number> {
+  const db = await openDb()
+  return new Promise<number>((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite')
+    const objStore = tx.objectStore(store)
+    let deleted = 0
+    const req = objStore.openCursor()
+    req.onsuccess = () => {
+      const cursor = req.result
+      if (cursor === null) return
+      const value = cursor.value as { label?: string }
+      if (value.label === label) {
+        cursor.delete()
+        deleted++
+      }
+      cursor.continue()
+    }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(deleted)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(new Error(tx.error?.message ?? 'IDB cursor error'))
+    }
+  })
+}
+
+export async function deleteStaticByLabel(label: string): Promise<number> {
+  return deleteByLabel(STATIC_STORE, label)
+}
+
+export async function deleteDynamicByLabel(label: string): Promise<number> {
+  return deleteByLabel(DYNAMIC_STORE, label)
+}
+
 export async function clearAll(): Promise<void> {
   const db = await openDb()
   await new Promise<void>((resolve, reject) => {
