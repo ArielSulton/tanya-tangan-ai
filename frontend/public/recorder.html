@@ -593,17 +593,11 @@ function onHandsResults(results) {
   state.latestPair = sortAndNormalize(detected)
   if (detected.length > 0) {
     const sorted = [...detected].sort((a, b) => a[0].x - b[0].x)
-    // Push timestamped wrist. Buffer is time-windowed (not frame-count) so
-    // the same gesture has the same temporal shape on slow & fast laptops.
-    const t = Date.now()
-    state.dynamicBuffer.push({ x: sorted[0][0].x, y: sorted[0][0].y, t })
-    // Trim: drop oldest only if SECOND-oldest is still within window, so
-    // span ends up slightly over (not under) the target duration.
-    while (
-      state.dynamicBuffer.length > 1 &&
-      state.dynamicBuffer[state.dynamicBuffer.length - 1].t - state.dynamicBuffer[1].t >= DYNAMIC_BUFFER_DURATION_MS
-    ) {
-      state.dynamicBuffer.shift()
+    // Push timestamped wrist. Buffer is time-windowed and FREEZES once it
+    // reaches the target duration — preserves the first frame as anchor.
+    // The user must save or reset before recording resumes.
+    if (bufferDurationMs() < DYNAMIC_BUFFER_DURATION_MS) {
+      state.dynamicBuffer.push({ x: sorted[0][0].x, y: sorted[0][0].y, t: Date.now() })
     }
   }
   renderBuffer()
@@ -810,7 +804,10 @@ function renderDynamicClasses() {
 function renderBuffer() {
   if (state.mode !== 'dynamic') return
   const dur = bufferDurationMs()
-  document.getElementById('buf-dur').textContent = (dur / 1000).toFixed(2)
+  // Cap displayed value at target — the rolling buffer keeps capturing the
+  // latest 1.5s (good for the user), but showing "1.69s / 1.50s" is confusing.
+  const displayDur = Math.min(dur, DYNAMIC_BUFFER_DURATION_MS)
+  document.getElementById('buf-dur').textContent = (displayDur / 1000).toFixed(2)
   document.getElementById('buf-cap').textContent = (DYNAMIC_BUFFER_DURATION_MS / 1000).toFixed(2)
   const pct = Math.min(100, (dur / DYNAMIC_BUFFER_DURATION_MS) * 100)
   document.getElementById('buf-bar').style.width = pct + '%'

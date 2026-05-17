@@ -86,7 +86,7 @@ export function RecordingControls(props: Props): ReactNode {
           <div className="flex items-center gap-2 text-sm text-slate-700">
             <span>Buffer:</span>
             <span className="font-mono">
-              {(dynamicBufferDurationMs / 1000).toFixed(2)}s / {(DYNAMIC_BUFFER_DURATION_MS / 1000).toFixed(2)}s
+              {(Math.min(dynamicBufferDurationMs, DYNAMIC_BUFFER_DURATION_MS) / 1000).toFixed(2)}s / {(DYNAMIC_BUFFER_DURATION_MS / 1000).toFixed(2)}s
             </span>
             <span className="inline-block h-1.5 w-24 overflow-hidden rounded bg-slate-200">
               <span

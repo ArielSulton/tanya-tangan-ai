@@ -10,19 +10,42 @@ function makeClock() {
 }
 
 describe('PointHistoryRecorder', () => {
-  test('buffer trims to the duration window', () => {
+  test('buffer freezes once the duration window fills', () => {
     const clock = makeClock()
     const r = new PointHistoryRecorder(clock.now)
-    // Push 100 points at 30fps (~33ms apart) — covers ~3.3s but window is 1.5s,
-    // so older points should drop out.
+    // Push 100 points at 30fps (~33ms apart) — covers ~3.3s but the buffer
+    // should freeze at the first point that brings durationMs past 1.5s.
     for (let i = 0; i < 100; i++) {
       r.push({ x: i, y: -i })
       clock.advance(33)
     }
-    // Trim policy keeps span slightly OVER the target duration (within one
-    // tick interval) so durationMs reliably crosses the threshold for save.
     expect(r.durationMs).toBeGreaterThanOrEqual(DYNAMIC_BUFFER_DURATION_MS)
     expect(r.durationMs).toBeLessThan(DYNAMIC_BUFFER_DURATION_MS + 100)
+    // First frame preserved: buffer should contain the x=0 anchor.
+    // (Can't access buffer directly, but takeSample resamples from t=0 so
+    // first output point reflects the first push.)
+    const s = r.takeSample('jeruk')
+    expect(s.history[0].x).toBeCloseTo(0, 5)
+    expect(s.history[0].y).toBeCloseTo(0, 5)
+  })
+
+  test('frozen buffer ignores further pushes until reset', () => {
+    const clock = makeClock()
+    const r = new PointHistoryRecorder(clock.now)
+    // Fill the buffer.
+    for (let i = 0; i < 60; i++) {
+      r.push({ x: i, y: i })
+      clock.advance(33)
+    }
+    const sizeAfterFill = r.size
+    const durAfterFill = r.durationMs
+    // Continue pushing — should be ignored.
+    for (let i = 100; i < 130; i++) {
+      r.push({ x: i, y: i })
+      clock.advance(33)
+    }
+    expect(r.size).toBe(sizeAfterFill)
+    expect(r.durationMs).toBe(durAfterFill)
   })
 
   test('takeSample on under-duration buffer rejects', () => {

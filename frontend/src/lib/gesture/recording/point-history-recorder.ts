@@ -28,18 +28,12 @@ export class PointHistoryRecorder {
 
   push(point: HistoryPoint | null): void {
     if (point === null) return
-    const t = this.now()
-    this.buffer.push({ x: point.x, y: point.y, t })
-    // Trim: drop the oldest point only if the SECOND-oldest is still within
-    // the duration window. Keeps the buffer slightly OVER the target
-    // duration rather than slightly under, so `durationMs` reliably reaches
-    // DYNAMIC_BUFFER_DURATION_MS once enough wall-clock time has elapsed.
-    while (
-      this.buffer.length > 1 &&
-      this.buffer[this.buffer.length - 1].t - this.buffer[1].t >= DYNAMIC_BUFFER_DURATION_MS
-    ) {
-      this.buffer.shift()
-    }
+    // Freeze once the buffer reaches target duration — preserves the FIRST
+    // frame as the gesture anchor. takeSample() / reset() clears the buffer
+    // so the next push starts a fresh recording. No rolling trim: this is
+    // user-driven sample collection, not continuous inference.
+    if (this.durationMs >= DYNAMIC_BUFFER_DURATION_MS) return
+    this.buffer.push({ x: point.x, y: point.y, t: this.now() })
   }
 
   reset(): void {
