@@ -12,5 +12,8 @@ __pycache__/
 
 # Trained model intermediate artifacts (only converted TFJS goes to public/)
 *.hdf5
+*.h5
+*.keras
 *.tflite
 saved_model/
+*_saved_model/

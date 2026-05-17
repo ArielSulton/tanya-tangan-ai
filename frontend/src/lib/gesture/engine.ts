@@ -48,6 +48,8 @@ export class BrowserGestureEngine {
   private staticEngineMode: StaticEngineMode = 'fingerpose'
   private mlpReady = false
   private mlpInflight = false
+  // Dev-only: track last motion state so we log transitions, not every frame.
+  private lastLoggedMotionState: MotionState | null = null
 
   constructor(callbacks: BrowserGestureEngineCallbacks = {}) {
     this.callbacks = callbacks
@@ -81,6 +83,19 @@ export class BrowserGestureEngine {
         }
       })
     }
+    // Preload dynamic LSTM in parallel so the first motion_end doesn't pay
+    // the download + WebGL kernel compile cost (otherwise the user's first
+    // dynamic gesture silently misses while the model lazy-loads).
+    void dynamicClassifier.load().then((ok) => {
+      if (ok) {
+        this.callbacks.onStatus?.('Dynamic engine: LSTM ready')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[engine] LSTM model loaded ✓')
+        }
+      } else if (process.env.NODE_ENV === 'development') {
+        console.warn('[engine] LSTM model failed to load — dynamic gestures will never fire')
+      }
+    })
 
     this.service.setOnResult((r) => this.handleServiceResult(r))
     this.service.setOnError((e) => this.callbacks.onError?.(e))
@@ -113,11 +128,15 @@ export class BrowserGestureEngine {
   async stop(): Promise<void> {
     if (!this.service) return
     await this.service.stop()
+    this.dynamicHistory = []
+    this.motionDetector.update(null)
     this.setState('stopped')
   }
 
   dispose(): void {
     this.frameBuffer = []
+    this.dynamicHistory = []
+    this.motionDetector.update(null)
     if (this.service) {
       void this.service.stop()
       this.service.dispose()
@@ -158,8 +177,23 @@ export class BrowserGestureEngine {
     const sortedRawByX = [...raws].sort((a, b) => a.landmarks[0].x - b.landmarks[0].x)
     const rawSlot0 = sortedRawByX[0]
     if (rawSlot0) {
-      const px = { x: rawSlot0.landmarks[0].x, y: rawSlot0.landmarks[0].y }
+      // Motion detection tracks INDEX FINGER TIP (landmark 8), not wrist.
+      // For SIBI dynamic signs like J/Z the fingertip traces the letter while
+      // the wrist stays nearly stationary — tracking wrist alone misses these
+      // entirely. For whole-hand gestures (terima_kasih) wrist + fingertip
+      // move together so trigger still fires reliably.
+      const motionLm = rawSlot0.landmarks[8] ?? rawSlot0.landmarks[0]
+      const px = { x: motionLm.x, y: motionLm.y }
       this.motionDetector.update(px)
+      if (
+        process.env.NODE_ENV === 'development' &&
+        this.motionDetector.state !== this.lastLoggedMotionState
+      ) {
+        console.log(
+          `[engine] motion: ${this.lastLoggedMotionState ?? 'init'} → ${this.motionDetector.state} (buffer=${this.dynamicHistory.length})`,
+        )
+        this.lastLoggedMotionState = this.motionDetector.state
+      }
       const vw = this.video?.videoWidth || 0
       const vh = this.video?.videoHeight || 0
       const normX = vw > 0 && vh > 0 ? px.x / vw : px.x
@@ -182,6 +216,10 @@ export class BrowserGestureEngine {
     // On motion_end, resample buffer to fixed N points spanning the fixed
     // duration window, then dispatch async. The model only sees this shape;
     // laptop FPS variation drops out.
+    //
+    // Clear `dynamicHistory` after dispatch (or after a too-short reject) so
+    // the next gesture starts with a clean buffer — otherwise tail points
+    // from gesture N contaminate gesture N+1's window.
     if (this.motionDetector.state === 'motion_end' && this.dynamicHistory.length >= 2) {
       const span = this.dynamicHistory[this.dynamicHistory.length - 1].t - this.dynamicHistory[0].t
       if (span >= DYNAMIC_BUFFER_DURATION_MS * 0.5) {
@@ -190,8 +228,16 @@ export class BrowserGestureEngine {
           this.DYNAMIC_HISTORY_SIZE,
           DYNAMIC_BUFFER_DURATION_MS,
         )
+        if (process.env.NODE_ENV === 'development') {
+          console.log(
+            `[engine] dynamic dispatch: span=${span}ms, n=${this.dynamicHistory.length} → resampled to ${this.DYNAMIC_HISTORY_SIZE}`,
+          )
+        }
         void this.runDynamicInference(resampled)
+      } else if (process.env.NODE_ENV === 'development') {
+        console.log(`[engine] dynamic skip: span=${span}ms < ${DYNAMIC_BUFFER_DURATION_MS * 0.5}ms floor`)
       }
+      this.dynamicHistory = []
     }
   }
 
@@ -218,6 +264,13 @@ export class BrowserGestureEngine {
   private async runDynamicInference(history: HistoryPoint[]): Promise<void> {
     try {
       const result = await dynamicClassifier.classify(history)
+      if (process.env.NODE_ENV === 'development') {
+        if (result) {
+          console.log(`[engine] dynamic result: ${result.label} (conf=${result.confidence.toFixed(3)})`)
+        } else {
+          console.log('[engine] dynamic result: NULL (confidence below classifier threshold)')
+        }
+      }
       if (result) {
         const adapted: BrowserGestureResult = {
           letter: result.label,

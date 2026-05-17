@@ -2,13 +2,20 @@ import type { MotionState } from './types'
 
 const WINDOW_SIZE = 15 // ~500ms @ 30fps
 // Thresholds are coordinate-space-dependent. These defaults assume raw
-// pixel-space wrist positions from a ~640x480 frame: a variance of ~400
-// corresponds to small jitter, ~2000+ to clear motion. When calling this
+// pixel-space wrist positions from a ~640x480 frame: a variance of ~300
+// corresponds to small jitter, ~1500+ to clear motion. When calling this
 // detector, the caller must feed wrist coordinates in a consistent space
 // (typically raw image pixels, NOT palm-normalized landmark space, where
 // the wrist is at (0,0) by construction and variance would be zero).
-const MOTION_START_THRESHOLD = 2000
-const MOTION_END_THRESHOLD = 400
+// Tuned for tracking INDEX FINGER TIP (landmark 8) — see engine.ts for why.
+// Fingertip variance is much larger than wrist variance for fingertrace
+// signs (J, Z): a 60px arc gives variance ~1800, easy to clear START=1500.
+// For whole-hand gestures the fingertip moves with the wrist, so threshold
+// is still trivially cleared.
+//   - START 1500: clears for fingertip arcs ≥ ~40px range
+//   - END   500: motion_end fires once fingertip stabilizes
+const MOTION_START_THRESHOLD = 1500
+const MOTION_END_THRESHOLD = 500
 
 export interface TrackingPoint {
   x: number

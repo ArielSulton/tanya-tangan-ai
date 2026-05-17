@@ -271,13 +271,15 @@ export class HandPoseService {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async recognizeGesture(landmarks: HandLandmark[]): Promise<GestureRecognitionResult> {
-    console.log('🚀 recognizeGesture called with', landmarks.length, 'landmarks')
-    // Debug: Check if landmarks are actually changing
-    const landmarkHash = landmarks
-      .slice(0, 5)
-      .map((l) => `${l.x.toFixed(1)},${l.y.toFixed(1)}`)
-      .join('|')
-    console.log('🔍 First 5 landmarks hash:', landmarkHash)
+    // Per-frame debug logs commented out (too noisy with MLP path active).
+    // Uncomment block-by-block if fingerpose path needs debugging again.
+    // console.log('🚀 recognizeGesture called with', landmarks.length, 'landmarks')
+    // // Debug: Check if landmarks are actually changing
+    // const landmarkHash = landmarks
+    //   .slice(0, 5)
+    //   .map((l) => `${l.x.toFixed(1)},${l.y.toFixed(1)}`)
+    //   .join('|')
+    // console.log('🔍 First 5 landmarks hash:', landmarkHash)
 
     if (!this.allGestures || this.allGestures.length === 0) {
       console.error('❌ Gestures not loaded!')
@@ -287,57 +289,57 @@ export class HandPoseService {
     const startTime = performance.now()
 
     try {
-      // Debug: Check landmark data format
-      console.log('🔍 Landmarks sample (first 3):')
-      landmarks.slice(0, 3).forEach((lm, i) => {
-        console.log(`  [${i}] x:${lm.x.toFixed(1)} y:${lm.y.toFixed(1)} z:${lm.z.toFixed(1)}`)
-      })
-      console.log('🔍 Landmarks length:', landmarks.length, 'Expected: 21')
+      // // Debug: Check landmark data format
+      // console.log('🔍 Landmarks sample (first 3):')
+      // landmarks.slice(0, 3).forEach((lm, i) => {
+      //   console.log(`  [${i}] x:${lm.x.toFixed(1)} y:${lm.y.toFixed(1)} z:${lm.z.toFixed(1)}`)
+      // })
+      // console.log('🔍 Landmarks length:', landmarks.length, 'Expected: 21')
 
       // Create new GestureEstimator for each detection (match reference pattern)
       const GE = new GestureEstimator(this.allGestures)
-      console.log('🎯 Using threshold:', this.config.scoreThreshold, 'with', this.allGestures.length, 'gestures')
+      // console.log('🎯 Using threshold:', this.config.scoreThreshold, 'with', this.allGestures.length, 'gestures')
 
       // FIX: Use correct data format for fingerpose v0.1.0 (raw landmark arrays, not keypoint objects)
       // Convert landmarks back to raw array format that fingerpose expects: [[x,y,z], [x,y,z], ...]
       const rawLandmarks = landmarks.map((landmark) => [landmark.x, landmark.y, landmark.z])
-      console.log('🔧 Using raw landmarks format for fingerpose:', rawLandmarks.length, 'points')
+      // console.log('🔧 Using raw landmarks format for fingerpose:', rawLandmarks.length, 'points')
 
       // Call fingerpose with correct format (match official repository pattern)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const gestureResults = GE.estimate(rawLandmarks as any, this.config.scoreThreshold)
 
-      console.log('📊 Raw results:', gestureResults)
+      // console.log('📊 Raw results:', gestureResults)
 
-      // Debug: Check finger analysis from fingerpose
-      if (gestureResults.poseData && gestureResults.poseData.length > 0) {
-        const fingerData = gestureResults.poseData
-        console.log('🖐️ Finger analysis:')
-        console.log('📋 Raw poseData:', fingerData)
-        fingerData.forEach((finger, idx) => {
-          const fingerNames = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
-          console.log(`  Raw finger[${idx}]:`, finger)
-          if (finger && typeof finger === 'object' && finger.length >= 3) {
-            // FIX: Correct parsing - finger[1] is curl, finger[2] is direction
-            console.log(`  ${fingerNames[idx]}: Curl=${finger[1]}, Direction=${finger[2]}`)
-          } else if (finger && typeof finger === 'object') {
-            // Try different property access patterns
-            console.log(`  ${fingerNames[idx]}: Object keys=`, Object.keys(finger))
-            console.log(`  ${fingerNames[idx]}: Full object=`, finger)
-          }
-        })
-      }
+      // // Debug: Check finger analysis from fingerpose
+      // if (gestureResults.poseData && gestureResults.poseData.length > 0) {
+      //   const fingerData = gestureResults.poseData
+      //   console.log('🖐️ Finger analysis:')
+      //   console.log('📋 Raw poseData:', fingerData)
+      //   fingerData.forEach((finger, idx) => {
+      //     const fingerNames = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
+      //     console.log(`  Raw finger[${idx}]:`, finger)
+      //     if (finger && typeof finger === 'object' && finger.length >= 3) {
+      //       // FIX: Correct parsing - finger[1] is curl, finger[2] is direction
+      //       console.log(`  ${fingerNames[idx]}: Curl=${finger[1]}, Direction=${finger[2]}`)
+      //     } else if (finger && typeof finger === 'object') {
+      //       // Try different property access patterns
+      //       console.log(`  ${fingerNames[idx]}: Object keys=`, Object.keys(finger))
+      //       console.log(`  ${fingerNames[idx]}: Full object=`, finger)
+      //     }
+      //   })
+      // }
 
-      // Debug: check gesture object structure
-      if (gestureResults.gestures && gestureResults.gestures.length > 0) {
-        console.log('First gesture object:', gestureResults.gestures[0])
-        console.log(
-          'Gestures detected:',
-          gestureResults.gestures.map((g) => `${g.name}:${g.score.toFixed(1)}`).join(', '),
-        )
-      } else {
-        console.log('❌ No gestures detected above threshold', this.config.scoreThreshold)
-      }
+      // // Debug: check gesture object structure
+      // if (gestureResults.gestures && gestureResults.gestures.length > 0) {
+      //   console.log('First gesture object:', gestureResults.gestures[0])
+      //   console.log(
+      //     'Gestures detected:',
+      //     gestureResults.gestures.map((g) => `${g.name}:${g.score.toFixed(1)}`).join(', '),
+      //   )
+      // } else {
+      //   console.log('❌ No gestures detected above threshold', this.config.scoreThreshold)
+      // }
 
       // Process results
       let bestGesture = { name: 'Unknown', score: 0 }
@@ -349,19 +351,19 @@ export class HandPoseService {
         const maxScore = Math.max(...scores)
         const maxScoreIndex = scores.indexOf(maxScore)
 
-        console.log('🔍 Scores array:', scores)
-        console.log('🔍 Max score:', maxScore, 'at index:', maxScoreIndex)
-        console.log(
-          '🔍 All gestures with scores:',
-          gestureResults.gestures.map((g, i) => `[${i}] ${g.name}:${g.score}`),
-        )
+        // console.log('🔍 Scores array:', scores)
+        // console.log('🔍 Max score:', maxScore, 'at index:', maxScoreIndex)
+        // console.log(
+        //   '🔍 All gestures with scores:',
+        //   gestureResults.gestures.map((g, i) => `[${i}] ${g.name}:${g.score}`),
+        // )
 
         bestGesture = {
           name: gestureResults.gestures[maxScoreIndex].name,
           score: gestureResults.gestures[maxScoreIndex].score,
         }
 
-        console.log('→', bestGesture.name, 'selected (', gestureResults.gestures[maxScoreIndex].score.toFixed(1), ')')
+        // console.log('→', bestGesture.name, 'selected (', gestureResults.gestures[maxScoreIndex].score.toFixed(1), ')')
 
         // Get alternatives using score
         for (let i = 0; i < gestureResults.gestures.length; i++) {
@@ -406,7 +408,10 @@ export class HandPoseService {
     return { ...this.config }
   }
 
-  // Manual finger analysis to debug fingerpose issues (unused but kept for debugging)
+  // Manual finger analysis to debug fingerpose issues — kept for future
+  // debugging but currently unused (TS6133 hint is intentional; tsc still
+  // exits 0). Was previously referenced from the per-frame debug logs that
+  // are now commented out above.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private analyzeFingerManually(landmarks: any[]): any {
     // MediaPipe hand landmarks indices:

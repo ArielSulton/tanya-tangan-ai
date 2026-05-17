@@ -45,8 +45,19 @@ export async function middleware(request: NextRequest) {
 
   const url = request.nextUrl.clone()
 
-  // Debug logging
-  if (process.env.NODE_ENV === 'development') {
+  const isProtectedRoute = protectedRoutes.some((route) => url.pathname.startsWith(route))
+  const isAdminRoute = adminRoutes.some((route) => url.pathname.startsWith(route))
+  const isDashboardRoute = dashboardRoutes.some((route) => url.pathname.startsWith(route))
+  const isAuthRoute = authRoutes.some((route) => url.pathname.startsWith(route))
+
+  // Debug logging — only for routes where middleware actually does auth work.
+  // Public pages (/vocab/*, /dev/*, /komunikasi/*, etc.) still pass through
+  // middleware so supabase.auth.getUser() can refresh session cookies, but
+  // logging every one of those creates noise without diagnostic value.
+  if (
+    process.env.NODE_ENV === 'development' &&
+    (isProtectedRoute || isAdminRoute || isDashboardRoute || isAuthRoute)
+  ) {
     console.log('🔍 [Middleware] Auth check for:', url.pathname)
     console.log('- User exists:', !!user)
     if (user) {
@@ -55,10 +66,6 @@ export async function middleware(request: NextRequest) {
       console.log('- Email confirmed:', !!user.email_confirmed_at)
     }
   }
-  const isProtectedRoute = protectedRoutes.some((route) => url.pathname.startsWith(route))
-  const isAdminRoute = adminRoutes.some((route) => url.pathname.startsWith(route))
-  const isDashboardRoute = dashboardRoutes.some((route) => url.pathname.startsWith(route))
-  const isAuthRoute = authRoutes.some((route) => url.pathname.startsWith(route))
 
   // Redirect authenticated users away from auth pages
   if (isAuthRoute && user) {
@@ -373,12 +380,14 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * Match all request paths except for:
+     * - _next/static, _next/image (Next internal static assets)
+     * - favicon.ico
+     * - /models/* (public TFJS classifier files — model.json, *.bin, labels.json
+     *   are loaded by the browser engine and have no auth surface; skipping
+     *   middleware avoids a Supabase getUser() roundtrip + DB query per chunk)
+     * - common image extensions
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|models/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

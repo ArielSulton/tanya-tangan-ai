@@ -6,7 +6,11 @@ import { softmaxToResult } from './static-classifier'
 
 const MODEL_PATH = '/models/dynamic/model.json'
 const LABELS_PATH = '/models/dynamic/labels.json'
-const DEFAULT_THRESHOLD = 0.6
+// Dynamic classifier confidence floor below which classify() returns null.
+// Kept low (0.4) because dynamic gestures are inherently noisier than static
+// poses — same gesture varies more between takes, so softmax peaks are
+// usually softer. Hook layer applies its own validation threshold on top.
+const DEFAULT_THRESHOLD = 0.4
 const EXPECTED_HISTORY_LENGTH = DYNAMIC_HISTORY_SIZE
 const EXPECTED_FEATURE_LENGTH = DYNAMIC_FEATURE_LENGTH
 
@@ -28,7 +32,11 @@ export function historyToFeatures(history: HistoryPoint[]): number[] {
  * missing — engine treats null as "no dynamic recognition this take".
  */
 export class DynamicClassifier {
-  private model: tf.GraphModel | null = null
+  // Uses tfjs_layers_model (Keras-reconstructed Sequential) rather than
+  // tfjs_graph_model — see convert_to_tfjs.sh for the rationale. Layers
+  // models handle LSTM via the native Keras LSTM layer impl, so predict()
+  // works without dynamic-op gymnastics.
+  private model: tf.LayersModel | null = null
   private labels: string[] | null = null
   private loading: Promise<void> | null = null
   private loadFailed = false
@@ -51,13 +59,21 @@ export class DynamicClassifier {
     this.loading = (async () => {
       try {
         const [model, labelsRes] = await Promise.all([
-          tf.loadGraphModel(MODEL_PATH),
+          tf.loadLayersModel(MODEL_PATH),
           fetch(LABELS_PATH),
         ])
         if (!labelsRes.ok) throw new Error(`labels.json fetch failed (${labelsRes.status})`)
         const labels = (await labelsRes.json()) as string[]
         this.model = model
         this.labels = labels
+        if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+          console.log(
+            '[DynamicClassifier] loaded (layers). input=',
+            model.inputs[0]?.shape,
+            'output=',
+            model.outputs[0]?.shape,
+          )
+        }
       } catch (err) {
         console.warn('[DynamicClassifier] model not loaded; subsequent calls will no-op:', err)
         this.model = null

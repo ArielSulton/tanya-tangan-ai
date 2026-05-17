@@ -28,6 +28,9 @@ interface GestureResult {
   mediapipe_bbox?: Bbox
   yolo_bbox?: Bbox
   validated?: boolean
+  /** 'static' = per-frame letter (concat as-is); 'dynamic' = word/motion-letter
+   *  emission (space-separated, underscores→spaces at display time). */
+  gestureType?: 'static' | 'dynamic'
 }
 
 export interface UseGestureRecognitionOptions {
@@ -54,8 +57,14 @@ export interface UseGestureRecognitionReturn {
 }
 
 // Validation tuning. Engine runs at ~30fps; ~24 frames ≈ 0.8s hold.
+// Static: requires hold for VALIDATION_FRAMES consecutive frames above the
+// confidence floor. Dynamic results fire ONCE per motion_end (no hold), so
+// they use a separate, looser confidence floor — held above 0.7 would discard
+// most real dynamic gestures since their softmax is naturally softer than
+// static MLP output.
 const VALIDATION_FRAMES = 24
 const VALIDATION_MIN_CONFIDENCE = 0.7
+const DYNAMIC_VALIDATION_MIN_CONFIDENCE = 0.45
 
 // Clear lastResult if engine hasn't emitted in this many ms — i.e., hand is
 // gone or no gesture matched. Prevents the UI from showing a stale letter
@@ -69,6 +78,7 @@ function toGestureResult(r: BrowserGestureResult, validated: boolean): GestureRe
     alternatives: r.alternatives,
     processing_time_ms: r.processingTimeMs,
     validated,
+    gestureType: r.gestureType,
   }
 }
 
@@ -119,7 +129,7 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
           // build its own hold from scratch.
           let validated = false
           if (r.gestureType === 'dynamic') {
-            if (r.confidence >= VALIDATION_MIN_CONFIDENCE) {
+            if (r.confidence >= DYNAMIC_VALIDATION_MIN_CONFIDENCE) {
               validated = true
             }
             streakLetterRef.current = null
