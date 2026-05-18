@@ -77,9 +77,7 @@ export class BrowserGestureEngine {
           this.mlpReady = true
           this.callbacks.onStatus?.('Static engine: MLP ready')
         } else {
-          console.warn(
-            '[engine] NEXT_PUBLIC_STATIC_ENGINE=mlp but model failed to load; falling back to fingerpose',
-          )
+          console.warn('[engine] NEXT_PUBLIC_STATIC_ENGINE=mlp but model failed to load; falling back to fingerpose')
         }
       })
     }
@@ -185,10 +183,7 @@ export class BrowserGestureEngine {
       const motionLm = rawSlot0.landmarks[8] ?? rawSlot0.landmarks[0]
       const px = { x: motionLm.x, y: motionLm.y }
       this.motionDetector.update(px)
-      if (
-        process.env.NODE_ENV === 'development' &&
-        this.motionDetector.state !== this.lastLoggedMotionState
-      ) {
+      if (process.env.NODE_ENV === 'development' && this.motionDetector.state !== this.lastLoggedMotionState) {
         console.log(
           `[engine] motion: ${this.lastLoggedMotionState ?? 'init'} → ${this.motionDetector.state} (buffer=${this.dynamicHistory.length})`,
         )

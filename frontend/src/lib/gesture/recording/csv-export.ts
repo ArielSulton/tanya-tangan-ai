@@ -27,10 +27,7 @@ export function staticSamplesToCsv(samples: StaticSample[]): string {
  * Format: label,x0,y0,x1,y1,...,x{N-1},y{N-1} where N = DYNAMIC_HISTORY_SIZE.
  */
 export function dynamicSamplesToCsv(samples: DynamicSample[]): string {
-  const headers = [
-    'label',
-    ...Array.from({ length: DYNAMIC_HISTORY_LENGTH }, (_, i) => [`x${i}`, `y${i}`]).flat(),
-  ]
+  const headers = ['label', ...Array.from({ length: DYNAMIC_HISTORY_LENGTH }, (_, i) => [`x${i}`, `y${i}`]).flat()]
   const lines: string[] = [headers.join(',')]
   for (const s of samples) {
     if (s.history.length !== DYNAMIC_HISTORY_LENGTH) {

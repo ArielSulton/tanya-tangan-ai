@@ -64,10 +64,7 @@ export class StaticClassifier {
     }
     this.loading = (async () => {
       try {
-        const [model, labelsRes] = await Promise.all([
-          tf.loadGraphModel(MODEL_PATH),
-          fetch(LABELS_PATH),
-        ])
+        const [model, labelsRes] = await Promise.all([tf.loadGraphModel(MODEL_PATH), fetch(LABELS_PATH)])
         if (!labelsRes.ok) throw new Error(`labels.json fetch failed (${labelsRes.status})`)
         const labels = (await labelsRes.json()) as string[]
         this.model = model

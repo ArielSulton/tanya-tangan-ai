@@ -80,7 +80,9 @@ export class HandPoseService {
       // backend init can be slow on first cold start on weaker hardware.
       await Promise.race([
         tf.ready(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('TensorFlow.js initialization timeout (60s)')), 60_000)),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('TensorFlow.js initialization timeout (60s)')), 60_000),
+        ),
       ])
       console.log('✅ TensorFlow.js ready with backend:', tf.getBackend())
 
@@ -105,7 +107,12 @@ export class HandPoseService {
           modelType: 'full',
           maxHands: this.config.maxNumHands,
         }),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('HandPose model loading timeout (90s) — check network / try reload')), 90_000)),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('HandPose model loading timeout (90s) — check network / try reload')),
+            90_000,
+          ),
+        ),
       ])
       console.log('✅ HandPose detector loaded successfully (mediapipe runtime)')
 
@@ -238,9 +245,7 @@ export class HandPoseService {
    * naturalWidth/Height > 0 (i.e., decode complete) — caller is responsible
    * for awaiting the load event before invoking.
    */
-  async detectRawHandsFromImage(
-    image: HTMLImageElement,
-  ): Promise<import('../../gesture/types').RawHand[]> {
+  async detectRawHandsFromImage(image: HTMLImageElement): Promise<import('../../gesture/types').RawHand[]> {
     if (!this.isInitialized || !this.detector) {
       throw new Error('HandPose service not initialized')
     }

@@ -80,7 +80,7 @@ export function SampleList({ title, samples, onDelete, onClear, onDeleteClass }:
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs font-mono font-normal text-slate-700 focus:border-emerald-500 focus:outline-none"
+            className="rounded border border-slate-300 bg-white px-1.5 py-0.5 font-mono text-xs font-normal text-slate-700 focus:border-emerald-500 focus:outline-none"
             aria-label="Filter by class"
             disabled={classOptions.length === 0}
           >

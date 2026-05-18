@@ -6,7 +6,12 @@ import { DYNAMIC_BUFFER_DURATION_MS } from './resample'
 // Test clock helper — lets us simulate any FPS without sleeping.
 function makeClock() {
   let t = 0
-  return { now: () => t, advance: (ms: number) => { t += ms } }
+  return {
+    now: () => t,
+    advance: (ms: number) => {
+      t += ms
+    },
+  }
 }
 
 describe('PointHistoryRecorder', () => {

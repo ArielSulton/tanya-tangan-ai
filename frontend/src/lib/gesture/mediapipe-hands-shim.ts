@@ -66,6 +66,6 @@ export class Hands {
         '@mediapipe/hands not loaded yet — call loadHandsScript() from this shim and await it before constructing the detector.',
       )
     }
-    return new RealHands(config) as unknown as Hands
+    return new RealHands(config) as Hands
   }
 }

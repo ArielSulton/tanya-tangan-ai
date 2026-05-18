@@ -13,11 +13,7 @@ function genId(): string {
  * The HandPair must come from sortHandsByXPosition (Phase 2A) so the feature
  * layout matches what the static classifier will see at inference time.
  */
-export function captureStaticSample(
-  pair: HandPair,
-  label: string,
-  source: 'manual' | 'yolo-auto',
-): StaticSample {
+export function captureStaticSample(pair: HandPair, label: string, source: 'manual' | 'yolo-auto'): StaticSample {
   return {
     id: genId(),
     label,

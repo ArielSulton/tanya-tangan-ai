@@ -54,10 +54,7 @@ export async function middleware(request: NextRequest) {
   // Public pages (/vocab/*, /dev/*, /komunikasi/*, etc.) still pass through
   // middleware so supabase.auth.getUser() can refresh session cookies, but
   // logging every one of those creates noise without diagnostic value.
-  if (
-    process.env.NODE_ENV === 'development' &&
-    (isProtectedRoute || isAdminRoute || isDashboardRoute || isAuthRoute)
-  ) {
+  if (process.env.NODE_ENV === 'development' && (isProtectedRoute || isAdminRoute || isDashboardRoute || isAuthRoute)) {
     console.log('🔍 [Middleware] Auth check for:', url.pathname)
     console.log('- User exists:', !!user)
     if (user) {

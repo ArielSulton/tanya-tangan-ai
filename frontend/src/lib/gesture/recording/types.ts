@@ -55,9 +55,30 @@ export interface DynamicSample {
 // J and Z are traced in the air (motion gestures), so they belong in the
 // dynamic class set, not static. 24 static alphabet classes total.
 export const STATIC_CLASSES = [
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
-  'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-  'T', 'U', 'V', 'W', 'X', 'Y',
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'H',
+  'I',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'P',
+  'Q',
+  'R',
+  'S',
+  'T',
+  'U',
+  'V',
+  'W',
+  'X',
+  'Y',
 ] as const
 
 export type StaticClass = (typeof STATIC_CLASSES)[number]

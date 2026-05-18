@@ -413,17 +413,13 @@ export function GestureRecorder() {
       <div className="flex min-w-0 flex-col lg:col-span-7">
         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2.5rem] bg-slate-50 p-2 shadow-inner ring-1 ring-black/5">
           <div className="relative h-full w-full overflow-hidden rounded-[2rem] bg-slate-900">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+            <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 h-full w-full object-cover" />
             <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
             {countdown !== null && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
-                <span className="font-mono text-[14rem] font-bold leading-none text-white drop-shadow-lg">{countdown}</span>
+                <span className="font-mono text-[14rem] leading-none font-bold text-white drop-shadow-lg">
+                  {countdown}
+                </span>
               </div>
             )}
           </div>
@@ -463,7 +459,9 @@ export function GestureRecorder() {
                   />
                   detik
                 </label>
-                <span className="text-slate-500">— countdown sebelum capture (0 = langsung). Press Space lagi untuk cancel.</span>
+                <span className="text-slate-500">
+                  — countdown sebelum capture (0 = langsung). Press Space lagi untuk cancel.
+                </span>
                 {countdown !== null && (
                   <button
                     type="button"
@@ -494,7 +492,7 @@ export function GestureRecorder() {
                 onSelect={setActiveClass}
                 counts={staticCounts}
               />
-              <div className="mb-1 mt-3 text-xs font-semibold text-slate-500 uppercase">Or custom static class</div>
+              <div className="mt-3 mb-1 text-xs font-semibold text-slate-500 uppercase">Or custom static class</div>
               <DynamicClassInput
                 active={!isAlphabetActive ? activeClass : null}
                 onSelect={setActiveClass}

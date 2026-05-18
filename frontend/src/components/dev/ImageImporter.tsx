@@ -53,8 +53,9 @@ function extractLabel(file: File & { webkitRelativePath?: string }): string | nu
 
 /** Static accepts only single uppercase letters in STATIC_CLASSES. */
 function isValidStaticLabel(label: string): boolean {
-  return STATIC_CLASS_SET.has(label.toUpperCase()) && STATIC_CLASS_SET.has(label.toUpperCase())
-    && /^[A-Za-z]$/.test(label) // exactly one alphabetic char
+  return (
+    STATIC_CLASS_SET.has(label.toUpperCase()) && STATIC_CLASS_SET.has(label.toUpperCase()) && /^[A-Za-z]$/.test(label)
+  ) // exactly one alphabetic char
 }
 
 function normalizeStaticLabel(label: string): string {
@@ -124,7 +125,7 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
     if (files.length === 0) return
     const rows: ParsedFile[] = files
       .filter((f) => /\.(jpe?g|png|webp)$/i.test(f.name))
-      .map((f) => ({ file: f, label: extractLabel(f as File) }))
+      .map((f) => ({ file: f, label: extractLabel(f) }))
 
     // Bucket by label, filter non-letter
     const counts: Record<string, number> = {}
@@ -275,13 +276,7 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
         Import files
       </button>
       {/* Folder picker — webkitdirectory attribute applied via ref (React strips it from JSX). */}
-      <input
-        ref={folderInputRef}
-        type="file"
-        multiple
-        style={{ display: 'none' }}
-        onChange={handleFiles}
-      />
+      <input ref={folderInputRef} type="file" multiple style={{ display: 'none' }} onChange={handleFiles} />
       {/* Multi-file picker — fallback for browsers/OS where folder picker is grey/disabled. */}
       <input
         ref={filesInputRef}
@@ -304,7 +299,8 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
             <div className="max-h-[50vh] overflow-y-auto px-4 py-3 text-sm">
               {validLabels.length === 0 ? (
                 <p className="text-slate-500">
-                  Tidak ada file dengan label huruf valid. {nonLetterSkipped > 0 && `${nonLetterSkipped} file di-skip karena label non-letter.`}
+                  Tidak ada file dengan label huruf valid.{' '}
+                  {nonLetterSkipped > 0 && `${nonLetterSkipped} file di-skip karena label non-letter.`}
                 </p>
               ) : (
                 <>
@@ -331,9 +327,15 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
               )}
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3">
-              <span className="text-xs text-slate-600">Akan di-import: <b>{totalSelected}</b></span>
+              <span className="text-xs text-slate-600">
+                Akan di-import: <b>{totalSelected}</b>
+              </span>
               <div className="flex gap-2">
-                <button type="button" onClick={reset} className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-slate-400">
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-slate-400"
+                >
                   Cancel
                 </button>
                 <button
@@ -355,7 +357,9 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
           <div className="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-xl">
             <div className="border-b border-slate-200 px-4 py-3">
               <h2 className="text-base font-semibold text-slate-800">Importing…</h2>
-              <p className="mt-1 text-xs text-slate-500">{progress.done} / {progress.total} files processed</p>
+              <p className="mt-1 text-xs text-slate-500">
+                {progress.done} / {progress.total} files processed
+              </p>
             </div>
             <div className="px-4 py-4">
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
@@ -376,7 +380,13 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
                 </div>
               </div>
               <div className="mt-3 text-right">
-                <button type="button" onClick={() => { cancelRef.current = true }} className="text-xs text-rose-600 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => {
+                    cancelRef.current = true
+                  }}
+                  className="text-xs text-rose-600 hover:underline"
+                >
                   Cancel after current chunk
                 </button>
               </div>
@@ -393,24 +403,31 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
             </div>
             <div className="max-h-[50vh] overflow-y-auto px-4 py-3 text-sm">
               <p>
-                <b>{liveStats.imported}</b> sample imported · <b>{liveStats.skippedNoHands}</b> tidak ada tangan · <b>{liveStats.skipped}</b> error
+                <b>{liveStats.imported}</b> sample imported · <b>{liveStats.skippedNoHands}</b> tidak ada tangan ·{' '}
+                <b>{liveStats.skipped}</b> error
               </p>
               {Object.keys(liveStats.perClass).length > 0 && (
                 <>
-                  <p className="mt-3 text-xs font-semibold uppercase text-slate-500">Per kelas</p>
+                  <p className="mt-3 text-xs font-semibold text-slate-500 uppercase">Per kelas</p>
                   <ul className="mt-1 divide-y divide-slate-100">
-                    {Object.keys(liveStats.perClass).sort().map((label) => (
-                      <li key={label} className="flex justify-between py-1 text-xs">
-                        <span className="font-mono">{label}</span>
-                        <span className="text-slate-500">{liveStats.perClass[label]}</span>
-                      </li>
-                    ))}
+                    {Object.keys(liveStats.perClass)
+                      .sort()
+                      .map((label) => (
+                        <li key={label} className="flex justify-between py-1 text-xs">
+                          <span className="font-mono">{label}</span>
+                          <span className="text-slate-500">{liveStats.perClass[label]}</span>
+                        </li>
+                      ))}
                   </ul>
                 </>
               )}
             </div>
             <div className="flex justify-end border-t border-slate-200 bg-slate-50 px-4 py-3">
-              <button type="button" onClick={reset} className="rounded-md border border-emerald-500 bg-emerald-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-600">
+              <button
+                type="button"
+                onClick={reset}
+                className="rounded-md border border-emerald-500 bg-emerald-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-600"
+              >
                 Done
               </button>
             </div>
