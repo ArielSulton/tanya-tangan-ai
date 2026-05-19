@@ -68,6 +68,29 @@ type LookupResult =
 
 const VALID_CATEGORIES = ['hewan', 'benda', 'alam', 'perasaan', 'kata_keterangan']
 
+// Dynamic SIBI gesture words rendered by hand-rolled visual cards
+// (BelajarCard / MaafCard / SepertiCard / TerimaKasihCard / TolongCard).
+// These bypass the DB lookup so users see the card even when the words
+// aren't seeded yet — without this short-circuit the page falls through
+// to AIFallbackCard ("Kata belum tersedia") for any dynamic SIBI sign.
+const DYNAMIC_GESTURE_WORDS = new Set(['belajar', 'maaf', 'seperti', 'terima kasih', 'tolong'])
+
+function buildSyntheticDynamicWord(text: string, category: string): WordResult {
+  return {
+    id: `synthetic-${text}`,
+    text,
+    category,
+    word_type: 'abstrak',
+    image_url: null,
+    comparison: null,
+    adverb_subcategory: null,
+    slider_config: null,
+    timeline_config: null,
+    certainty_config: null,
+    gauge_config: null,
+  }
+}
+
 export default function VocabKategoriPage() {
   const params = useParams()
   const kategori = params.kategori as string
@@ -87,6 +110,20 @@ export default function VocabKategoriPage() {
   const handleWordFormed = useCallback(
     async (word: string) => {
       if (!word.trim()) return
+
+      // Short-circuit dynamic SIBI gesture words — these are rendered by
+      // dedicated card components regardless of whether the DB has an entry.
+      // Normalize: lowercase + underscore→space so "terima_kasih" matches
+      // "terima kasih". Display preserves the spaced form for readability.
+      const normalized = word.toLowerCase().trim().replace(/_/g, ' ')
+      if (DYNAMIC_GESTURE_WORDS.has(normalized)) {
+        setResult({
+          state: 'found',
+          word: buildSyntheticDynamicWord(normalized, kategori),
+        })
+        return
+      }
+
       setResult({ state: 'loading' })
 
       try {
