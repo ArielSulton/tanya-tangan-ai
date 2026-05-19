@@ -16,6 +16,11 @@ import { SizeContrastCard } from '@/components/vocab/SizeContrastCard'
 import { IntensityCard } from '@/components/vocab/IntensityCard'
 import { SelectionCard } from '@/components/vocab/SelectionCard'
 import { CombinationCard } from '@/components/vocab/CombinationCard'
+import { BelajarCard } from '@/components/vocab/BelajarCard'
+import { MaafCard } from '@/components/vocab/MaafCard'
+import { SepertiCard } from '@/components/vocab/SepertiCard'
+import { TerimaKasihCard } from '@/components/vocab/TerimaKasihCard'
+import { TolongCard } from '@/components/vocab/TolongCard'
 import type { AdverbSubcategory, SliderConfig, TimelineConfig, CertaintyConfig, GaugeConfig } from '@/lib/adverb-types'
 import { getInteractionComponent } from '@/lib/adverb-types'
 import { ArrowLeft, Loader2, Keyboard, Gamepad2 } from 'lucide-react'
@@ -365,7 +370,10 @@ export default function VocabKategoriPage() {
                   {result.state === 'found' &&
                     result.word.word_type === 'abstrak' &&
                     (() => {
-                      const w = result.word.text.toLowerCase()
+                      // Normalize for matching: lowercase + collapse training-data
+                      // underscores (e.g. "terima_kasih") to spaces so we accept
+                      // both "terima_kasih" and "terima kasih" forms.
+                      const w = result.word.text.toLowerCase().replace(/_/g, ' ')
                       const isStaticCardWord =
                         w === 'besar' || w === 'kecil' || w === 'sangat' || w === 'yang' || w === 'dan'
 
@@ -398,6 +406,45 @@ export default function VocabKategoriPage() {
                             </div>
                           )
                         }
+                      }
+
+                      // Dynamic gesture words (motion-based SIBI signs). Match
+                      // by word text regardless of DB category since these may
+                      // not fit into the existing kata_keterangan bucket.
+                      if (w === 'belajar') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <BelajarCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
+                      }
+                      if (w === 'maaf') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <MaafCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
+                      }
+                      if (w === 'seperti') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <SepertiCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
+                      }
+                      if (w === 'terima kasih') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <TerimaKasihCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
+                      }
+                      if (w === 'tolong') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <TolongCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
                       }
 
                       const interactionType = getInteractionComponent(
