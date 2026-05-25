@@ -45,12 +45,7 @@ BODY_MAX=15
 LAMPIRAN_MAX=5
 
 TOTAL=$(pdfinfo "$PDF" | awk '/^Pages:/ {print $2}')
-pdftotext -layout "$PDF" - | awk -v dir="$PER_PAGE" '
-  BEGIN{p=1; out=dir"/p001.txt"}
-  {
-    if (length($0)==1 && $0=="\f") { p++; out=sprintf("%s/p%03d.txt", dir, p); next }
-    gsub("\f","",$0); print >> out
-  }'
+pdftotext -layout "$PDF" - | awk -v dir="$PER_PAGE" 'BEGIN{RS="\f"; ORS=""} {f=sprintf("%s/p%03d.txt", dir, NR); print > f}'
 BODY_START=$(grep -lF "1. LINGKUP PEMBAHASAN" "$PER_PAGE"/p*.txt | head -1 | sed -E 's#.*/p0*([0-9]+)\.txt#\1#')
 LAMPIRAN_START=$(grep -lF "Lampiran 1." "$PER_PAGE"/p*.txt | head -1 | sed -E 's#.*/p0*([0-9]+)\.txt#\1#')
 
