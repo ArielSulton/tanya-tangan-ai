@@ -160,6 +160,10 @@ QWEN.md
 # Reference
 superpowers/
 reference/
+# Allow revisi build artifacts to be tracked
+!docs/reference/
+!docs/reference/revisi/
+!docs/reference/revisi/**
 
 # Database files (if any local)
 /frontend/drizzle/meta
