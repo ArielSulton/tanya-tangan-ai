@@ -486,7 +486,77 @@ def section_bab2(doc):
         "SMART (Sub-bab 3.1), pemilihan solusi terbaik (Sub-bab 4.2), dan "
         "perancangan uji efektivitas pre-test/post-test (Sub-bab 4.3.3).")
     # === END NEW ===
-def section_bab3(doc):        add_body_paragraph(doc, "[TODO bab3]")
+def section_bab3(doc):
+    from styles import (add_heading1, add_heading2, add_body_paragraph,
+                        add_caption, add_table, add_numbered_list)
+    add_heading1(doc, "3. Rumusan Target Pembangunan")
+    add_heading2(doc, "3.1 Tujuan Pembangunan dan Target SMART")
+    add_body_paragraph(doc,
+        "Tujuan pembangunan PENSyarat AI dirumuskan melalui tahap Idea "
+        "Development dan Affinity Diagram untuk mengelompokkan kebutuhan "
+        "pengguna terhadap solusi yang tepat. Tabel 2 menunjukkan "
+        "keterkaitan antara kebutuhan (goals) pengguna dan fitur solusi "
+        "yang dikembangkan.")
+    add_caption(doc, "Tabel 2. Affinity Diagram PENSyarat AI")
+    add_table(doc,
+        header=["Goals Pengguna", "Solusi"],
+        rows=[
+            ["Memahami makna kata konkret secara visual (misalnya: \"apel\", \"kucing\", \"pohon\")",
+             "Tampil gambar/foto objek nyata per kategori (hewan, benda, alam, perasaan) + label kata"],
+            ["Memahami perbedaan makna kata abstrak",
+             "Representasi visual kontekstual, baik berupa ilustrasi mandiri yang melambangkan fungsi kata maupun komparasi visual berdampingan"],
+            ["Memasukkan kata melalui bahasa isyarat SIBI",
+             "Input gestur SIBI via kamera browser real-time (MediaPipe)"],
+            ["Tetap mendapat penjelasan meski kata belum tersedia di database",
+             "Fallback AI: saran kata terdekat + penjelasan singkat (LLaMA 3.3)"],
+            ["Guru dapat menambah/memperbarui kosakata dan gambar secara mandiri",
+             "Dashboard admin: CRUD kata konkret + abstrak + gambar"],
+            ["Tidak memerlukan perangkat atau instalasi khusus",
+             "Berbasis browser, cukup kamera standar laptop/smartphone"],
+            ["Sistem mencatat kata yang sering dicari siswa agar dapat dikembangkan ke depan",
+             "Log word_requests: data kata belum tersedia untuk prioritas pengembangan konten"],
+        ],
+        col_widths_cm=[8.5, 8.5])
+    add_body_paragraph(doc,
+        "Tahap selanjutnya diarahkan menggunakan indikator SMART untuk "
+        "menjaga keberlanjutan dan relevansi inovasi, sebagaimana "
+        "disajikan pada Tabel 3.")
+    add_caption(doc, "Tabel 3. Target Pembangunan dengan Indikator SMART")
+    add_table(doc,
+        header=["No.", "Parameter", "Indikator"],
+        rows=[
+            ["1", "Specific",
+             "Produk yang dikembangkan adalah PENSyarat AI, platform pemahaman kosakata visual untuk siswa tunarungu SDLB-B. Fitur utama: (1) pengenalan gestur SIBI real-time via kamera browser, (2) tampilan gambar untuk kata konkret, (3) representasi visual kontekstual untuk kata keterangan abstrak, (4) AI fallback dengan log word_requests, dan (5) dashboard admin untuk manajemen kosakata dan gambar."],
+            ["2", "Measurable",
+             "PENSyarat AI mencapai MVP dengan: akurasi pengenalan gestur SIBI >=85%, tampilan kata tersedia dalam <2 detik, minimal 100 kata terkurasi per kategori (hewan, benda, alam, perasaan, kata keterangan), dan dapat diakses oleh minimal 3 SLB-B pilot sebelum Oktober 2026. EFEKTIVITAS PEMBELAJARAN diukur melalui pre-test/post-test dengan target peningkatan skor rata-rata minimal 30% untuk kata konkret dan 20% untuk kata abstrak (rincian desain pada Sub-bab 4.3.3)."],
+            ["3", "Acceptable",
+             "Produk dapat digunakan oleh siswa SDLB-B dan guru tanpa pelatihan teknis khusus."],
+            ["4", "Realistic",
+             "Pengembangan PENSyarat AI sangat realistis secara ekonomis berkat penggunaan teknologi open-source dan API gambar publik. Efisiensi ini menjadikan produk ini sangat ideal untuk diadopsi secara masal, sejalan dengan dukungan regulasi pemerintah melalui UU No. 8 Tahun 2016, yang mewajibkan penyediaan teknologi yang mudah diakses bagi penyandang disabilitas di sektor pendidikan."],
+            ["5", "Time-bound",
+             "PENSyarat AI diharapkan mencapai MVP pada bulan Juni 2026 dan diimplementasikan secara pilot di 3 SLB-B pada bulan Oktober 2026, dimulai dari SLB-B mitra di Surabaya."],
+        ],
+        col_widths_cm=[1.2, 2.8, 13.0])
+    add_heading2(doc, "3.2 Manfaat Solusi")
+    add_numbered_list(doc, [
+        "Bagi Siswa SDLB-B: PENSyarat AI menyediakan media pemahaman "
+        "kosakata visual yang interaktif dan inklusif, memungkinkan siswa "
+        "untuk memahami makna kata, terutama kata abstrak dan kata "
+        "keterangan, secara mandiri melalui bahasa isyarat SIBI yang sudah "
+        "mereka kuasai, tanpa ketergantungan penuh pada guru.",
+        "Bagi Guru dan SLB-B: Platform ini membantu guru dalam menyediakan "
+        "media pembelajaran visual digital yang dapat diperbarui secara "
+        "mandiri, serta mengurangi beban penjelasan kosakata berulang "
+        "kepada siswa. Sistem pencatatan word_requests juga memberi guru "
+        "data tentang kata apa yang sering tidak dipahami siswa, untuk "
+        "pengembangan konten berikutnya.",
+        "Bagi Pemerintah: PENSyarat AI mendukung implementasi pendidikan "
+        "inklusif dan transformasi digital pendidikan sebagaimana "
+        "diamanatkan Permendikbud Nomor 70 Tahun 2009 dan Undang-Undang "
+        "Nomor 8 Tahun 2016, serta selaras dengan Sustainable Development "
+        "Goals (SDGs) Poin 4 (Pendidikan Berkualitas) dan Poin 10 "
+        "(Berkurangnya Kesenjangan).",
+    ])
 def section_bab4(doc):        add_body_paragraph(doc, "[TODO bab4]")
 def section_bab5(doc):        add_body_paragraph(doc, "[TODO bab5]")
 def section_bab6(doc):        add_body_paragraph(doc, "[TODO bab6]")
