@@ -201,8 +201,8 @@ def section_daftar_isi(doc):
         ("Tabel 7. Penerapan Prinsip Aksesibilitas", "12"),
         ("Tabel 8. Proyeksi Outcome Sebelum vs Sesudah PENSyarat AI", "12"),
         ("Tabel 9. Identifikasi Risiko dan Strategi Mitigasi", "14"),
-        ("Tabel 10. Skema Keberlanjutan dan Kemitraan", "17"),
-        ("Tabel 11. Key Difference Matrix", "15"),
+        ("Tabel 10. Key Difference Matrix", "15"),
+        ("Tabel 11. Skema Keberlanjutan dan Kemitraan", "17"),
     ]
     for txt, pg in tabel_list:
         p = doc.add_paragraph()
@@ -962,9 +962,9 @@ def section_bab6(doc):
         "Business Model Canvas (BMC). Pada tahap Key Difference Matrix, "
         "dilakukan identifikasi terhadap solusi-solusi yang saat ini ada "
         "di pasar dan diperbandingkan dengan PENSyarat AI berdasarkan "
-        "aspek keunggulan kritis, sebagaimana disajikan pada Tabel 11.")
+        "aspek keunggulan kritis, sebagaimana disajikan pada Tabel 10.")
     # COMPACTED (page budget): KDM trimmed to 6 most differentiating rows
-    add_caption(doc, "Tabel 11. Key Difference Matrix")
+    add_caption(doc, "Tabel 10. Key Difference Matrix")
     add_table(doc,
         header=["Aspek Pembanding", "PENSyarat AI", "Hear Me",
                 "Text-to-Gesture SIBI", "KADARING SIBI", "KATAKU / LearnAble"],
@@ -1040,7 +1040,7 @@ def section_bab6(doc):
         "Rp 300.000. Detail rancangan anggaran dapat dilihat pada "
         "Lampiran 3.")
     add_body_paragraph(doc,
-        "b) Sumber Pendanaan. PENSyarat AI menerapkan dua sumber "
+        "b) Sumber Pendanaan. PENSyarat AI menerapkan tiga sumber "
         "pendapatan utama berupa crowdfunding, hibah wirausahawan, serta "
         "pemodalan yang berasal dari investor.")
     # === EXPANDED: 6.4 Proyeksi Jangka Panjang (LLDIKTI #7 sustainability table) ===
@@ -1069,9 +1069,9 @@ def section_bab6(doc):
     ])
     add_body_paragraph(doc,
         "Sebagai penegasan model keberlanjutan (sustainability model), "
-        "Tabel 10 merinci skema kemitraan, kontribusi konkret tiap pihak, "
+        "Tabel 11 merinci skema kemitraan, kontribusi konkret tiap pihak, "
         "dan periode pelibatan — dari fase pilot hingga diseminasi nasional.")
-    add_caption(doc, "Tabel 10. Skema Keberlanjutan dan Kemitraan")
+    add_caption(doc, "Tabel 11. Skema Keberlanjutan dan Kemitraan")
     add_table(doc,
         header=["Pilar", "Mitra Target", "Kontribusi Konkret", "Periode"],
         rows=[
