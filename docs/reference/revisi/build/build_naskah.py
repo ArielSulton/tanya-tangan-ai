@@ -450,7 +450,8 @@ def section_bab2(doc):
              "Vocabulary gap anak tunarungu melebar di usia 8–9 tahun; media visual terbukti paling efektif (Kadir, 2021; Mat Yasin & Mohamad, 2024)."],
             ["How", "Bagaimana kriteria keberhasilan produk?",
              "Akurasi gestur SIBI ≥85%, tampilan visual <2 detik, siswa dapat membedakan makna kata konkret vs abstrak secara mandiri."],
-        ])
+        ],
+        col_widths_cm=[2.5, 4.5, 10.0])
     add_body_paragraph(doc,
         "Berdasarkan analisis tersebut, dikembangkan solusi platform web "
         "bernama PENSyarat AI. Gambar 1 menampilkan alur kerja sistem "
