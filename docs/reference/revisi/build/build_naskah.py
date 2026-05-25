@@ -384,7 +384,107 @@ def section_bab1(doc):
         "pemahaman makna kata dan retensi memori jangka panjang, "
         "khususnya bagi pembelajar tunarungu yang secara natural "
         "memproses informasi melalui jalur spasial-visual.")
-def section_bab2(doc):        add_body_paragraph(doc, "[TODO bab2]")
+def section_bab2(doc):
+    from styles import (add_heading1, add_heading2, add_body_paragraph,
+                        add_caption, add_table, add_numbered_list, add_image)
+    add_heading1(doc, "2. Identifikasi Potensi dan Kebutuhan Lingkungan")
+    add_heading2(doc, "2.1 Potensi Lingkungan")
+    add_body_paragraph(doc,
+        "Di balik keterbatasan pendengaran, siswa tunarungu di SDLB-B "
+        "memiliki potensi kecerdasan visual dan ketajaman memori motorik "
+        "yang luar biasa. Mereka telah terlatih secara ekstensif "
+        "menggunakan pergerakan tangan atau gestur Sistem Isyarat Bahasa "
+        "Indonesia (SIBI) untuk berkomunikasi sehari-hari. Potensi "
+        "penglihatan sebagai jalur penerimaan informasi utama dan "
+        "kebiasaan memori motorik inilah yang menjadi modal dasar "
+        "(leverage) berharga yang dapat dikapitalisasi melalui pemanfaatan "
+        "media pembelajaran visual digital yang tepat guna.")
+    add_heading2(doc, "2.2 Situasi dan Kebutuhan Lingkungan")
+    add_body_paragraph(doc,
+        "Berdasarkan survei lapangan di SLB-B Karya Mulia Wonokromo dan "
+        "SLB Aditama Gebang Surabaya, serta kajian literatur yang telah "
+        "dilakukan, ditemukan empat masalah utama: (1) siswa SDLB-B "
+        "seringkali hafal cara mengisyaratkan suatu kata dalam SIBI, "
+        "namun tidak memahami makna konseptualnya, terutama untuk kata "
+        "abstrak dan kata keterangan derajat; (2) tidak tersedia media "
+        "belajar digital yang mampu menampilkan visualisasi makna kata "
+        "melalui gambar, terutama representasi visual kontekstual untuk "
+        "kata keterangan seperti \"sedikit\", \"agak\", \"sangat\", dan "
+        "\"terlalu\"; (3) keterbatasan jumlah guru dan waktu pembelajaran "
+        "tatap muka menyebabkan penjelasan kosakata seringkali tidak "
+        "memadai; dan (4) platform digital edukasi yang ada umumnya "
+        "tidak dirancang untuk menerima input bahasa isyarat SIBI secara "
+        "real-time.")
+    add_body_paragraph(doc,
+        "Untuk menentukan prioritas penyelesaian secara objektif, "
+        "dilakukan pembobotan masalah menggunakan metode USG (Urgency, "
+        "Seriousness, Growth). Berdasarkan analisis penilaian skala 1-5, "
+        "masalah pertama dan kedua mendapatkan akumulasi skor tertinggi. "
+        "Kesenjangan pemahaman makna konseptual (Masalah 1) dinilai "
+        "sangat mendesak (Urgency) karena merupakan fondasi literasi "
+        "dasar, serta memiliki dampak yang serius (Seriousness) yang "
+        "dapat menghambat perkembangan kognitif siswa secara eksponensial "
+        "di masa depan (Growth). Ketiadaan media visual yang representatif "
+        "sesuai konteks (Masalah 2) menjadi faktor utama yang memperburuk "
+        "kondisi tersebut. Oleh karena itu, pengembangan inovasi "
+        "difokuskan pada penyediaan platform yang tidak hanya mampu "
+        "mendeteksi isyarat secara real-time, tetapi juga "
+        "memvisualisasikan makna konseptual tersebut secara interaktif. "
+        "Analisis solusi secara sistematis dari permasalahan prioritas "
+        "ini menggunakan kerangka 5W+1H disajikan pada Tabel 1.")
+    add_caption(doc, "Tabel 1. Analisis Solusi")
+    # COMPACTED (page budget): two "What" rows merged into one
+    add_table(doc,
+        header=["5W + 1H", "Pertanyaan", "Jawaban"],
+        rows=[
+            ["What",
+             "Apa permasalahan utama dan solusi yang diharapkan?",
+             "Masalah: siswa SDLB-B tidak memiliki media digital yang menampilkan makna kata (terutama kata abstrak) via input bahasa isyarat SIBI. Solusi: platform penerima gestur SIBI yang menampilkan gambar untuk kata konkret + representasi visual kontekstual untuk kata abstrak, dengan AI sebagai fallback."],
+            ["Who", "Siapa yang menggunakan?",
+             "Siswa tunarungu SDLB-B dan guru sebagai admin konten kosakata."],
+            ["Where", "Di mana produk digunakan?",
+             "Lingkungan SDLB-B dan rumah, melalui peramban web standar."],
+            ["When", "Kapan produk digunakan?",
+             "Saat pembelajaran Bahasa Indonesia atau saat siswa menemui kata yang tidak dipahami maknanya."],
+            ["Why", "Mengapa produk ini penting?",
+             "Vocabulary gap anak tunarungu melebar di usia 8–9 tahun; media visual terbukti paling efektif (Kadir, 2021; Mat Yasin & Mohamad, 2024)."],
+            ["How", "Bagaimana kriteria keberhasilan produk?",
+             "Akurasi gestur SIBI ≥85%, tampilan visual <2 detik, siswa dapat membedakan makna kata konkret vs abstrak secara mandiri."],
+        ])
+    add_body_paragraph(doc,
+        "Berdasarkan analisis tersebut, dikembangkan solusi platform web "
+        "bernama PENSyarat AI. Gambar 1 menampilkan alur kerja sistem "
+        "PENSyarat AI secara keseluruhan.")
+    add_image(doc, str(ASSETS / "gambar1_alur_kerja.png"), width_cm=12)
+    add_caption(doc, "Gambar 1. Alur Kerja Sistem PENSyarat AI")
+    # === NEW: 2.3 Rumusan Masalah (LLDIKTI #1) ===
+    add_heading2(doc, "2.3 Rumusan Masalah")
+    add_body_paragraph(doc,
+        "Berdasarkan kerangka analisis di atas dan hasil pembobotan USG, "
+        "naskah ini merumuskan tiga rumusan masalah eksplisit yang menjadi "
+        "fokus pengembangan PENSyarat AI:")
+    add_numbered_list(doc, [
+        "Bagaimana meningkatkan pemahaman makna kosakata abstrak — "
+        "khususnya kata keterangan derajat seperti \"sedikit\", \"agak\", "
+        "\"sangat\", dan \"terlalu\" — pada siswa SDLB-B tingkat pemula "
+        "melalui pendekatan representasi visual kontekstual berbasis "
+        "komparasi dan ilustrasi mandiri?",
+        "Bagaimana merancang sistem pengenalan gestur Sistem Isyarat "
+        "Bahasa Indonesia (SIBI) yang akurat (≥85%) dan real-time (<2 "
+        "detik), berjalan langsung di peramban web tanpa instalasi "
+        "perangkat lunak khusus, sehingga dapat dioperasikan pada "
+        "perangkat dengan kamera standar yang umum tersedia di SLB-B?",
+        "Bagaimana memberdayakan guru SLB-B untuk memperbarui, "
+        "menambahkan, dan mengurasi kosakata serta materi visual secara "
+        "mandiri (tanpa ketergantungan pada developer) melalui dashboard "
+        "administrasi yang sederhana, demi menjamin keberlanjutan "
+        "(sustainability) konten platform?",
+    ])
+    add_body_paragraph(doc,
+        "Ketiga rumusan masalah ini menjadi jangkar dalam perumusan target "
+        "SMART (Sub-bab 3.1), pemilihan solusi terbaik (Sub-bab 4.2), dan "
+        "perancangan uji efektivitas pre-test/post-test (Sub-bab 4.3.3).")
+    # === END NEW ===
 def section_bab3(doc):        add_body_paragraph(doc, "[TODO bab3]")
 def section_bab4(doc):        add_body_paragraph(doc, "[TODO bab4]")
 def section_bab5(doc):        add_body_paragraph(doc, "[TODO bab5]")
