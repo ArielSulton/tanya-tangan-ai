@@ -849,7 +849,108 @@ def section_bab4(doc):
         "4.3.3) pada Q3 2026 di tiga SLB-B mitra. Hasil validasi akan "
         "menjadi bukti efektivitas (outcome evidence) yang mendukung "
         "diseminasi PENSyarat AI ke jangkauan yang lebih luas.")
-def section_bab5(doc):        add_body_paragraph(doc, "[TODO bab5]")
+def section_bab5(doc):
+    from styles import (add_heading1, add_heading2, add_body_paragraph,
+                        add_caption, add_table, add_numbered_list)
+    add_heading1(doc, "5. Penjabaran Rencana Kerja")
+    add_heading2(doc, "5.1 Tahapan Utama (Pendekatan Strategis)")
+    add_body_paragraph(doc,
+        "Pengembangan PENSyarat AI dilakukan secara iteratif melalui "
+        "siklus build-measure-learn. Setiap iterasi mencakup pengembangan "
+        "fitur, pengujian langsung bersama siswa dan guru SLB-B, serta "
+        "penyempurnaan berdasarkan umpan balik. Pendekatan ini memastikan "
+        "bahwa setiap fitur yang dikembangkan relevan, dapat digunakan "
+        "secara efektif oleh pengguna target, dan memenuhi standar "
+        "aksesibilitas yang dibutuhkan.")
+    add_numbered_list(doc, [
+        "Pendekatan melalui Dinas Pendidikan: Berkoordinasi dengan Dinas "
+        "Pendidikan setempat dan Kemendikdasmen untuk program pilot "
+        "implementasi PENSyarat AI di SLB-B yang memiliki infrastruktur "
+        "internet memadai, dimulai dari SLB-B mitra di Surabaya (SLB-B "
+        "Karya Mulia Wonokromo dan SLB Aditama Gebang).",
+        "Pendekatan langsung ke SLB-B: Melakukan uji coba dan pelatihan "
+        "kepada guru sebagai administrator konten kosakata dan "
+        "pendamping siswa dalam penggunaan platform.",
+        "Kampanye melalui berbagai kanal: Publikasi melalui (1) pameran "
+        "inovasi pendidikan inklusif, (2) artikel ilmiah dan media, serta "
+        "(3) komunitas pendidikan inklusif untuk membangun kesadaran dan "
+        "menarik mitra strategis.",
+    ])
+    add_heading2(doc, "5.2 Tahap dan Langkah Kegiatan")
+    add_body_paragraph(doc,
+        "Adapun tahapan dalam kegiatan program implementasi PENSyarat AI "
+        "adalah sebagai berikut:")
+    add_numbered_list(doc, [
+        "Penyelesaian MVP PENSyarat AI: Finalisasi prototipe dengan "
+        "seluruh fitur inti — gestur SIBI, tampilan visual kata konkret "
+        "dan abstrak, serta AI fallback.",
+        "Kurasi Konten Kosakata Awal: Pengumpulan dan kurasi minimal 100 "
+        "kata per kategori beserta gambar referensi yang sesuai untuk "
+        "siswa SDLB-B, bekerja sama dengan guru mitra.",
+        "Pengujian dan Validasi Produk: Melakukan uji coba langsung di "
+        "lingkungan SLB-B untuk mengukur efektivitas (via pre-test dan "
+        "post-test pada Sub-bab 4.3.3), kenyamanan penggunaan, dan "
+        "pemahaman kosakata siswa sebelum dan sesudah menggunakan "
+        "platform.",
+        "Dokumentasi dan Pelatihan Guru: Menyiapkan panduan penggunaan "
+        "bagi guru (administrator konten) dan siswa, serta modul "
+        "pelatihan singkat pengelolaan kosakata di dashboard admin.",
+        "Memperkenalkan Produk kepada Calon Pengguna: Melalui (1) pameran "
+        "inovasi, (2) workshop guru SLB-B, dan (3) sosialisasi kepada "
+        "dinas pendidikan.",
+        "Evaluasi dan Pengembangan Lanjutan: Menganalisis data "
+        "word_requests untuk mengidentifikasi kata yang paling sering "
+        "dicari, mengumpulkan umpan balik pengguna, dan menambah konten "
+        "kosakata secara berkelanjutan.",
+        "Monitoring: Memantau kelangsungan program dan keberlanjutan "
+        "penggunaan di SLB-B pilot, termasuk publikasi hasil pre/post-test.",
+    ])
+    add_heading2(doc, "5.3 Penjadwalan")
+    add_body_paragraph(doc,
+        "Penjadwalan dilakukan berdasarkan iterasi yang direncanakan. "
+        "Jadwal kegiatan dapat dilihat pada Lampiran 1.")
+    # === NEW: 5.4 Mitigasi Risiko Implementasi (LLDIKTI #5) ===
+    add_heading2(doc, "5.4 Mitigasi Risiko Implementasi")
+    add_body_paragraph(doc,
+        "Implementasi PENSyarat AI di lingkungan SLB-B menghadirkan "
+        "sejumlah risiko teknis, operasional, dan etis. Identifikasi "
+        "risiko dilakukan melalui kajian literatur, survei lapangan, dan "
+        "evaluasi internal terhadap arsitektur sistem. Strategi mitigasi "
+        "yang direncanakan disajikan pada Tabel 9.")
+    add_caption(doc, "Tabel 9. Identifikasi Risiko dan Strategi Mitigasi")
+    add_table(doc,
+        header=["No.", "Risiko", "Dampak", "Strategi Mitigasi"],
+        rows=[
+            ["1", "Pencahayaan ruang kelas yang buruk atau tidak konsisten",
+             "Akurasi pengenalan gestur turun (hingga 81,15% pada kondisi redup, sesuai Tabel 4)",
+             "(a) Dataset pelatihan mencakup variasi cahaya redup dan backlit; (b) UI menampilkan peringatan otomatis ketika confidence pengenalan < 60% dan menyarankan reposisi cahaya; (c) panduan pemasangan webcam pada lokasi dengan cahaya optimal di SLB-B mitra."],
+            ["2", "Variasi gestur antarindividu (ukuran tangan, gaya isyarat, kecepatan)",
+             "Misclassification meningkat untuk siswa di luar distribusi training",
+             "(a) Augmentasi data berbasis 10 responden dengan rentang usia luas (8–22 tahun); (b) mekanisme fine-tuning model on-device per pengguna pada iterasi v2; (c) opsi sesi kalibrasi 30 detik bagi siswa baru."],
+            ["3", "Kualitas kamera laptop/HP yang rendah di sebagian SLB-B",
+             "Landmark MediaPipe tidak terdeteksi atau noisy",
+             "(a) Threshold confidence MediaPipe minimum 0,6 untuk mengurangi false positive; (b) UI memberikan pesan visual untuk mendekatkan tangan ke kamera; (c) anggaran pengadaan webcam HD pada Cost of Capital (Lampiran 3)."],
+            ["4", "Internet terbatas/tidak stabil di SLB-B daerah",
+             "Fitur AI fallback (LLaMA via Groq) tidak berfungsi optimal",
+             "(a) Inference gestur dilakukan sepenuhnya client-side (browser) — tidak butuh server saat pengenalan; (b) konten gambar utama di-cache lokal via Service Worker untuk akses offline parsial; (c) AI fallback dirancang sebagai pelengkap (degradasi anggun), bukan dependensi inti."],
+            ["5", "Privasi data anak penyandang disabilitas",
+             "Risiko penyebaran data biometrik atau identitas siswa",
+             "(a) Kamera hanya aktif saat sesi belajar; (b) hanya koordinat 21 landmark (bukan gambar mentah) yang diproses; (c) tidak ada penyimpanan video/gambar gestur di server; (d) rincian lengkap pada Sub-bab 6.6 Perlindungan Data Siswa."],
+            ["6", "Resistensi adopsi oleh guru (digital literacy gap)",
+             "Platform tidak terpakai meski sudah dipasang",
+             "(a) Workshop guru pada fase pilot (3 sesi @ Rp 700.000, Lampiran 3); (b) UI dashboard CRUD yang sederhana dan berbahasa Indonesia; (c) pendampingan langsung tim PENSyarat AI di SLB-B mitra selama 2 minggu pertama."],
+            ["7", "Ketidakseragaman variasi gestur SIBI antar daerah",
+             "Model akurat untuk SIBI Jawa Timur tetapi kurang akurat untuk variasi regional lain",
+             "(a) Konsultasi dengan komunitas Tuli (Gerkatin) dan akademisi linguistik isyarat sebelum ekspansi nasional; (b) ekspansi dataset dengan responden dari ≥3 provinsi pada fase scale-up."],
+            ["8", "Ketergantungan pada API eksternal (Groq API, Pinecone)",
+             "Layanan down atau pricing model berubah",
+             "(a) Abstraksi LLM provider di backend (interface swap-able); (b) opsi self-hosted Ollama + vector DB Qdrant untuk fallback; (c) anggaran cadangan 10% di Cost of Capital."],
+        ],
+        col_widths_cm=[0.8, 3.8, 3.8, 7.6])  # sum 16.0
+    add_body_paragraph(doc,
+        "Risiko di atas akan dipantau secara berkala selama fase pilot, "
+        "dan strategi mitigasi diperbarui pada tahap Monitoring (Sub-bab "
+        "5.2 langkah 7).")
 def section_bab6(doc):        add_body_paragraph(doc, "[TODO bab6]")
 def section_bab7(doc):        add_body_paragraph(doc, "[TODO bab7]")
 def section_pustaka(doc):     add_body_paragraph(doc, "[TODO pustaka]")
