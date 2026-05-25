@@ -451,7 +451,7 @@ def section_bab2(doc):
             ["How", "Bagaimana kriteria keberhasilan produk?",
              "Akurasi gestur SIBI ≥85%, tampilan visual <2 detik, siswa dapat membedakan makna kata konkret vs abstrak secara mandiri."],
         ],
-        col_widths_cm=[2.5, 4.5, 10.0])
+        col_widths_cm=[2.3, 4.2, 9.5])
     add_body_paragraph(doc,
         "Berdasarkan analisis tersebut, dikembangkan solusi platform web "
         "bernama PENSyarat AI. Gambar 1 menampilkan alur kerja sistem "
@@ -516,7 +516,7 @@ def section_bab3(doc):
             ["Sistem mencatat kata yang sering dicari siswa agar dapat dikembangkan ke depan",
              "Log word_requests: data kata belum tersedia untuk prioritas pengembangan konten"],
         ],
-        col_widths_cm=[8.5, 8.5])
+        col_widths_cm=[8.0, 8.0])
     add_body_paragraph(doc,
         "Tahap selanjutnya diarahkan menggunakan indikator SMART untuk "
         "menjaga keberlanjutan dan relevansi inovasi, sebagaimana "
@@ -527,6 +527,7 @@ def section_bab3(doc):
         rows=[
             ["1", "Specific",
              "Produk yang dikembangkan adalah PENSyarat AI, platform pemahaman kosakata visual untuk siswa tunarungu SDLB-B. Fitur utama: (1) pengenalan gestur SIBI real-time via kamera browser, (2) tampilan gambar untuk kata konkret, (3) representasi visual kontekstual untuk kata keterangan abstrak, (4) AI fallback dengan log word_requests, dan (5) dashboard admin untuk manajemen kosakata dan gambar."],
+            # uppercase "EFEKTIVITAS PEMBELAJARAN" — intentional visual hook for LLDIKTI #2
             ["2", "Measurable",
              "PENSyarat AI mencapai MVP dengan: akurasi pengenalan gestur SIBI >=85%, tampilan kata tersedia dalam <2 detik, minimal 100 kata terkurasi per kategori (hewan, benda, alam, perasaan, kata keterangan), dan dapat diakses oleh minimal 3 SLB-B pilot sebelum Oktober 2026. EFEKTIVITAS PEMBELAJARAN diukur melalui pre-test/post-test dengan target peningkatan skor rata-rata minimal 30% untuk kata konkret dan 20% untuk kata abstrak (rincian desain pada Sub-bab 4.3.3)."],
             ["3", "Acceptable",
@@ -536,7 +537,7 @@ def section_bab3(doc):
             ["5", "Time-bound",
              "PENSyarat AI diharapkan mencapai MVP pada bulan Juni 2026 dan diimplementasikan secara pilot di 3 SLB-B pada bulan Oktober 2026, dimulai dari SLB-B mitra di Surabaya."],
         ],
-        col_widths_cm=[1.2, 2.8, 13.0])
+        col_widths_cm=[1.0, 2.5, 12.5])
     add_heading2(doc, "3.2 Manfaat Solusi")
     add_numbered_list(doc, [
         "Bagi Siswa SDLB-B: PENSyarat AI menyediakan media pemahaman "
