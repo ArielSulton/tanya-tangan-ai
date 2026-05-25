@@ -951,7 +951,255 @@ def section_bab5(doc):
         "Risiko di atas akan dipantau secara berkala selama fase pilot, "
         "dan strategi mitigasi diperbarui pada tahap Monitoring (Sub-bab "
         "5.2 langkah 7).")
-def section_bab6(doc):        add_body_paragraph(doc, "[TODO bab6]")
+def section_bab6(doc):
+    from styles import (add_heading1, add_heading2, add_body_paragraph,
+                        add_caption, add_table, add_numbered_list,
+                        add_image)
+    add_heading1(doc, "6. Penjabaran Informasi Tambahan")
+    add_heading2(doc, "6.1 Analisis Keunikan dan Orisinalitas Produk")
+    add_body_paragraph(doc,
+        "Analisis dilakukan menggunakan Key Difference Matrix dan "
+        "Business Model Canvas (BMC). Pada tahap Key Difference Matrix, "
+        "dilakukan identifikasi terhadap solusi-solusi yang saat ini ada "
+        "di pasar dan diperbandingkan dengan PENSyarat AI berdasarkan "
+        "aspek keunggulan kritis, sebagaimana disajikan pada Tabel 11.")
+    # COMPACTED (page budget): KDM trimmed to 6 most differentiating rows
+    add_caption(doc, "Tabel 11. Key Difference Matrix")
+    add_table(doc,
+        header=["Aspek Pembanding", "PENSyarat AI", "Hear Me",
+                "Text-to-Gesture SIBI", "KADARING SIBI", "KATAKU / LearnAble"],
+        rows=[
+            ["Fokus Linguistik Utama",
+             "SIBI (Kurikulum SLB Formal)",
+             "BISINDO (Kasual)",
+             "SIBI (Morfologi Luring)",
+             "SIBI (Stemming Teks)",
+             "Kosakata Akademis SLB"],
+            ["Computer Vision (Real-Time)",
+             "✓ Deteksi gestur real-time (MediaPipe)",
+             "~ Abjad/angka saja",
+             "✗ Tidak ada",
+             "✗ Tidak ada",
+             "✗ Tidak ada"],
+            ["Representasi Kata Abstrak",
+             "✓ Side-by-side + visual kontekstual",
+             "✗ Tidak ada",
+             "✗ Tidak ada",
+             "✗ Tidak ada",
+             "~ Kategorisasi kata saja"],
+            ["AI Fallback Generatif (LLM)",
+             "✓ RAG + LLaMA 3.3",
+             "✗ Tidak ada",
+             "✗ Tidak ada",
+             "✗ Tidak ada",
+             "✗ Tidak ada"],
+            ["Manajemen Konten oleh Guru",
+             "✓ Dashboard admin terdesentralisasi",
+             "✗ Tersentralisasi developer",
+             "✗ Tersentralisasi developer",
+             "✗ Tersentralisasi kementerian",
+             "✗ Tersentralisasi developer"],
+            ["Tanpa Instalasi (Aksesibilitas)",
+             "✓ Browser + webcam standar",
+             "✗ Wajib install",
+             "✗ Wajib install",
+             "✓ Berbasis browser",
+             "✗ Wajib install"],
+        ],
+        col_widths_cm=[3.0, 3.0, 2.5, 2.5, 2.5, 2.5])  # sum 16.0
+    add_body_paragraph(doc,
+        "Keterangan: ✓ = Ada | ✗ = Tidak Ada | ~ = Sebagian. Berdasarkan "
+        "Key Difference Matrix, PENSyarat AI unggul karena merupakan "
+        "satu-satunya platform yang menggabungkan tiga kapabilitas kritis "
+        "secara bersamaan: (1) pengenalan gestur SIBI real-time berbasis "
+        "browser, (2) jawaban AI berbasis kurikulum SLB-B per mata "
+        "pelajaran dan jenjang, serta (3) manajemen konten yang dapat "
+        "diperbarui secara dinamis oleh guru. Tahap berikutnya adalah "
+        "penyusunan Business Model Canvas (BMC) yang dapat dilihat pada "
+        "Lampiran 4, dengan pendekatan B2G (Business-to-Government) dan "
+        "B2B (Business-to-Business) melalui kemitraan dengan dinas "
+        "pendidikan dan SLB-B.")
+    add_heading2(doc, "6.2 Struktur Organisasi Pelaksana")
+    add_body_paragraph(doc,
+        "Dalam pengimplementasian PENSyarat AI membutuhkan lima peran "
+        "utama dengan deskripsi tugas sebagai berikut:")
+    add_numbered_list(doc, [
+        "CEO (Chief Executive Officer): Mengkoordinasikan tim dan mengambil keputusan strategis agar pengembangan selaras dengan visi misi platform.",
+        "CTO (Chief Technology Officer): Mengelola seluruh aspek teknis, memastikan sistem berjalan optimal, dan memimpin pengembangan teknologi AI, gestur, dan manajemen konten visual.",
+        "CMO (Chief Marketing Officer): Bertanggung jawab atas pemasaran, branding, dan perluasan jangkauan ke dinas pendidikan dan komunitas SLB-B.",
+        "CPO (Chief Program Officer): Mengelola kualitas konten kosakata dan gambar, serta memastikan relevansi visual dengan kebutuhan siswa SDLB-B per kategori.",
+        "CFO (Chief Financial Officer): Mengatur keuangan, menyusun anggaran, serta memastikan keberlanjutan finansial proyek.",
+    ])
+    add_body_paragraph(doc, "Struktur organisasi lebih lanjut dapat dilihat pada Lampiran 2.")
+    add_heading2(doc, "6.3 Rencana Anggaran dan Sumber Pendanaan")
+    add_body_paragraph(doc,
+        "a) Rencana Anggaran Dana. Rencana anggaran yang dibutuhkan untuk "
+        "merealisasikan PENSyarat AI: Cost of Capital sebesar Rp "
+        "7.600.000, Cost of Operational sebesar Rp 20.000.000, Cost of "
+        "Maintenance sebesar Rp 4.500.000, dan biaya lain-lain sebesar "
+        "Rp 300.000. Detail rancangan anggaran dapat dilihat pada "
+        "Lampiran 3.")
+    add_body_paragraph(doc,
+        "b) Sumber Pendanaan. PENSyarat AI menerapkan dua sumber "
+        "pendapatan utama berupa crowdfunding, hibah wirausahawan, serta "
+        "pemodalan yang berasal dari investor.")
+    # === EXPANDED: 6.4 Proyeksi Jangka Panjang (LLDIKTI #7 sustainability table) ===
+    add_heading2(doc, "6.4 Proyeksi Jangka Panjang dan Mitra Pemangku Kepentingan")
+    add_body_paragraph(doc,
+        "Penerapan PENSyarat AI selaras dengan Sustainable Development "
+        "Goals (SDGs), khususnya Poin 4 (Pendidikan Berkualitas) dan Poin "
+        "10 (Berkurangnya Kesenjangan). Inovasi ini mendorong pemerataan "
+        "akses pendidikan berkualitas bagi sekitar 25.000–28.000 siswa "
+        "tunarungu di SLB-B yang selama ini menghadapi keterbatasan "
+        "sistemik. Untuk mewujudkan visi PENSyarat AI, dibutuhkan sinergi "
+        "dari berbagai pihak berikut:")
+    add_numbered_list(doc, [
+        "Pemerintah: Mendukung implementasi PENSyarat AI melalui program "
+        "digitalisasi pendidikan inklusif dan pengadaan infrastruktur "
+        "internet di SLB-B.",
+        "SLB-B dan Guru: Mitra utama dalam penerapan, uji coba, "
+        "pengelolaan konten kurikulum, dan pendampingan siswa dalam "
+        "penggunaan platform.",
+        "Peneliti dan Akademisi: Berkontribusi dalam riset peningkatan "
+        "akurasi model gestur SIBI dan kualitas jawaban RAG AI.",
+        "Industri dan Pemodal: Menjamin kesinambungan teknologi dan "
+        "pembiayaan melalui kerja sama CSR dan program kemitraan strategis.",
+        "Komunitas Disabilitas: Memberikan masukan agar platform terus "
+        "berkembang sesuai kebutuhan nyata penyandang tunarungu.",
+    ])
+    add_body_paragraph(doc,
+        "Sebagai penegasan model keberlanjutan (sustainability model), "
+        "Tabel 10 merinci skema kemitraan, kontribusi konkret tiap pihak, "
+        "dan periode pelibatan — dari fase pilot hingga diseminasi nasional.")
+    add_caption(doc, "Tabel 10. Skema Keberlanjutan dan Kemitraan")
+    add_table(doc,
+        header=["Pilar", "Mitra Target", "Kontribusi Konkret", "Periode"],
+        rows=[
+            ["SLB-B Mitra Inti",
+             "SLB-B Karya Mulia Wonokromo & SLB Aditama Gebang Surabaya",
+             "Pengujian, kurasi kosakata bersama, umpan balik guru, "
+             "pre-test/post-test (Sub-bab 4.3.3).",
+             "Tahun 1 (pilot)"],
+            ["Diseminasi Pendidikan",
+             "Dispendik Provinsi Jawa Timur & Kemendikdasmen",
+             "Diseminasi bertahap: 3 SLB-B pilot → 30 SLB-B se-Jatim → "
+             "ekspansi nasional via program digitalisasi pendidikan inklusif.",
+             "Tahun 1–3"],
+            ["Pendanaan Berkelanjutan",
+             "CSR mitra teknologi (target: Telkom Indonesia, Indosat) & "
+             "startup edutech",
+             "Pendanaan operasional, infrastruktur hosting/VPS, langganan "
+             "Pinecone & Groq API. Cadangan untuk migrasi self-hosted "
+             "(Ollama/Qdrant).",
+             "Tahun 2 dan seterusnya"],
+            ["Riset Akademik",
+             "Politeknik Elektronika Negeri Surabaya + komunitas peneliti deaf education",
+             "Peningkatan akurasi model gestur SIBI, validasi pedagogis, "
+             "publikasi ilmiah di jurnal/konferensi.",
+             "Berkelanjutan"],
+            ["Komunitas Tuli",
+             "Gerkatin (Gerakan untuk Kesejahteraan Tunarungu Indonesia), Pusat Bahasa Isyarat Indonesia",
+             "Validasi varian gestur SIBI antar daerah, masukan kontekstual budaya Tuli, advokasi adopsi.",
+             "Berkelanjutan"],
+            ["Pengembangan Konten Berkala",
+             "Guru SLB-B mitra nasional",
+             "Per semester: +50 kata baru hasil analisis log word_requests; "
+             "per tahun: workshop kurasi tematik (kosakata IPA, IPS, Matematika SDLB-B); "
+             "setiap 2 tahun: audit akurasi gestur SIBI.",
+             "Berkala (semesteran/tahunan)"],
+        ],
+        col_widths_cm=[3.0, 4.0, 6.5, 2.5])  # sum 16.0
+    # COMPACTED: §6.5 reduced to one paragraph
+    add_heading2(doc, "6.5 Kesimpulan Dampak Inovasi")
+    add_body_paragraph(doc,
+        "PENSyarat AI terbukti secara teknis (akurasi gestur SIBI rata-rata "
+        "85,92%, melampaui target ≥85%) dan fungsional (seluruh fitur "
+        "LULUS) menjawab kebutuhan mendasar SDLB-B: pemahaman kosakata "
+        "visual interaktif melalui bahasa isyarat yang sudah dikuasai "
+        "siswa. Berbasis temuan survei SLB-B Karya Mulia & SLB Aditama "
+        "Surabaya serta riset ilmiah (Kadir, 2021; Mat Yasin & Mohamad, "
+        "2024; Convertino dkk., 2014), platform ini mengintegrasikan "
+        "pengenalan gestur berbasis peramban (MediaPipe + TensorFlow.js), "
+        "representasi visual kontekstual untuk kata abstrak, fallback AI "
+        "(LLaMA 3.3), dan log word_requests untuk pengembangan konten "
+        "berkelanjutan. Inovasi ini selaras dengan tema Pilmapres Produk "
+        "Inovatif Poin F (digitalisasi pendidikan) dan G (perlindungan hak "
+        "penyandang disabilitas), serta berkontribusi pada SDGs 4 dan 10 "
+        "di Indonesia.")
+    add_image(doc, str(ASSETS / "gambar2_roadmap.png"), width_cm=14)
+    add_caption(doc, "Gambar 2. Visualisasi Roadmap dari PENSyarat AI")
+    # === NEW: 6.6 Perlindungan Data Siswa (LLDIKTI #6) ===
+    add_heading2(doc, "6.6 Perlindungan Data Siswa")
+    add_body_paragraph(doc,
+        "Mengingat pengguna utama PENSyarat AI adalah anak penyandang "
+        "disabilitas (kelompok rentan), perlindungan data dirancang "
+        "dengan prinsip privacy-by-design dan mengikuti regulasi yang "
+        "berlaku di Indonesia. Berikut rincian skema perlindungan data "
+        "yang diterapkan:")
+    add_numbered_list(doc, [
+        "Pemrosesan Lokal (On-Device): Seluruh pengenalan gestur SIBI "
+        "dilakukan langsung di peramban menggunakan TensorFlow.js dan "
+        "MediaPipe. Frame kamera tidak pernah dikirim ke server backend.",
+        "Tidak Ada Penyimpanan Gambar/Video: Sistem tidak menyimpan "
+        "gambar atau rekaman video gestur, baik di sisi klien (selain "
+        "memori sementara browser yang dibersihkan saat tab/sesi "
+        "berakhir) maupun di sisi server. Buffer video dibersihkan "
+        "secara eksplisit setelah pengenalan selesai.",
+        "Data yang Dikirim ke Server: Hanya teks hasil pengenalan "
+        "(huruf/kata yang teridentifikasi) dan log word_requests (kata "
+        "yang dicari pengguna) yang dikirim ke backend FastAPI untuk "
+        "dicatat sebagai metrik pengembangan konten — tanpa identitas "
+        "personal siswa.",
+        "Anonimisasi Sesi: Tidak ada akun siswa; sesi diidentifikasi "
+        "melalui session ID anonim yang di-generate oleh browser dan "
+        "tidak terkait dengan data personal (nama, foto, alamat, NISN).",
+        "Akses Kamera: Permintaan izin kamera mengikuti standar peramban "
+        "(HTTPS + Permissions API + getUserMedia); izin dapat dicabut "
+        "kapan saja oleh pengguna atau guru pendamping.",
+        "Kepatuhan Regulasi: Desain mengacu pada UU Perlindungan Data "
+        "Pribadi (PDP) Nomor 27 Tahun 2022, khususnya Pasal 25 tentang "
+        "pemrosesan data anak yang harus mendapat persetujuan orang "
+        "tua/wali. Persetujuan tertulis akan dikumpulkan dari orang tua "
+        "siswa peserta pilot sebelum implementasi.",
+        "Penyimpanan Data Admin (Guru): Akun admin guru disimpan "
+        "terenkripsi menggunakan Supabase Auth (JWT + bcrypt) dengan "
+        "kontrol akses berbasis peran (RBAC). Hanya data login (email "
+        "dan hashed password) yang disimpan; tidak ada data siswa yang "
+        "dihubungkan dengan akun guru.",
+        "Audit dan Transparansi: Kebijakan privasi dipublikasikan secara "
+        "terbuka di halaman /privacy platform. Log akses admin "
+        "diterbitkan setiap kuartal untuk audit internal.",
+    ])
+    # === NEW: 6.7 Manfaat Jangka Panjang (LLDIKTI image header) ===
+    add_heading2(doc, "6.7 Manfaat Jangka Panjang")
+    add_body_paragraph(doc,
+        "Jika dikembangkan lebih luas, PENSyarat AI dapat menjadi basis "
+        "data kosakata visual SIBI nasional yang terus diperbarui oleh "
+        "guru dan komunitas. Dalam jangka panjang, produk ini berpotensi "
+        "memberikan dampak sebagai berikut:")
+    add_numbered_list(doc, [
+        "Meningkatkan literasi dasar siswa tunarungu — melalui akumulasi "
+        "kosakata visual yang diakses secara repetitif dan kontekstual, "
+        "sejalan dengan Dual Coding Theory (Paivio) dan Cognitive Theory "
+        "of Multimedia Learning (Mayer) yang menjadi dasar teoretis "
+        "platform (Sub-bab 1.3).",
+        "Memperkuat komunikasi akademik — siswa SDLB-B dapat memahami "
+        "kata abstrak dalam mata pelajaran lain (IPA, IPS, Matematika), "
+        "bukan hanya Bahasa Indonesia, sejalan dengan KI-KD Kurikulum "
+        "Merdeka.",
+        "Memperbesar peluang partisipasi sosial — pemahaman kosakata "
+        "abstrak menjembatani siswa tunarungu untuk berpartisipasi dalam "
+        "diskusi sosial, ranah akademik, dan lingkungan kerja inklusif "
+        "di masa depan.",
+        "Menjadi standar nasional konten visual SIBI — kontribusi pada "
+        "repositori kosakata SIBI yang dapat diintegrasikan dengan "
+        "kurikulum Kemendikdasmen dan diadopsi oleh SLB-B di seluruh "
+        "Indonesia.",
+        "Mendorong riset deaf education di Indonesia — log word_requests "
+        "dan dataset gestur (anonim) berkontribusi sebagai sumber data "
+        "publik bagi komunitas riset linguistik isyarat, AI pendidikan, "
+        "dan pedagogi inklusif.",
+    ])
 def section_bab7(doc):        add_body_paragraph(doc, "[TODO bab7]")
 def section_pustaka(doc):     add_body_paragraph(doc, "[TODO pustaka]")
 def section_lampiran(doc):    add_body_paragraph(doc, "[TODO lampiran]")
