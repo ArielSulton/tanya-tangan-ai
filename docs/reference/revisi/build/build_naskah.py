@@ -251,18 +251,18 @@ def section_bab1(doc):
         "hadirnya kata-kata abstrak dan konsep yang lebih kompleks.")
     # === NEW: Bu Ida feedback — abstract-vocab differentiator paragraph ===
     add_body_paragraph(doc,
-        "Sebagai pembeda utama, PENSyarat AI difokuskan pada penjembatanan "
+        "Berbeda dari intervensi visual yang telah ada sebelumnya, PENSyarat AI difokuskan pada penjembatanan "
         "kesenjangan pada ranah kata abstrak. Tinjauan terhadap karya "
         "inovatif dan riset terdahulu pada pembelajaran kosakata berbasis "
         "visual untuk siswa tunarungu — sebagaimana dirangkum oleh Mat "
         "Yasin & Mohamad (2024) dalam SHS Web of Conferences serta Kadir "
         "(2021) dalam Aksara: Jurnal Ilmu Pendidikan Nonformal — "
         "menunjukkan bahwa intervensi visual yang sudah ada dominan "
-        "menyasar kata benda konkret (contoh: 'apel', 'kucing', 'pohon') "
+        "menyasar kata benda konkret (contoh: \"apel\", \"kucing\", \"pohon\") "
         "melalui media foto atau flashcard. Padahal, kesenjangan pemahaman "
         "yang paling tajam pada siswa SDLB-B justru muncul pada kata "
-        "abstrak dan kata keterangan derajat (contoh: 'sedikit', 'sangat', "
-        "'terlalu', 'sebelum', 'sesudah') — area yang belum tersentuh "
+        "abstrak dan kata keterangan derajat (contoh: \"sedikit\", \"sangat\", "
+        "\"terlalu\", \"sebelum\", \"sesudah\") — area yang belum tersentuh "
         "secara sistematis. PENSyarat AI mengisi celah ini melalui "
         "representasi visual kontekstual khusus (ilustrasi mandiri yang "
         "melambangkan fungsi kata serta komparasi visual berdampingan) "
