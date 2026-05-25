@@ -1200,7 +1200,18 @@ def section_bab6(doc):
         "publik bagi komunitas riset linguistik isyarat, AI pendidikan, "
         "dan pedagogi inklusif.",
     ])
-def section_bab7(doc):        add_body_paragraph(doc, "[TODO bab7]")
+def section_bab7(doc):
+    from styles import (add_heading1, add_heading2, add_body_paragraph,
+                        add_caption, add_image)
+    add_heading1(doc, "7. Visualisasi Solusi")
+    add_heading2(doc, "7.1 Desain Visualisasi Gagasan (SaHaBaT)")
+    add_body_paragraph(doc,
+        "Desain Visualisasi Gagasan PENSyarat AI menggunakan kerangka "
+        "SaHaBaT (Sasaran, Hambatan, Bantuan, dan Tindakan) yang merangkum "
+        "solusi secara ringkas dan terarah, sebagaimana disajikan pada "
+        "Gambar 3.")
+    add_image(doc, str(ASSETS / "gambar3_sahabat.png"), width_cm=15)
+    add_caption(doc, "Gambar 3. Desain Visualisasi Gagasan (SaHaBaT)")
 def section_pustaka(doc):     add_body_paragraph(doc, "[TODO pustaka]")
 def section_lampiran(doc):    add_body_paragraph(doc, "[TODO lampiran]")
 
