@@ -660,7 +660,7 @@ def section_bab4(doc):
             ["3", "Latar belakang berwarna", "260", "235", "25", "90,38"],
             ["4", "Tangan kanan", "260", "229", "31", "88,08"],
             ["5", "Tangan kiri", "260", "214", "46", "82,31"],
-            ["", "Rata-rata", "", "", "", "85,92"],
+            ["", "Rata-rata", "1.300", "1.117", "183", "85,92"],
         ],
         col_widths_cm=[0.8, 4.5, 2.2, 2.6, 2.6, 2.0])  # sum 14.7 cm
     add_body_paragraph(doc,
