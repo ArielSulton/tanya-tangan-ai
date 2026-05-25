@@ -7,6 +7,11 @@ from docx.shared import Cm, Pt
 ROOT = Path(__file__).resolve().parent.parent  # docs/reference/revisi/
 ASSETS = ROOT / "assets"
 OUTPUT = ROOT / "output" / "naskah_revisi.docx"
+TITLE = (
+    "PENSyarat AI: Platform Pemahaman Kosakata Abstrak Berbasis "
+    "Sistem Isyarat Bahasa Indonesia dan Kecerdasan Buatan untuk "
+    "Siswa SDLB-B Tingkat Pemula"
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from styles import (  # noqa: E402
@@ -18,7 +23,6 @@ from styles import (  # noqa: E402
 def section_cover(doc):
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     from styles import add_image, set_run
-    from docx.shared import Pt
     add_image(doc, str(ASSETS / "cover_pens_logo.png"), width_cm=8)
     for _ in range(2):
         doc.add_paragraph()
@@ -32,9 +36,7 @@ def section_cover(doc):
     doc.add_paragraph()
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p.add_run("PENSyarat AI: Platform Pemahaman Kosakata Abstrak Berbasis "
-                  "Sistem Isyarat Bahasa Indonesia dan Kecerdasan Buatan untuk "
-                  "Siswa SDLB-B Tingkat Pemula")
+    r = p.add_run(TITLE)
     set_run(r, size=Pt(12), bold=True)
     for _ in range(4):
         doc.add_paragraph()
@@ -54,7 +56,6 @@ def section_cover(doc):
 def section_pengesahan(doc):
     from styles import set_run
     from docx.enum.text import WD_ALIGN_PARAGRAPH
-    from docx.shared import Pt
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = p.add_run("LEMBAR PENGESAHAN")
@@ -64,25 +65,22 @@ def section_pengesahan(doc):
 def section_pengantar(doc):
     from styles import add_body_paragraph, set_run, add_numbered_list
     from docx.enum.text import WD_ALIGN_PARAGRAPH
-    from docx.shared import Pt
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = p.add_run("KATA PENGANTAR")
     set_run(r, size=Pt(14), bold=True)
     doc.add_paragraph()
     add_body_paragraph(doc,
-        "Puji syukur penulis haturkan kepada Tuhan Yang Maha Esa atas segala "
-        "rahmat dan karunia-Nya sehingga penulis dapat menyelesaikan Naskah "
-        "Produk Inovatif yang berjudul \"PENSyarat AI: Platform Pemahaman "
-        "Kosakata Abstrak Berbasis Sistem Isyarat Bahasa Indonesia dan "
-        "Kecerdasan Buatan untuk Siswa SDLB-B Tingkat Pemula\". Penyusunan "
-        "naskah ini merupakan bagian dari rangkaian keikutsertaan dalam "
-        "Pemilihan Mahasiswa Berprestasi (Pilmapres) Program Diploma Tahun "
-        "2026. Naskah ini telah direvisi berdasarkan masukan dari tim "
-        "pendamping LLDIKTI, Ibu Ida, dan Bapak Adam guna memperkuat "
-        "rumusan masalah, uji efektivitas pembelajaran, kerincian dataset "
-        "gestur, aksesibilitas antarmuka, mitigasi risiko, perlindungan "
-        "data siswa, model keberlanjutan, dan tabel outcome before–after."
+        f"Puji syukur penulis haturkan kepada Tuhan Yang Maha Esa atas segala "
+        f"rahmat dan karunia-Nya sehingga penulis dapat menyelesaikan Naskah "
+        f"Produk Inovatif yang berjudul \"{TITLE}\". Penyusunan "
+        f"naskah ini merupakan bagian dari rangkaian keikutsertaan dalam "
+        f"Pemilihan Mahasiswa Berprestasi (Pilmapres) Program Diploma Tahun "
+        f"2026. Naskah ini telah direvisi berdasarkan masukan dari tim "
+        f"pendamping LLDIKTI, Ibu Ida, dan Bapak Adam guna memperkuat "
+        f"rumusan masalah, uji efektivitas pembelajaran, kerincian dataset "
+        f"gestur, aksesibilitas antarmuka, mitigasi risiko, perlindungan "
+        f"data siswa, model keberlanjutan, dan tabel outcome before–after."
     )
     add_body_paragraph(doc, "Pada kesempatan ini, penulis menyampaikan terima kasih sebesar-besarnya kepada:")
     add_numbered_list(doc, [
@@ -119,7 +117,6 @@ def section_daftar_isi(doc):
     NOTE: page numbers below are placeholders — re-verify after final build."""
     from styles import set_run
     from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
-    from docx.shared import Pt, Cm
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = p.add_run("DAFTAR ISI")
