@@ -1212,7 +1212,106 @@ def section_bab7(doc):
         "Gambar 3.")
     add_image(doc, str(ASSETS / "gambar3_sahabat.png"), width_cm=15)
     add_caption(doc, "Gambar 3. Desain Visualisasi Gagasan (SaHaBaT)")
-def section_pustaka(doc):     add_body_paragraph(doc, "[TODO pustaka]")
+def section_pustaka(doc):
+    from styles import set_run
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.shared import Pt, Cm
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run("DAFTAR PUSTAKA")
+    set_run(r, size=Pt(14), bold=True)
+    refs = [
+        "American Speech-Language-Hearing Association (ASHA). 2024. Language "
+        "and Communication of Deaf and Hard of Hearing Children. "
+        "https://www.asha.org/practice-portal/professional-issues/language-"
+        "communication-deaf-hard-of-hearing-children/. Diakses tanggal 1 "
+        "April 2026.",
+        "Badan Pusat Statistik (BPS). 2024. Potret Penyandang Disabilitas "
+        "di Indonesia: Hasil Long Form SP2020. BPS. Jakarta.",
+        "Convertino, C., Borgna, G., Marschark, M., & Durkin, A. 2014. Word "
+        "and World Knowledge Among Deaf Learners With and Without Cochlear "
+        "Implants. Journal of Deaf Studies and Deaf Education, 19(4), "
+        "471–483.",
+        "Google. 2020. MediaPipe: A Framework for Building Perception "
+        "Pipelines. https://mediapipe.dev. Diakses tanggal 1 April 2026.",
+        "Haliza, N., Kuntarto, E., & Kusmana, A. 2020. Pemerolehan Bahasa "
+        "Anak Berkebutuhan Khusus (Tunarungu) dalam Memahami Bahasa. "
+        "Metabasa: Jurnal Bahasa, Sastra dan Pembelajaran, 2(1). DOI: "
+        "10.37058/mbsi.v2i1.1805.",
+        "International Organization for Standardization. 2011. ISO/IEC "
+        "25010:2011 — Systems and Software Engineering — Systems and "
+        "Software Quality Requirements and Evaluation (SQuaRE) — System "
+        "and Software Quality Models. ISO. Geneva.",
+        "Kadir, R. 2021. Peningkatan Penguasaan Kosakata Anak Tunarungu "
+        "Melalui Media Gambar Pada Siswa Kelas IV di SLB Negeri Kota "
+        "Gorontalo. Aksara: Jurnal Ilmu Pendidikan Nonformal, 7(3), "
+        "1185–1192. DOI: 10.37905/aksara.7.3.1185-1192.2021.",
+        "Kementerian Kesehatan Republik Indonesia. 2024. Survei Kesehatan "
+        "Indonesia (SKI) 2023. Kemenkes. Jakarta.",
+        "Kementerian Pendidikan dan Kebudayaan. 2013. Kompetensi Inti dan "
+        "Kompetensi Dasar Bahasa Indonesia SDLB Tunarungu. Kemendikbud. "
+        "Jakarta.",
+        "Kementerian Pendidikan dan Kebudayaan. 2021. Data Pokok "
+        "Pendidikan: Statistik Sekolah Luar Biasa. Kemendikbud. Jakarta.",
+        "Kementerian Pendidikan Dasar dan Menengah (Kemendikdasmen). 2025. "
+        "Data Sebaran Siswa SLB di Indonesia TA 2024/2025. "
+        "https://dapo.kemendikdasmen.go.id. Diakses tanggal 1 April 2026.",
+        "Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., "
+        "Goyal, N., Kydlicek, H., & Kiela, D. 2020. Retrieval-Augmented "
+        "Generation for Knowledge-Intensive NLP Tasks. Advances in Neural "
+        "Information Processing Systems, 33, 9459–9474.",
+        "Mat Yasin, M., & Mohamad, M. 2024. The Use of Visual Aids to "
+        "Improve Deaf Students' English Vocabulary: A Literature Review. "
+        "SHS Web of Conferences, 182. DOI: 10.1051/shsconf/202418202001.",
+        "Meta AI. 2024. LLaMA 3.3: Open Foundation Language Models. "
+        "https://llama.meta.com. Diakses tanggal 1 April 2026.",
+        "Nurizae & Maimunah. 2021. Kemampuan Memahami Kata Abstrak pada "
+        "Anak Tunarungu. Jurnal Basicedu, 5(4). DOI: "
+        "10.31004/basicedu.v5i4.1038.",
+        "Peraturan Menteri Pendidikan Nasional Nomor 70 Tahun 2009 tentang "
+        "Pendidikan Inklusif bagi Peserta Didik yang Memiliki Kelainan dan "
+        "Memiliki Potensi Kecerdasan dan/atau Bakat Istimewa. Kementerian "
+        "Pendidikan Nasional. Jakarta.",
+        "Sarchet, T., Marschark, M., Borgna, G., Convertino, C., Sapere, "
+        "P., & Dirmyer, R. 2014. Vocabulary Knowledge of Deaf and Hearing "
+        "Postsecondary Students. Journal of Postsecondary Education and "
+        "Disability, 27(2), 161–178.",
+        "Smilkov, D., Thorat, N., Assogba, Y., Yuan, A., Kreeger, N., Yu, "
+        "P., Zhang, K., Cai, S., Nielsen, E., Soergel, D., Bileschi, S., "
+        "Terry, M., Nicholson, C., Gupta, N., Sculley, D., Monga, R., "
+        "Corrado, G., & Dean J. 2019. TensorFlow.js: Machine Learning for "
+        "the Web and Beyond. Proceedings of Machine Learning and Systems, 1.",
+        "TTAC Online. 2024. Instructional Strategies for Students who are "
+        "Deaf and Hard of Hearing. "
+        "https://ttaconline.org/instructional-strategies-students-deaf-hard-"
+        "of-hearing. Diakses tanggal 1 April 2026.",
+        "Undang-Undang Nomor 8 Tahun 2016 tentang Penyandang Disabilitas. "
+        "Sekretariat Negara Republik Indonesia. Jakarta.",
+        "Undang-Undang Nomor 20 Tahun 2003 tentang Sistem Pendidikan "
+        "Nasional. Sekretariat Negara Republik Indonesia. Jakarta.",
+        "Undang-Undang Nomor 27 Tahun 2022 tentang Perlindungan Data "
+        "Pribadi. Sekretariat Negara Republik Indonesia. Jakarta.",
+        "University of Minnesota CEHD. 2020. Improving Deaf Education "
+        "Through Visual Learning. "
+        "https://cehdvision2020.umn.edu/blog/improving-deaf-education/. "
+        "Diakses tanggal 1 April 2026.",
+        "W3C Web Accessibility Initiative. 2018. Web Content Accessibility "
+        "Guidelines (WCAG) 2.1. https://www.w3.org/TR/WCAG21/. Diakses "
+        "tanggal 1 April 2026.",
+        "World Health Organization (WHO). 2023. Deafness and Hearing "
+        "Loss: Key Facts. "
+        "https://www.who.int/news-room/fact-sheets/detail/deafness-and-"
+        "hearing-loss. Diakses tanggal 1 April 2026.",
+    ]
+    refs_sorted = sorted(refs, key=lambda s: s.lower())
+    for ref in refs_sorted:
+        p = doc.add_paragraph()
+        p.paragraph_format.left_indent = Cm(1.0)
+        p.paragraph_format.first_line_indent = Cm(-1.0)
+        p.paragraph_format.space_after = Pt(6)
+        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        r = p.add_run(ref)
+        set_run(r)
 def section_lampiran(doc):    add_body_paragraph(doc, "[TODO lampiran]")
 
 SECTIONS = [
