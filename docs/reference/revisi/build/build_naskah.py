@@ -1312,7 +1312,104 @@ def section_pustaka(doc):
         p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         r = p.add_run(ref)
         set_run(r)
-def section_lampiran(doc):    add_body_paragraph(doc, "[TODO lampiran]")
+def section_lampiran(doc):
+    from styles import (add_heading1, add_heading2, add_body_paragraph,
+                        add_caption, add_table, add_image, set_run,
+                        CAPTION_SIZE)
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.shared import Pt, Cm
+    add_heading1(doc, "Lampiran")
+    # Lampiran 1: Jadwal Kegiatan
+    add_heading2(doc, "Lampiran 1. Jadwal Kegiatan")
+    months = ["Bulan 1","Bulan 2","Bulan 3","Bulan 4","Bulan 5","Bulan 6","Bulan 7"]
+    schedule = [
+        ("Penyelesaian MVP produk",       [1,1,0,0,0,0,0]),
+        ("Kurasi konten kosakata awal",   [0,1,1,0,0,0,0]),
+        ("Pengujian dan validasi",        [0,0,1,1,1,0,0]),
+        ("Dokumentasi dan pelatihan guru",[0,0,0,1,1,0,0]),
+        ("Pilot implementasi di SLB-B",   [0,0,0,1,1,1,0]),
+        ("Evaluasi dan analisis data (pre/post-test)", [0,0,0,0,1,1,1]),
+        ("Monitoring dan pengembangan",   [0,0,0,0,0,1,1]),
+        ("Pembuatan laporan",             [0,0,0,0,0,1,1]),
+    ]
+    header = ["No.", "Jenis Kegiatan"] + months
+    rows = []
+    for i, (activity, mask) in enumerate(schedule, start=1):
+        rows.append([str(i), activity] + ["■" if v else "" for v in mask])
+    add_table(doc, header=header, rows=rows,
+              col_widths_cm=[0.8, 5.2] + [1.4]*7)  # sum 15.8
+    # Lampiran 2: Struktur Organisasi
+    add_heading2(doc, "Lampiran 2. Struktur Organisasi")
+    add_image(doc, str(ASSETS / "lampiran2_orgchart.png"), width_cm=14)
+    # Lampiran 3: Anggaran (4 sub-tables)
+    add_heading2(doc, "Lampiran 3. Anggaran Biaya")
+    for subtitle, rows_data, total in [
+        ("Cost of Capital", [
+            ["Domain dan VPS hosting web", "12 Bulan", "Rp 200.000", "Rp 2.400.000"],
+            ["Langganan Pinecone (vector database)", "12 Bulan", "Rp 200.000", "Rp 2.400.000"],
+            ["Langganan Groq API (LLM inference)", "12 Bulan", "Rp 150.000", "Rp 1.800.000"],
+            ["Perangkat pengujian (webcam HD)", "2", "Rp 500.000", "Rp 1.000.000"],
+        ], "Rp 7.600.000"),
+        ("Cost of Operational", [
+            ["Frontend Developer (Next.js)", "8 Bulan", "Rp 800.000", "Rp 6.400.000"],
+            ["Backend Developer (FastAPI/Python)", "8 Bulan", "Rp 800.000", "Rp 6.400.000"],
+            ["AI/ML Engineer (gestur + visual)", "8 Bulan", "Rp 800.000", "Rp 6.400.000"],
+            ["Kurasi konten kosakata & gambar", "1", "Rp 800.000", "Rp 800.000"],
+        ], "Rp 20.000.000"),
+        ("Cost of Maintenance", [
+            ["Workshop guru SLB-B (sesi pilot)", "3", "Rp 700.000", "Rp 2.100.000"],
+            ["Pembuatan konten edukasi media sosial", "6", "Rp 300.000", "Rp 1.800.000"],
+            ["Produksi video demo produk", "1", "Rp 600.000", "Rp 600.000"],
+        ], "Rp 4.500.000"),
+        ("Lain-lain", [
+            ["Pembuatan laporan", "4", "Rp 50.000", "Rp 200.000"],
+            ["ATK dan keperluan administrasi", "1", "Rp 100.000", "Rp 100.000"],
+        ], "Rp 300.000"),
+    ]:
+        p = doc.add_paragraph()
+        r = p.add_run(subtitle)
+        set_run(r, bold=True)
+        add_table(doc,
+            header=["Kegiatan/Justifikasi Anggaran", "Jumlah",
+                    "Biaya Satuan (Rp)", "Total Biaya (Rp)"],
+            rows=rows_data + [["TOTAL BIAYA", "", "", total]],
+            col_widths_cm=[8.0, 2.0, 3.0, 3.0])  # sum 16.0
+    p = doc.add_paragraph()
+    r = p.add_run("TOTAL KESELURUHAN ANGGARAN: Rp 32.400.000")
+    set_run(r, bold=True, size=Pt(12))
+    # Lampiran 4: BMC
+    add_heading2(doc, "Lampiran 4. Business Model Canvas PENSyarat AI")
+    add_image(doc, str(ASSETS / "lampiran4_bmc.png"), width_cm=16)
+    # Lampiran 5: Tampilan Aplikasi — COMPACTED layout (2-col row + centered third)
+    add_heading2(doc, "Lampiran 5. Tampilan Aplikasi PENSyarat AI")
+    row_tbl = doc.add_table(rows=1, cols=2)
+    row_tbl.autofit = True
+    for cell, img in zip(row_tbl.rows[0].cells,
+                          ["lampiran5_app_landing.png",
+                           "lampiran5_app_recognition.png"]):
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run()
+        run.add_picture(str(ASSETS / img), width=Cm(7.5))
+    add_image(doc, str(ASSETS / "lampiran5_app_dashboard.png"), width_cm=14)
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run("Link Video Demonstrasi: https://youtu.be/7BndK5VSEws")
+    set_run(r, size=CAPTION_SIZE)
+    # Lampiran 6: Survei — COMPACTED 2×2 grid
+    add_heading2(doc, "Lampiran 6. Survei Lokasi SLB Aditama Surabaya dan SLB-B Karya Mulia Surabaya")
+    grid = doc.add_table(rows=2, cols=2)
+    photos = ["lampiran6_survei_1.jpg","lampiran6_survei_2.jpg",
+              "lampiran6_survei_3.jpg","lampiran6_survei_4.jpg"]
+    for i, img in enumerate(photos):
+        cell = grid.rows[i // 2].cells[i % 2]
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run()
+        run.add_picture(str(ASSETS / img), width=Cm(7.5))
+    # Lampiran 7: Similarity
+    add_heading2(doc, "Lampiran 7. Hasil Uji Similaritas Naskah")
+    add_image(doc, str(ASSETS / "lampiran7_similarity.png"), width_cm=14)
 
 SECTIONS = [
     section_cover, section_pengesahan, section_pengantar, section_daftar_isi,
