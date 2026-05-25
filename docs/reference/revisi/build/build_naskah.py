@@ -209,7 +209,181 @@ def section_daftar_isi(doc):
         p.paragraph_format.tab_stops.add_tab_stop(Cm(16), alignment=WD_TAB_ALIGNMENT.RIGHT)
         r = p.add_run(f"{txt}\t{pg}")
         set_run(r)
-def section_bab1(doc):        add_body_paragraph(doc, "[TODO bab1]")
+def section_bab1(doc):
+    from styles import add_heading1, add_heading2, add_body_paragraph
+    add_heading1(doc, "1. Lingkup Pembahasan")
+    add_heading2(doc, "1.1 Lingkungan Penerima Manfaat dan Kerangka Analisis")
+    add_body_paragraph(doc,
+        "Pendidikan merupakan hak dasar setiap manusia sebagaimana diamanatkan "
+        "dalam Undang-Undang Dasar 1945 Pasal 31 ayat (1) serta Undang-Undang "
+        "Nomor 20 Tahun 2003 tentang Sistem Pendidikan Nasional. Hak ini "
+        "berlaku tanpa terkecuali, termasuk bagi penyandang disabilitas. "
+        "Namun dalam praktiknya, kelompok penyandang tunarungu masih "
+        "menghadapi hambatan signifikan dalam mengakses pendidikan yang "
+        "berkualitas dan setara (WHO, 2023). Hambatan tersebut tidak "
+        "semata-mata bersifat komunikatif, tetapi menyentuh aspek yang lebih "
+        "mendasar: pemahaman kosakata.")
+    # COMPACTED (page budget): four-statistic paragraphs merged into one
+    add_body_paragraph(doc,
+        "Data WHO (2023) mencatat sekitar 1,5 miliar orang di dunia "
+        "mengalami gangguan pendengaran (proyeksi 2,5 miliar pada 2050); "
+        "di Indonesia, Long Form SP2020 BPS (2024) mencatat 923 ribu "
+        "penduduk mengalami kesulitan mendengar berat dan Survei "
+        "Kesehatan Indonesia (Kemenkes, 2024) menempatkan prevalensi "
+        "disabilitas pendengaran pada 0,4% populasi dengan hanya 4,1% "
+        "yang menggunakan alat bantu dengar. Pada level pendidikan, "
+        "Kemendikdasmen (2025) mencatat 162.806 siswa SLB pada TA "
+        "2024/2025, dengan Jawa Timur menempati posisi kedua nasional "
+        "(22.644 siswa).")
+    add_body_paragraph(doc,
+        "Permasalahan mendasar yang dihadapi siswa tunarungu, khususnya di "
+        "jenjang sekolah dasar luar biasa tipe B (SDLB-B), bukan hanya "
+        "keterbatasan komunikasi verbal, melainkan kesenjangan kosakata "
+        "(vocabulary gap) yang lebar dan semakin melebar seiring "
+        "bertambahnya usia. Penelitian Sarchet dkk. (2014) dalam Journal of "
+        "Postsecondary Education and Disability menunjukkan bahwa siswa "
+        "tunarungu rata-rata berada di persentil ke-19 kemampuan kosakata, "
+        "jauh tertinggal dari rekan-rekan mereka yang mendengar di "
+        "persentil ke-65. Convertino dkk. (2014) dalam Journal of Deaf "
+        "Studies and Deaf Education menemukan bahwa kesenjangan ini melebar "
+        "secara signifikan di sekitar usia 8–9 tahun, bertepatan dengan "
+        "jenjang kelas 3–4 SDLB, ketika tuntutan bahasa meningkat karena "
+        "hadirnya kata-kata abstrak dan konsep yang lebih kompleks.")
+    # === NEW: Bu Ida feedback — abstract-vocab differentiator paragraph ===
+    add_body_paragraph(doc,
+        "Sebagai pembeda utama, PENSyarat AI difokuskan pada penjembatanan "
+        "kesenjangan pada ranah kata abstrak. Tinjauan terhadap karya "
+        "inovatif dan riset terdahulu pada pembelajaran kosakata berbasis "
+        "visual untuk siswa tunarungu — sebagaimana dirangkum oleh Mat "
+        "Yasin & Mohamad (2024) dalam SHS Web of Conferences serta Kadir "
+        "(2021) dalam Aksara: Jurnal Ilmu Pendidikan Nonformal — "
+        "menunjukkan bahwa intervensi visual yang sudah ada dominan "
+        "menyasar kata benda konkret (contoh: 'apel', 'kucing', 'pohon') "
+        "melalui media foto atau flashcard. Padahal, kesenjangan pemahaman "
+        "yang paling tajam pada siswa SDLB-B justru muncul pada kata "
+        "abstrak dan kata keterangan derajat (contoh: 'sedikit', 'sangat', "
+        "'terlalu', 'sebelum', 'sesudah') — area yang belum tersentuh "
+        "secara sistematis. PENSyarat AI mengisi celah ini melalui "
+        "representasi visual kontekstual khusus (ilustrasi mandiri yang "
+        "melambangkan fungsi kata serta komparasi visual berdampingan) "
+        "yang dibangun di atas pengenalan gestur SIBI real-time.")
+    # === END NEW ===
+    add_body_paragraph(doc,
+        "Akar dari kesenjangan ini adalah keterbatasan incidental learning: "
+        "anak-anak yang mendengar secara tidak sadar menyerap ribuan "
+        "kosakata baru dari percakapan di sekitar mereka setiap hari, "
+        "sementara anak tunarungu tidak memiliki akses terhadap sumber "
+        "pembelajaran pasif ini (Convertino dkk., 2014; ASHA, 2024). "
+        "Akibatnya, sebagaimana dikemukakan Haliza dkk. (2020) dalam "
+        "Metabasa: Jurnal Bahasa, Sastra dan Pembelajaran, anak tunarungu "
+        "cenderung hanya menguasai kata-kata benda konkret (seperti "
+        "\"apel\", \"kucing\", \"buku\") dan mengalami kesulitan signifikan "
+        "dalam memahami kata abstrak (seperti \"sangat\", \"terlalu\", "
+        "\"sedikit\", \"sebelum\", dan \"sesudah\"). Temuan serupa "
+        "dikemukakan oleh Nurizae dan Maimunah (2021) dalam Jurnal "
+        "Basicedu, yang menyatakan bahwa anak tunarungu di Indonesia "
+        "\"miskin dalam perbendaharaan kata sehingga kesulitan "
+        "mengekspresikan bahasa dan bicaranya, serta mengalami kesulitan "
+        "memahami kata-kata yang bersifat abstrak dan kata yang "
+        "mengandung kiasan.\"")
+    add_body_paragraph(doc,
+        "Kondisi ini dikonfirmasi langsung melalui survei lapangan yang "
+        "penulis lakukan di dua sekolah SLB-B di Kota Surabaya: SLB-B "
+        "Karya Mulia Wonokromo (berdiri sejak 1954, salah satu sekolah "
+        "tunarungu tertua di Indonesia) dan SLB Aditama Gebang Surabaya. "
+        "Berdasarkan hasil wawancara dengan para guru di kedua sekolah "
+        "tersebut, diperoleh pengakuan yang konsisten bahwa siswa SDLB-B "
+        "seringkali tidak memahami makna dari kata-kata yang mereka "
+        "gunakan, terutama kata-kata abstrak dan kata keterangan derajat "
+        "dalam mata pelajaran Bahasa Indonesia. Guru menyatakan bahwa "
+        "siswa sering hafal cara mengisyaratkan suatu kata dalam SIBI, "
+        "namun tidak memahami makna konseptualnya, terutama karena tidak "
+        "ada media visual yang memadai untuk menjelaskan perbedaan makna "
+        "antar kata keterangan (misalnya, perbedaan antara \"sedikit besar\" "
+        "dan \"sangat besar\"). Hasil wawancara selengkapnya dapat dilihat "
+        "pada Lampiran 6.")
+    add_body_paragraph(doc,
+        "Di sisi lain, riset kependidikan konsisten menunjukkan bahwa "
+        "pendekatan visual merupakan strategi paling efektif untuk "
+        "pembelajaran kosakata siswa tunarungu, mengingat visi (penglihatan) "
+        "adalah jalur penerimaan informasi utama mereka (TTAC Online, 2024; "
+        "University of Minnesota CEHD, 2020). Penelitian Kadir (2021) di "
+        "SLB Negeri Kota Gorontalo membuktikan bahwa intervensi media "
+        "gambar meningkatkan penguasaan kosakata siswa tunarungu dari "
+        "16,67% menjadi 100% hanya dalam dua siklus pembelajaran. Kajian "
+        "literatur Mat Yasin dan Mohamad (2024) dalam SHS Web of "
+        "Conferences juga mengonfirmasi bahwa penggunaan visual aids "
+        "bersama bahasa isyarat secara konsisten lebih efektif "
+        "dibandingkan pengajaran bahasa isyarat semata.")
+    add_body_paragraph(doc,
+        "Kemajuan kecerdasan buatan kini membuka peluang untuk menghadirkan "
+        "pendekatan visual tersebut secara digital dan interaktif. "
+        "Teknologi pengenalan gestur berbasis visi komputer seperti "
+        "MediaPipe (Google, 2020) dan TensorFlow.js kini mampu berjalan "
+        "langsung di peramban web tanpa instalasi, memungkinkan siswa "
+        "SDLB-B memasukkan kata melalui gestur SIBI yang sudah mereka "
+        "kuasai. Model bahasa besar (LLM) seperti LLaMA 3.3 via ChatGroq "
+        "memungkinkan sistem untuk menghasilkan penjelasan kontekstual "
+        "ketika kata belum tersedia dalam basis data visual.")
+    add_body_paragraph(doc,
+        "Berdasarkan fakta-fakta di atas, penulis mengembangkan platform "
+        "digital bernama PENSyarat AI, sebuah platform pemahaman kosakata "
+        "visual untuk siswa SDLB-B. Siswa menginput kata melalui gestur "
+        "SIBI via kamera, dan platform menampilkan: (1) gambar objek nyata "
+        "untuk kata konkret (misalnya: foto kucing untuk kata \"kucing\"); "
+        "(2) representasi visual kontekstual untuk kosakata abstrak, baik "
+        "berupa ilustrasi mandiri yang melambangkan fungsi kata (misalnya: "
+        "visualisasi gestur menunjuk untuk mendeskripsikan kata \"yang\") "
+        "maupun komparasi visual berdampingan (misalnya: gambar objek "
+        "kecil dan besar untuk menjelaskan perbedaan \"sedikit\" dan "
+        "\"sangat\"); serta (3) penjelasan singkat berbasis AI sebagai "
+        "fallback ketika kata belum tersedia dalam basis data.")
+    add_heading2(doc, "1.2 Pihak Terdampak sebagai Penerima Manfaat")
+    add_body_paragraph(doc,
+        "Pihak yang secara langsung terdampak oleh permasalahan ini adalah "
+        "siswa tunarungu yang bersekolah pada jenjang SDLB-B (Sekolah "
+        "Dasar Luar Biasa untuk Tunarungu) di seluruh Indonesia. "
+        "Berdasarkan data Kemendikdasmen (2025), terdapat 162.806 siswa "
+        "SLB secara nasional pada tahun ajaran 2024/2025, dengan jenjang "
+        "SD menjadi yang terbesar (sekitar 52,5% dari total siswa SLB). "
+        "Jawa Timur merupakan salah satu provinsi dengan konsentrasi "
+        "siswa SLB terbesar kedua secara nasional. Siswa-siswa SDLB-B ini "
+        "menghadapi kesenjangan kosakata yang signifikan, terutama pada "
+        "pemahaman kata abstrak dan kata keterangan, yang menghambat "
+        "kemampuan mereka dalam memahami materi pelajaran Bahasa "
+        "Indonesia sesuai Kompetensi Inti dan Kompetensi Dasar (KI-KD) "
+        "yang ditetapkan Kemendikbud dalam Kurikulum 2013 dan Kurikulum "
+        "Merdeka.")
+    add_body_paragraph(doc,
+        "Pihak yang secara tidak langsung terdampak meliputi: (1) guru "
+        "dan tenaga pendidik SLB-B yang beban mengajarnya dapat berkurang "
+        "dengan adanya media pembelajaran visual berbasis digital; (2) "
+        "orang tua siswa tunarungu yang memerlukan media pendukung "
+        "pembelajaran di rumah; serta (3) pemerintah, khususnya "
+        "Kemendikdasmen, yang memiliki kewajiban mewujudkan pendidikan "
+        "inklusif dan berkualitas sebagaimana diamanatkan oleh "
+        "Undang-Undang Nomor 8 Tahun 2016 tentang Penyandang Disabilitas.")
+    add_body_paragraph(doc,
+        "Penulis telah melakukan survei langsung ke dua SLB-B di Kota "
+        "Surabaya, SLB-B Karya Mulia Wonokromo dan SLB Aditama Gebang "
+        "dan mengidentifikasi bahwa selama ini tidak tersedia platform "
+        "digital yang mampu menerima input bahasa isyarat SIBI dan "
+        "menampilkan visualisasi makna kata secara interaktif, terutama "
+        "untuk kata-kata abstrak yang menjadi tantangan utama dalam "
+        "pembelajaran Bahasa Indonesia. Dokumentasi wawancara "
+        "selengkapnya dapat dilihat pada Lampiran 6.")
+    add_heading2(doc, "1.3 Pernyataan Teori Utama")
+    add_body_paragraph(doc,
+        "Sebagai dasar kerangka analisis, pengembangan platform PENSyarat "
+        "AI dilandasi oleh teori utama Dual Coding Theory (diinisiasi "
+        "oleh Allan Paivio) dan Cognitive Theory of Multimedia Learning "
+        "(oleh Richard Mayer). Kedua teori kognitif ini menegaskan bahwa "
+        "integrasi informasi visual serta memori motorik (melalui input "
+        "gestur SIBI) akan secara signifikan mengurangi beban kognitif "
+        "(cognitive load). Pendekatan ini secara saintifik mempercepat "
+        "pemahaman makna kata dan retensi memori jangka panjang, "
+        "khususnya bagi pembelajar tunarungu yang secara natural "
+        "memproses informasi melalui jalur spasial-visual.")
 def section_bab2(doc):        add_body_paragraph(doc, "[TODO bab2]")
 def section_bab3(doc):        add_body_paragraph(doc, "[TODO bab3]")
 def section_bab4(doc):        add_body_paragraph(doc, "[TODO bab4]")
