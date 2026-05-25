@@ -27,11 +27,15 @@ def set_run(run, size=BODY_SIZE, bold=False, italic=False, color=None):
         run.font.color.rgb = RGBColor.from_string(color)
     # Force eastAsia font (Word quirk for non-Latin)
     rPr = run._element.get_or_add_rPr()
-    rFonts = rPr.find(qn("w:rFonts")) or OxmlElement("w:rFonts")
+    rFonts = rPr.find(qn("w:rFonts"))
+    if rFonts is None:
+        rFonts = OxmlElement("w:rFonts")
+        rPr.append(rFonts)
     rFonts.set(qn("w:eastAsia"), FONT_NAME)
-    rPr.append(rFonts)
 
-def add_body_paragraph(doc, text, justify=True, first_line_indent=Cm(1.0)):
+def add_body_paragraph(doc, text, justify=True, first_line_indent=None):
+    if first_line_indent is None:
+        first_line_indent = Cm(1.0)
     p = doc.add_paragraph()
     p.paragraph_format.line_spacing_rule = WD_LINE_SPACING.MULTIPLE
     p.paragraph_format.line_spacing = LINE_SPACING

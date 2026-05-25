@@ -4,7 +4,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PDF="$ROOT/output/naskah_revisi.pdf"
 [ -f "$PDF" ] || { echo "FAIL: $PDF not found"; exit 1; }
+
 TXT="$(mktemp)"
+PER_PAGE="$(mktemp -d)"
+trap 'rm -f "$TXT"; rm -rf "$PER_PAGE"' EXIT
+
 pdftotext -layout "$PDF" "$TXT"
 
 check() {
@@ -40,15 +44,14 @@ BODY_MAX=15
 LAMPIRAN_MAX=5
 
 TOTAL=$(pdfinfo "$PDF" | awk '/^Pages:/ {print $2}')
-PER_PAGE=$(mktemp -d)
 pdftotext -layout "$PDF" - | awk -v dir="$PER_PAGE" '
   BEGIN{p=1; out=dir"/p001.txt"}
   {
     if (length($0)==1 && $0=="\f") { p++; out=sprintf("%s/p%03d.txt", dir, p); next }
     gsub("\f","",$0); print >> out
   }'
-BODY_START=$(grep -l "1. LINGKUP PEMBAHASAN" "$PER_PAGE"/p*.txt | head -1 | sed -E 's#.*/p0*([0-9]+)\.txt#\1#')
-LAMPIRAN_START=$(grep -l "Lampiran 1\." "$PER_PAGE"/p*.txt | head -1 | sed -E 's#.*/p0*([0-9]+)\.txt#\1#')
+BODY_START=$(grep -lF "1. LINGKUP PEMBAHASAN" "$PER_PAGE"/p*.txt | head -1 | sed -E 's#.*/p0*([0-9]+)\.txt#\1#')
+LAMPIRAN_START=$(grep -lF "Lampiran 1." "$PER_PAGE"/p*.txt | head -1 | sed -E 's#.*/p0*([0-9]+)\.txt#\1#')
 
 if [ -z "$BODY_START" ] || [ -z "$LAMPIRAN_START" ]; then
   echo "FAIL [page-budget]: could not locate body start or lampiran start in PDF"
