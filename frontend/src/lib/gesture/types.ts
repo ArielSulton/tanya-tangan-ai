@@ -14,8 +14,11 @@ export interface BrowserGestureResult {
   /**
    * Source of the result. 'browser' = in-browser HandPose + Fingerpose.
    * 'yolo-fallback' = legacy backend YOLO endpoint, used when browser init failed.
+   * 'yolo' = primary backend YOLOv8 path selected via NEXT_PUBLIC_GESTURE_ENGINE.
+   * 'browser' and 'yolo' are the two primary selectable paths (via NEXT_PUBLIC_GESTURE_ENGINE);
+   * 'yolo-fallback' is the degraded path used only when in-browser init fails.
    */
-  source: 'browser' | 'yolo-fallback'
+  source: 'browser' | 'yolo-fallback' | 'yolo'
   /**
    * 'static' for per-frame letter detection (fingerpose / static MLP),
    * 'dynamic' for one-shot word detection from a motion trajectory.
@@ -23,6 +26,13 @@ export interface BrowserGestureResult {
    * (which only fire once per motion_end and would never survive a streak).
    */
   gestureType: 'static' | 'dynamic'
+  /**
+   * Set ONLY by engines that perform their own validation (the YOLO engine,
+   * whose backend runs TemporalValidationService server-side). When present,
+   * the hook trusts this value (with dedupe) instead of running the
+   * in-browser dwell-streak validator. Left undefined by BrowserGestureEngine.
+   */
+  validated?: boolean
 }
 
 export type EngineStatus =
@@ -91,3 +101,28 @@ export type FrameFeatures = number[]
  * classifier on the window leading up to it).
  */
 export type MotionState = 'idle' | 'still' | 'moving' | 'motion_end'
+
+/**
+ * Callbacks accepted by any gesture engine. Both BrowserGestureEngine and
+ * YoloGestureEngine implement this constructor contract so the hook can
+ * swap engines behind one interface.
+ */
+export interface GestureEngineCallbacks {
+  onResult?: (result: BrowserGestureResult) => void
+  onError?: (error: Error) => void
+  /** Human-readable diagnostic string (NOT an EngineStatus value). */
+  onStatus?: (status: string) => void
+  onStateChange?: (state: EngineStatus) => void
+}
+
+/**
+ * Common surface the useGestureRecognition hook drives. BrowserGestureEngine
+ * already satisfies this structurally; YoloGestureEngine is built to match.
+ */
+export interface GestureEngine {
+  getState(): EngineStatus
+  initialize(video: HTMLVideoElement, canvas: HTMLCanvasElement): Promise<void>
+  start(): Promise<void>
+  stop(): Promise<void>
+  dispose(): void
+}

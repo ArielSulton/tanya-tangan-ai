@@ -105,6 +105,29 @@ export interface WordCompletionErrorResponse {
 
 export type WordCompletionResponse = WordCompletionSuccessResponse | WordCompletionErrorResponse
 
+// Raw response body of POST /api/v1/gesture/recognize (server-side YOLOv8).
+// NOTE: this endpoint returns the body directly (it is NOT wrapped in the
+// {success,data} ApiResponse envelope), so it is parsed as the request<T>
+// data payload.
+export interface YoloRecognizeBbox {
+  readonly x1: number
+  readonly y1: number
+  readonly x2: number
+  readonly y2: number
+}
+
+export interface YoloRecognizeResponse {
+  readonly letter: string | null
+  readonly confidence: number
+  readonly alternatives: { letter: string; confidence: number }[]
+  readonly processing_time_ms: number
+  readonly detected: boolean
+  readonly validated: boolean
+  readonly landmarks?: number[][] | null
+  readonly mediapipe_bbox?: YoloRecognizeBbox | null
+  readonly yolo_bbox?: YoloRecognizeBbox | null
+}
+
 export interface SessionHistoryItem {
   readonly message_id: number
   readonly content: string
@@ -361,6 +384,21 @@ class GestureAPIClient {
     return this.request<GestureRecognitionSuccessResponse['data']>('/api/v1/gesture/recognize', {
       method: 'POST',
       body: JSON.stringify(request),
+    })
+  }
+
+  /**
+   * Recognize a sign from a single camera frame using the backend YOLOv8
+   * pipeline. `frame` is a base64 JPEG (data URL prefix optional — the
+   * backend strips it). Returns the raw GestureRecognizeResponse body.
+   */
+  async recognizeFrame(frame: string, sessionId?: string): Promise<ApiResponse<YoloRecognizeResponse>> {
+    if (typeof frame !== 'string' || frame.length === 0) {
+      throw new ValidationError('frame', frame, 'non-empty base64 string')
+    }
+    return this.request<YoloRecognizeResponse>('/api/v1/gesture/recognize', {
+      method: 'POST',
+      body: JSON.stringify({ frame, session_id: sessionId ?? null }),
     })
   }
 
