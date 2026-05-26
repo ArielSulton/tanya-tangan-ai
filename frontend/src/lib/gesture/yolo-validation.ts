@@ -23,9 +23,7 @@ export function decideYoloEmission(
   // A different letter than the one latched → clear the latch first so the
   // new letter is free to emit.
   const cleared: YoloDedupeState =
-    state.lastEmittedLetter !== null && state.lastEmittedLetter !== letter
-      ? { lastEmittedLetter: null }
-      : state
+    state.lastEmittedLetter !== null && state.lastEmittedLetter !== letter ? { lastEmittedLetter: null } : state
 
   if (backendValidated && cleared.lastEmittedLetter !== letter) {
     return { validated: true, nextState: { lastEmittedLetter: letter } }
