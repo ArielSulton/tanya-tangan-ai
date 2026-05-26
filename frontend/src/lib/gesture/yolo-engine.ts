@@ -30,6 +30,7 @@ export class YoloGestureEngine implements GestureEngine {
   // directly; no cast needed since SessionId is a subtype of string.
   private sessionId: ReturnType<typeof gestureClient.generateSessionId> = gestureClient.generateSessionId()
   private captureCanvas: HTMLCanvasElement | null = null
+  private stream: MediaStream | null = null
   private timer: ReturnType<typeof setTimeout> | null = null
   // Guards against overlapping in-flight requests when the backend is slower
   // than CAPTURE_INTERVAL_MS — we skip a tick rather than queue.
@@ -45,6 +46,10 @@ export class YoloGestureEngine implements GestureEngine {
   }
 
   async initialize(video: HTMLVideoElement, _canvas: HTMLCanvasElement): Promise<void> {
+    if (this.state !== 'uninitialized' && this.state !== 'stopped') {
+      this.callbacks.onStatus?.('YoloGestureEngine already initialized; skipping')
+      return
+    }
     this.setState('initializing')
     this.video = video
     this.captureCanvas = document.createElement('canvas')
@@ -77,10 +82,16 @@ export class YoloGestureEngine implements GestureEngine {
   }
 
   dispose(): void {
-    void this.stop()
-    if (this.video?.srcObject) {
-      const stream = this.video.srcObject as MediaStream
-      stream.getTracks().forEach((t) => t.stop())
+    this.running = false
+    if (this.timer !== null) {
+      clearTimeout(this.timer)
+      this.timer = null
+    }
+    if (this.stream) {
+      this.stream.getTracks().forEach((t) => t.stop())
+      this.stream = null
+    }
+    if (this.video) {
       this.video.srcObject = null
     }
     this.video = null
@@ -141,6 +152,7 @@ export class YoloGestureEngine implements GestureEngine {
       video: { width: 640, height: 480, facingMode: 'user', frameRate: 30 },
       audio: false,
     })
+    this.stream = stream
     video.srcObject = stream
     await new Promise<void>((resolve, reject) => {
       video.onloadedmetadata = () => resolve()
