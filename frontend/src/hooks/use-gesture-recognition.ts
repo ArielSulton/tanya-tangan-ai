@@ -1,11 +1,16 @@
 /**
  * useGestureRecognition Hook
  *
- * Browser-side A-Z gesture recognition using the existing
- * BrowserGestureEngine (HandPose + Fingerpose). The browser engine is
- * the only inference path in Phase 1 — there is no YOLO fallback.
- * If initialization fails, the hook surfaces the error and stays in
- * a non-running state; the page should communicate this to the user.
+ * A-Z sign-language recognition that selects its inference engine at
+ * initialize() time from NEXT_PUBLIC_GESTURE_ENGINE:
+ *   - 'mediapipe' (default): in-browser BrowserGestureEngine (HandPose +
+ *     Fingerpose / static MLP + dynamic LSTM). Validation is done here via a
+ *     dwell-streak for static letters; dynamic results validate on confidence.
+ *   - 'yolo': YoloGestureEngine streams frames to the backend YOLOv8 endpoint,
+ *     which validates server-side; this hook trusts that `validated` flag and
+ *     only dedupes repeated emissions of a held letter.
+ * If initialization fails, the hook surfaces the error and stays in a
+ * non-running state; the page should communicate this to the user.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react'
@@ -125,9 +130,9 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
 
       setIsLoading(true)
       setError(null)
-      setStatus('Initializing browser engine...')
-
       const engineKind = selectGestureEngine(process.env.NEXT_PUBLIC_GESTURE_ENGINE)
+      const engineLabel = engineKind === 'yolo' ? 'YOLO engine' : 'browser engine'
+      setStatus(`Initializing ${engineLabel}...`)
       const callbacks = {
         onResult: (r: BrowserGestureResult) => {
           let validated = false
@@ -196,7 +201,7 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
       try {
         await engine.initialize(videoElement, canvasElement)
         setIsInitialized(true)
-        setStatus('Browser engine ready')
+        setStatus(`${engineLabel.charAt(0).toUpperCase() + engineLabel.slice(1)} ready`)
 
         if (optionsRef.current.autoStart) {
           await engine.start()
@@ -204,12 +209,12 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
         }
       } catch (err) {
         const e = err instanceof Error ? err : new Error(String(err))
-        console.error('[gesture] Browser engine init failed:', e)
+        console.error(`[gesture] ${engineLabel} init failed:`, e)
         engineRef.current = null
         setError(e)
         optionsRef.current.onError?.(e)
         setIsInitialized(false)
-        setStatus('Browser engine initialization failed')
+        setStatus(`${engineLabel.charAt(0).toUpperCase() + engineLabel.slice(1)} initialization failed`)
       } finally {
         setIsLoading(false)
       }
