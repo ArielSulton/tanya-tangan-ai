@@ -9,7 +9,7 @@ export const cSign = new GestureDescription('C')
 //     ],
 //     [
 //       "Index",
-//       "Half Curl",
+//       "No Curl",
 //       "Diagonal Up Right"
 //     ],
 //     [

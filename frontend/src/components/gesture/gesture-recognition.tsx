@@ -28,6 +28,9 @@ interface GestureResult {
   mediapipe_bbox?: Bbox
   yolo_bbox?: Bbox
   validated?: boolean
+  /** Discriminator for word-formation: static = char concat, dynamic = word
+   *  with space separator + underscore→space display normalization. */
+  gestureType?: 'static' | 'dynamic'
 }
 
 interface GestureRecognitionProps {
@@ -97,20 +100,28 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     setConfidence(result.confidence)
 
     if (result.validated) {
-      addLetterToWord(result.letter)
+      addLetterToWord(result.letter, result.gestureType ?? 'static')
       setStabilityCount(0)
       if (onLetterDetected) onLetterDetected(result.letter, result.confidence)
     }
   }
 
-  // Add letter to current word
+  // Add letter or word to current sentence.
+  //   - static  → concat as-is (e.g., S+A+Y+A → "SAYA")
+  //   - dynamic → underscores become spaces, space separator from previous
+  //               output (e.g., "terima_kasih" + "yang" → "terima kasih yang";
+  //               "SAYA" + "terima_kasih" → "SAYA terima kasih")
   const addLetterToWord = useCallback(
-    (letter: string) => {
+    (letter: string, gestureType: 'static' | 'dynamic') => {
       const mappedLetter = letterMapping[letter] ?? letter
+      const display = gestureType === 'dynamic' ? mappedLetter.replace(/_/g, ' ') : mappedLetter
       setCurrentWord((prev) => {
         if (prev.length >= maxWordLength) return prev
-        const newWord = prev + mappedLetter
-        setDetectedLetters((p) => [...p, mappedLetter])
+        // Dynamic emissions need a space separator unless the word is the
+        // very first token. Static letters concat tight.
+        const needsSpace = gestureType === 'dynamic' && prev.length > 0
+        const newWord = needsSpace ? prev + ' ' + display : prev + display
+        setDetectedLetters((p) => [...p, display])
         if (enableWordFormation && onWordFormed) {
           queueMicrotask(() => onWordFormed(newWord))
         }
@@ -172,7 +183,6 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     if (!ctx) return
 
     const drawFrame = () => {
-      const _result = gestureResultRef.current
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       animationFrameRef.current = requestAnimationFrame(drawFrame)
     }

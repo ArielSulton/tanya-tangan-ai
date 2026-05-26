@@ -9,8 +9,8 @@ export const eSign = new GestureDescription('E')
 //     ],
 //     [
 //       "Index",
-//       "Half Curl",
-//       "Diagonal Up Right"
+//       "Full Curl",
+//       "Vertical Up"
 //     ],
 //     [
 //       "Middle",
@@ -31,7 +31,7 @@ export const eSign = new GestureDescription('E')
 
 //Thumb
 eSign.addCurl(Finger.Thumb, FingerCurl.HalfCurl, 1.0)
-eSign.addDirection(Finger.Index, FingerDirection.VerticalUp, 0.7)
+eSign.addDirection(Finger.Thumb, FingerDirection.VerticalUp, 0.7)
 
 //Index
 eSign.addCurl(Finger.Index, FingerCurl.FullCurl, 1)

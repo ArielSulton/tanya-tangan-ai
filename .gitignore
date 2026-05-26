@@ -101,6 +101,7 @@ backend/logs/
 ._*
 .Spotlight-V100
 .Trashes
+.clone/
 ehthumbs.db
 Thumbs.db
 
@@ -160,6 +161,21 @@ QWEN.md
 # Reference
 superpowers/
 reference/
+# Un-ignore docs/reference/ dir only (needed as stepping stone — reference/ pattern above blocks it).
+# Contents of docs/reference/ other than revisi/ remain untracked.
+!docs/reference/
+# Allow only the revisi/ subtree; block artifacts so they stay untracked.
+!docs/reference/revisi/
+!docs/reference/revisi/build/
+!docs/reference/revisi/build/**
+!docs/reference/revisi/assets/
+!docs/reference/revisi/assets/.gitkeep
+!docs/reference/revisi/output/
+!docs/reference/revisi/output/.gitkeep
+docs/reference/revisi/build/__pycache__/
+docs/reference/revisi/build/**/__pycache__/
+docs/reference/revisi/output/*.docx
+docs/reference/revisi/output/*.pdf
 
 # Database files (if any local)
 /frontend/drizzle/meta

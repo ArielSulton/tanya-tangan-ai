@@ -6,6 +6,7 @@
 
 import { HandPoseService, HandPoseDetection, drawHand } from './handpose-service'
 import { SIBI_CONFIG } from '../config/sibi-config'
+import type { RawHand } from '../../gesture/types'
 
 export interface GestureRecognitionResult {
   letter: string
@@ -35,16 +36,24 @@ export class GestureRecognitionService {
   private isInitialized = false
   private isRunning = false
   private lastProcessingTime = 0
+  private lastDrawTime = 0
   private processingQueue: HandPoseDetection[] = []
   private smoothingBuffer: GestureRecognitionResult[] = []
   private videoElement: HTMLVideoElement | null = null
   private canvasElement: HTMLCanvasElement | null = null
   private animationFrameId: number | null = null
+  // Decoupled draw state: detection loop updates these; a separate rAF-driven
+  // draw loop reads them at display rate so the skeleton stays painted between
+  // detection ticks (detection ~7fps debounced; display ~60fps).
+  private latestDetections: HandPoseDetection[] = []
+  private latestDetectionsTime = 0
+  private drawAnimationFrameId: number | null = null
 
   // Callbacks
   private onResultCallback: ((result: GestureRecognitionResult) => void) | null = null
   private onErrorCallback: ((error: Error) => void) | null = null
   private onStatusCallback: ((status: string) => void) | null = null
+  private onRawHandsCallback: ((raws: RawHand[]) => void) | null = null
 
   // Configuration
   private config: Required<GestureRecognitionConfig> = {
@@ -149,6 +158,7 @@ export class GestureRecognitionService {
       this.updateStatus('Starting gesture recognition...')
       this.isRunning = true
       this.startProcessingLoop()
+      this.startDrawLoop()
       this.updateStatus('Gesture recognition started')
     } catch (error) {
       this.onError(error as Error)
@@ -173,9 +183,14 @@ export class GestureRecognitionService {
         cancelAnimationFrame(this.animationFrameId)
         this.animationFrameId = null
       }
+      if (this.drawAnimationFrameId) {
+        cancelAnimationFrame(this.drawAnimationFrameId)
+        this.drawAnimationFrameId = null
+      }
 
       this.processingQueue = []
       this.smoothingBuffer = []
+      this.latestDetections = []
       this.updateStatus('Gesture recognition stopped')
     } catch (error) {
       this.onError(error as Error)
@@ -202,6 +217,17 @@ export class GestureRecognitionService {
    */
   setOnStatus(callback: (status: string) => void): void {
     this.onStatusCallback = callback
+  }
+
+  /**
+   * Set callback for raw multi-hand detections (Phase 2A pipeline consumer).
+   * Fires every processed frame with all detected hands in `RawHand` shape
+   * (positional, before sort/normalize). Used by BrowserGestureEngine to
+   * feed the 2-hand feature pipeline without spinning up a second
+   * HandPoseService — single model load, multiple consumers.
+   */
+  setOnRawHands(callback: (raws: RawHand[]) => void): void {
+    this.onRawHandsCallback = callback
   }
 
   /**
@@ -232,6 +258,17 @@ export class GestureRecognitionService {
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Hand detection timeout')), 1000)),
         ])
 
+        // Phase 2A: publish raw hands to any subscribed pipeline before
+        // running fingerpose classification. Reusing the single HandPose
+        // model load — no second inference call.
+        if (this.onRawHandsCallback) {
+          const raws: RawHand[] = handDetections.map((d) => ({
+            landmarks: d.landmarks.map((lm) => ({ x: lm.x, y: lm.y, z: lm.z })),
+            confidence: d.confidence,
+          }))
+          this.onRawHandsCallback(raws)
+        }
+
         if (handDetections.length > 0) {
           // Take the most confident hand detection
           const bestResult = handDetections.reduce((best, current) =>
@@ -256,8 +293,9 @@ export class GestureRecognitionService {
             processingTime: gestureResult.processingTime,
           }
 
-          // Draw hand landmarks on canvas (non-blocking)
-          requestAnimationFrame(() => this.drawHandsOnCanvas(handDetections))
+          // Update draw state — the separate draw loop will paint at 60fps.
+          this.latestDetections = handDetections
+          this.latestDetectionsTime = now
 
           // Apply smoothing if enabled
           if (this.config.processingOptions.enableSmoothing) {
@@ -269,8 +307,10 @@ export class GestureRecognitionService {
             this.emitResult(recognitionResult)
           }
         } else {
-          // Clear canvas if no hands detected (non-blocking)
-          requestAnimationFrame(() => this.clearCanvas())
+          // No hands this tick; just note the time. The draw loop decides
+          // whether to clear based on staleness.
+          this.latestDetections = []
+          this.latestDetectionsTime = now
         }
       } catch (error) {
         // Handle specific errors differently
@@ -299,6 +339,28 @@ export class GestureRecognitionService {
 
     // Start the loop
     void processFrame()
+  }
+
+  /**
+   * Draw loop — runs at display refresh rate (rAF, ~60fps) and paints
+   * the most recent detected landmarks every tick. Decoupled from the
+   * (debounced, slower) detection loop so the skeleton overlay stays
+   * smooth instead of strobing at detection rate.
+   */
+  private startDrawLoop(): void {
+    const STALE_AFTER_MS = 500
+    const tick = () => {
+      if (!this.isRunning) return
+      const now = Date.now()
+      const fresh = now - this.latestDetectionsTime < STALE_AFTER_MS
+      if (fresh && this.latestDetections.length > 0) {
+        this.drawHandsOnCanvas(this.latestDetections)
+      } else {
+        this.clearCanvas()
+      }
+      this.drawAnimationFrameId = requestAnimationFrame(tick)
+    }
+    this.drawAnimationFrameId = requestAnimationFrame(tick)
   }
 
   /**

@@ -1,0 +1,19 @@
+# Collected datasets (large CSVs, never tracked)
+keypoint_csv/sibi.csv
+point_history_csv/dynamic.csv
+
+# Python virtualenv
+.venv/
+__pycache__/
+*.pyc
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Trained model intermediate artifacts (only converted TFJS goes to public/)
+*.hdf5
+*.h5
+*.keras
+*.tflite
+saved_model/
+*_saved_model/

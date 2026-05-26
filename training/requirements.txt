@@ -1,0 +1,31 @@
+# Training dependencies — minimal pinning. TF 2.16.1 strictly pins
+# ml-dtypes / numpy / protobuf to specific versions, so we let pip resolve
+# those transitively instead of over-constraining.
+#
+# The earlier kernel crash on `import tensorflow` (ml_dtypes.float8_e3m4
+# AttributeError) was caused by a globally-installed JAX picking up old
+# ml-dtypes. In a clean venv with TF as the only ML stack pulled in,
+# ml-dtypes 0.3.x ships transitively and there's no conflict.
+#
+# Workflow:
+#   cd training
+#   python3 -m venv .venv && source .venv/bin/activate
+#   pip install --upgrade pip
+#   pip install -r requirements.txt
+#   python -c "import tensorflow as tf; print(tf.__version__)"   # verify
+#   jupyter notebook  # or pick the .venv kernel in VS Code
+
+# Core ML stack — TF 2.16.1 is the last Python-3.10-compatible release.
+# (Python 3.11+ users can go up to TF 2.17 / 2.18 but the notebooks don't
+# rely on any newer-only features, so this version is fine for everyone.)
+tensorflow==2.16.1
+
+# Notebook training utilities — version ranges only, no strict pins.
+scikit-learn>=1.4,<2.0
+pandas>=2.0,<3.0
+matplotlib>=3.7,<4.0
+seaborn>=0.13,<1.0
+
+# TFJS conversion — produces frontend/public/models/<x>/{model.json,labels.json}
+# from the .tflite output.
+tensorflowjs>=4.10,<5.0

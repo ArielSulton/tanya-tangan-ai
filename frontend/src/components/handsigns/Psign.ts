@@ -14,13 +14,13 @@ export const pSign = new GestureDescription('P')
 //     ],
 //     [
 //       "Middle",
-//       "Full Curl",
-//       "Horizontal Right"
+//       "Half Curl",
+//       "Diagonal Down Right"
 //     ],
 //     [
 //       "Ring",
 //       "Full Curl",
-//       "Horizontal Right"
+//       "Diagonal Down Right"
 //     ],
 //     [
 //       "Pinky",
@@ -31,7 +31,7 @@ export const pSign = new GestureDescription('P')
 
 //Thumb
 pSign.addCurl(Finger.Thumb, FingerCurl.NoCurl, 1.0)
-pSign.addDirection(Finger.Index, FingerDirection.HorizontalRight, 0.7)
+pSign.addDirection(Finger.Thumb, FingerDirection.HorizontalRight, 0.7)
 
 //Index
 pSign.addCurl(Finger.Index, FingerCurl.NoCurl, 1)

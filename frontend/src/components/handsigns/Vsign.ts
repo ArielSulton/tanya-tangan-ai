@@ -4,7 +4,7 @@ export const vSign = new GestureDescription('V')
 // [
 //     [
 //       "Thumb",
-//       "No Curl",
+//       "Half Curl",
 //       "Diagonal Up Left"
 //     ],
 //     [

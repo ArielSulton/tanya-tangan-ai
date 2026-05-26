@@ -25,13 +25,13 @@ export const uSign = new GestureDescription('U')
 //     [
 //       "Pinky",
 //       "Full Curl",
-//       "Vertical Up"
+//       "Diagonal Up Left"
 //     ]
 //   ]
 
 //Thumb
 uSign.addCurl(Finger.Thumb, FingerCurl.HalfCurl, 1.0)
-uSign.addDirection(Finger.Index, FingerDirection.DiagonalUpLeft, 0.7)
+uSign.addDirection(Finger.Thumb, FingerDirection.DiagonalUpLeft, 0.7)
 
 //Index
 uSign.addCurl(Finger.Index, FingerCurl.NoCurl, 1)

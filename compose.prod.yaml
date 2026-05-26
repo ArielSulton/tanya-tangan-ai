@@ -33,6 +33,7 @@ services:
         - NEXT_PUBLIC_SIGN_UP_URL=${NEXT_PUBLIC_SIGN_UP_URL}
         - NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_IN_FALLBACK_REDIRECT_URL}
         - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL}
+        - NEXT_PUBLIC_STATIC_ENGINE=${NEXT_PUBLIC_STATIC_ENGINE}
       secrets:
         # Environment Configuration
         - NODE_ENV
@@ -71,6 +72,9 @@ services:
         - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL
         - SUPERADMIN_EMAILS
         - ADMIN_EMAILS
+
+        # Static Gesture Inference
+        - NEXT_PUBLIC_STATIC_ENGINE
 
         # AI Services Configuration
         - GROQ_API_KEY
@@ -157,6 +161,9 @@ services:
       - NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_SIGN_UP_FALLBACK_REDIRECT_URL}
       - SUPERADMIN_EMAILS=${SUPERADMIN_EMAILS}
       - ADMIN_EMAILS=${ADMIN_EMAILS}
+
+      # Static Gesture Inference
+      - NEXT_PUBLIC_STATIC_ENGINE=${NEXT_PUBLIC_STATIC_ENGINE}
 
       # AI Services Configuration
       - GROQ_API_KEY=${GROQ_API_KEY}
@@ -622,3 +629,7 @@ secrets:
     environment: CLOUDFLARE_R2_BUCKET_NAME
   CLOUDFLARE_R2_PUBLIC_URL:
     environment: CLOUDFLARE_R2_PUBLIC_URL
+
+  # Static Gesture Inference
+  NEXT_PUBLIC_STATIC_ENGINE:
+    environment: NEXT_PUBLIC_STATIC_ENGINE

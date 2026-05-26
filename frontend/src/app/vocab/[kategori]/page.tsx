@@ -16,6 +16,11 @@ import { SizeContrastCard } from '@/components/vocab/SizeContrastCard'
 import { IntensityCard } from '@/components/vocab/IntensityCard'
 import { SelectionCard } from '@/components/vocab/SelectionCard'
 import { CombinationCard } from '@/components/vocab/CombinationCard'
+import { BelajarCard } from '@/components/vocab/BelajarCard'
+import { MaafCard } from '@/components/vocab/MaafCard'
+import { SepertiCard } from '@/components/vocab/SepertiCard'
+import { TerimaKasihCard } from '@/components/vocab/TerimaKasihCard'
+import { TolongCard } from '@/components/vocab/TolongCard'
 import type { AdverbSubcategory, SliderConfig, TimelineConfig, CertaintyConfig, GaugeConfig } from '@/lib/adverb-types'
 import { getInteractionComponent } from '@/lib/adverb-types'
 import { ArrowLeft, Loader2, Keyboard, Gamepad2 } from 'lucide-react'
@@ -63,6 +68,29 @@ type LookupResult =
 
 const VALID_CATEGORIES = ['hewan', 'benda', 'alam', 'perasaan', 'kata_keterangan']
 
+// Dynamic SIBI gesture words rendered by hand-rolled visual cards
+// (BelajarCard / MaafCard / SepertiCard / TerimaKasihCard / TolongCard).
+// These bypass the DB lookup so users see the card even when the words
+// aren't seeded yet — without this short-circuit the page falls through
+// to AIFallbackCard ("Kata belum tersedia") for any dynamic SIBI sign.
+const DYNAMIC_GESTURE_WORDS = new Set(['belajar', 'maaf', 'seperti', 'terima kasih', 'tolong'])
+
+function buildSyntheticDynamicWord(text: string, category: string): WordResult {
+  return {
+    id: `synthetic-${text}`,
+    text,
+    category,
+    word_type: 'abstrak',
+    image_url: null,
+    comparison: null,
+    adverb_subcategory: null,
+    slider_config: null,
+    timeline_config: null,
+    certainty_config: null,
+    gauge_config: null,
+  }
+}
+
 export default function VocabKategoriPage() {
   const params = useParams()
   const kategori = params.kategori as string
@@ -82,6 +110,20 @@ export default function VocabKategoriPage() {
   const handleWordFormed = useCallback(
     async (word: string) => {
       if (!word.trim()) return
+
+      // Short-circuit dynamic SIBI gesture words — these are rendered by
+      // dedicated card components regardless of whether the DB has an entry.
+      // Normalize: lowercase + underscore→space so "terima_kasih" matches
+      // "terima kasih". Display preserves the spaced form for readability.
+      const normalized = word.toLowerCase().trim().replace(/_/g, ' ')
+      if (DYNAMIC_GESTURE_WORDS.has(normalized)) {
+        setResult({
+          state: 'found',
+          word: buildSyntheticDynamicWord(normalized, kategori),
+        })
+        return
+      }
+
       setResult({ state: 'loading' })
 
       try {
@@ -240,7 +282,7 @@ export default function VocabKategoriPage() {
                     }}
                     enableWordFormation={true}
                     showAlternatives={false}
-                    letterMapping={kategori === 'kata_keterangan' ? { D: 'DAN' } : {}}
+                    letterMapping={kategori === 'kata_keterangan' ? { D: 'DAN', O: 'DAN' } : {}}
                   />
                 </div>
 
@@ -365,7 +407,10 @@ export default function VocabKategoriPage() {
                   {result.state === 'found' &&
                     result.word.word_type === 'abstrak' &&
                     (() => {
-                      const w = result.word.text.toLowerCase()
+                      // Normalize for matching: lowercase + collapse training-data
+                      // underscores (e.g. "terima_kasih") to spaces so we accept
+                      // both "terima_kasih" and "terima kasih" forms.
+                      const w = result.word.text.toLowerCase().replace(/_/g, ' ')
                       const isStaticCardWord =
                         w === 'besar' || w === 'kecil' || w === 'sangat' || w === 'yang' || w === 'dan'
 
@@ -398,6 +443,45 @@ export default function VocabKategoriPage() {
                             </div>
                           )
                         }
+                      }
+
+                      // Dynamic gesture words (motion-based SIBI signs). Match
+                      // by word text regardless of DB category since these may
+                      // not fit into the existing kata_keterangan bucket.
+                      if (w === 'belajar') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <BelajarCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
+                      }
+                      if (w === 'maaf') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <MaafCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
+                      }
+                      if (w === 'seperti') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <SepertiCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
+                      }
+                      if (w === 'terima kasih') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <TerimaKasihCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
+                      }
+                      if (w === 'tolong') {
+                        return (
+                          <div className="animate-in fade-in slide-in-from-bottom-4 w-full duration-500">
+                            <TolongCard word={result.word.text} category={result.word.category} />
+                          </div>
+                        )
                       }
 
                       const interactionType = getInteractionComponent(

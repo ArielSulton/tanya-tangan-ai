@@ -10,28 +10,28 @@ export const qSign = new GestureDescription('Q')
 //     [
 //       "Index",
 //       "Half Curl",
-//       "Vertical Down"
+//       "Horizontal Right"
 //     ],
 //     [
 //       "Middle",
-//       "Half Curl",
-//       "Vertical Down"
+//       "Full Curl",
+//       "Horizontal Right"
 //     ],
 //     [
 //       "Ring",
-//       "Half Curl",
-//       "Vertical Down"
+//       "Full Curl",
+//       "Diagonal Down Right"
 //     ],
 //     [
 //       "Pinky",
-//       "Half Curl",
-//       "Diagonal Down Left"
+//       "Full Curl",
+//       "Diagonal Down Right"
 //     ]
 //   ]
 
 //Thumb
 qSign.addCurl(Finger.Thumb, FingerCurl.NoCurl, 1.0)
-qSign.addDirection(Finger.Index, FingerDirection.DiagonalDownRight, 0.7)
+qSign.addDirection(Finger.Thumb, FingerDirection.VerticalDown, 0.7)
 
 //Index
 qSign.addCurl(Finger.Index, FingerCurl.HalfCurl, 1)
