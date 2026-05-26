@@ -15,6 +15,8 @@ export interface BrowserGestureResult {
    * Source of the result. 'browser' = in-browser HandPose + Fingerpose.
    * 'yolo-fallback' = legacy backend YOLO endpoint, used when browser init failed.
    * 'yolo' = primary backend YOLOv8 path selected via NEXT_PUBLIC_GESTURE_ENGINE.
+   * 'browser' and 'yolo' are the two primary selectable paths (via NEXT_PUBLIC_GESTURE_ENGINE);
+   * 'yolo-fallback' is the degraded path used only when in-browser init fails.
    */
   source: 'browser' | 'yolo-fallback' | 'yolo'
   /**
@@ -108,6 +110,7 @@ export type MotionState = 'idle' | 'still' | 'moving' | 'motion_end'
 export interface GestureEngineCallbacks {
   onResult?: (result: BrowserGestureResult) => void
   onError?: (error: Error) => void
+  /** Human-readable diagnostic string (NOT an EngineStatus value). */
   onStatus?: (status: string) => void
   onStateChange?: (state: EngineStatus) => void
 }

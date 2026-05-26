@@ -7,7 +7,7 @@
  */
 
 import { GestureRecognitionService, type GestureRecognitionResult } from '../ai/services/gesture-recognition'
-import type { BrowserGestureResult, EngineStatus } from './types'
+import type { BrowserGestureResult, EngineStatus, GestureEngineCallbacks } from './types'
 import { sortHandsByXPosition } from './normalize'
 import { extractFrameFeatures } from './feature-extractor'
 import { MotionDetector } from './motion-detector'
@@ -19,12 +19,9 @@ import { DYNAMIC_BUFFER_DURATION_MS, resampleToN, type TimedPoint } from './reco
 
 type StaticEngineMode = 'fingerpose' | 'mlp'
 
-export interface BrowserGestureEngineCallbacks {
-  onResult?: (result: BrowserGestureResult) => void
-  onError?: (error: Error) => void
-  onStatus?: (status: string) => void
-  onStateChange?: (state: EngineStatus) => void
-}
+// Retained as an alias for the shared engine callback contract so existing
+// references keep working; new engines should use GestureEngineCallbacks directly.
+export type BrowserGestureEngineCallbacks = GestureEngineCallbacks
 
 export class BrowserGestureEngine {
   private service: GestureRecognitionService | null = null
