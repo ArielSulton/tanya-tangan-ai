@@ -10,7 +10,10 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { BrowserGestureEngine } from '@/lib/gesture/engine'
-import type { BrowserGestureResult } from '@/lib/gesture/types'
+import { YoloGestureEngine } from '@/lib/gesture/yolo-engine'
+import { selectGestureEngine } from '@/lib/gesture/engine-selector'
+import { decideYoloEmission, type YoloDedupeState } from '@/lib/gesture/yolo-validation'
+import type { BrowserGestureResult, GestureEngine } from '@/lib/gesture/types'
 
 interface Bbox {
   x1: number
@@ -90,7 +93,7 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
   const [status, setStatus] = useState('Not initialized')
   const [lastResult, setLastResult] = useState<GestureResult | null>(null)
 
-  const engineRef = useRef<BrowserGestureEngine | null>(null)
+  const engineRef = useRef<GestureEngine | null>(null)
   const optionsRef = useRef(options)
   optionsRef.current = options
 
@@ -103,10 +106,14 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
   const lastEmittedLetterRef = useRef<string | null>(null)
   const staleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // YOLO path only: latch so a backend-validated held letter emits once.
+  const yoloDedupeRef = useRef<YoloDedupeState>({ lastEmittedLetter: null })
+
   const resetStreak = useCallback(() => {
     streakLetterRef.current = null
     streakCountRef.current = 0
     lastEmittedLetterRef.current = null
+    yoloDedupeRef.current = { lastEmittedLetter: null }
   }, [])
 
   const initialize = useCallback(
@@ -120,15 +127,22 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
       setError(null)
       setStatus('Initializing browser engine...')
 
-      const engine = new BrowserGestureEngine({
-        onResult: (r) => {
-          // Dynamic results fire ONCE per motion_end (not continuous per
-          // frame), so a frame-streak validator would never trigger them.
-          // Auto-validate dynamic results that clear the confidence floor;
-          // reset the static streak so the next static letter still has to
-          // build its own hold from scratch.
+      const engineKind = selectGestureEngine(process.env.NEXT_PUBLIC_GESTURE_ENGINE)
+      const callbacks = {
+        onResult: (r: BrowserGestureResult) => {
           let validated = false
-          if (r.gestureType === 'dynamic') {
+          if (r.validated !== undefined) {
+            // YOLO engine: backend already validated (TemporalValidationService).
+            // Trust it, but dedupe so a held letter is only added once.
+            const decision = decideYoloEmission(yoloDedupeRef.current, r.letter, r.validated)
+            yoloDedupeRef.current = decision.nextState
+            validated = decision.validated
+          } else if (r.gestureType === 'dynamic') {
+            // Dynamic results fire ONCE per motion_end (not continuous per
+            // frame), so a frame-streak validator would never trigger them.
+            // Auto-validate dynamic results that clear the confidence floor;
+            // reset the static streak so the next static letter still has to
+            // build its own hold from scratch.
             if (r.confidence >= DYNAMIC_VALIDATION_MIN_CONFIDENCE) {
               validated = true
             }
@@ -136,7 +150,7 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
             streakCountRef.current = 0
             lastEmittedLetterRef.current = null
           } else {
-            // Static path: validate by consecutive-frame hold detection.
+            // Static path (MediaPipe): validate by consecutive-frame hold.
             if (r.letter === streakLetterRef.current) {
               streakCountRef.current += 1
             } else {
@@ -162,15 +176,18 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
             resetStreak()
           }, RESULT_STALE_MS)
         },
-        onError: (e) => {
+        onError: (e: Error) => {
           setError(e)
           optionsRef.current.onError?.(e)
         },
-        onStatus: (s) => {
+        onStatus: (s: string) => {
           setStatus(s)
           optionsRef.current.onStatus?.(s)
         },
-      })
+      }
+
+      const engine: GestureEngine =
+        engineKind === 'yolo' ? new YoloGestureEngine(callbacks) : new BrowserGestureEngine(callbacks)
 
       // Set ref immediately so a concurrent initialize() call bails out
       // instead of constructing a second engine.
