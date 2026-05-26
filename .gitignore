@@ -101,6 +101,7 @@ backend/logs/
 ._*
 .Spotlight-V100
 .Trashes
+.clone/
 ehthumbs.db
 Thumbs.db
 
