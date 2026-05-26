@@ -12,7 +12,7 @@
  * BrowserGestureEngine with no other changes.
  */
 
-import gestureClient from '@/lib/api/gesture-client'
+import { GestureAPIClient } from '@/lib/api/gesture-client'
 import { adaptYoloResponse } from './yolo-adapter'
 import type { BrowserGestureResult, EngineStatus, GestureEngine, GestureEngineCallbacks } from './types'
 
@@ -23,12 +23,17 @@ const CAPTURE_INTERVAL_MS = 150
 const JPEG_QUALITY = 0.6
 
 export class YoloGestureEngine implements GestureEngine {
+  // Dedicated client: NO retries + short timeout. The shared singleton retries
+  // 3× with exponential backoff (~16s), which would freeze this real-time frame
+  // loop on a transient error. Here a failed frame is simply dropped and the
+  // next tick (≈150ms later) tries again.
+  private readonly client = new GestureAPIClient(process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000', 5000, 1)
   private callbacks: GestureEngineCallbacks
   private state: EngineStatus = 'uninitialized'
   private video: HTMLVideoElement | null = null
   // generateSessionId returns a branded SessionId (extends string) — assign
   // directly; no cast needed since SessionId is a subtype of string.
-  private sessionId: ReturnType<typeof gestureClient.generateSessionId> = gestureClient.generateSessionId()
+  private readonly sessionId: ReturnType<GestureAPIClient['generateSessionId']>
   private captureCanvas: HTMLCanvasElement | null = null
   private stream: MediaStream | null = null
   private timer: ReturnType<typeof setTimeout> | null = null
@@ -39,6 +44,7 @@ export class YoloGestureEngine implements GestureEngine {
 
   constructor(callbacks: GestureEngineCallbacks = {}) {
     this.callbacks = callbacks
+    this.sessionId = this.client.generateSessionId()
   }
 
   getState(): EngineStatus {
@@ -111,7 +117,7 @@ export class YoloGestureEngine implements GestureEngine {
       if (frame) {
         this.inflight = true
         try {
-          const res = await gestureClient.recognizeFrame(frame, this.sessionId)
+          const res = await this.client.recognizeFrame(frame, this.sessionId)
           if (res.success) {
             const adapted = adaptYoloResponse(res.data)
             if (adapted) this.emit(adapted)

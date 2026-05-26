@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
     // /models/static/. If 'mlp' is set but model files are missing, the
     // engine auto-falls-back to fingerpose at runtime.
     NEXT_PUBLIC_STATIC_ENGINE: process.env.NEXT_PUBLIC_STATIC_ENGINE ?? 'fingerpose',
+    // Gesture inference engine selector. 'yolo' streams frames to the backend
+    // YOLOv8 endpoint; anything else (default: empty → 'mediapipe') uses the
+    // in-browser MediaPipe/fingerpose engine.
+    NEXT_PUBLIC_GESTURE_ENGINE: process.env.NEXT_PUBLIC_GESTURE_ENGINE ?? '',
   },
 
   // Generate build ID to force dynamic rendering for problematic pages
