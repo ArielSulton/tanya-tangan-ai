@@ -100,6 +100,7 @@ export default function VocabKalimatPage() {
     if (manualWord.trim() && pending.state !== 'checking') {
       addWord(manualWord.trim())
       setManualWord('')
+      inputRef.current?.focus()
     }
   }
 

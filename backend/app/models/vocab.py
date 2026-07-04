@@ -139,6 +139,7 @@ FallbackResult = FallbackResponse
 
 class FallbackAnyRequest(BaseModel):
     gesture_input: str = Field(min_length=1, max_length=100)
+    session_id: Optional[str] = None
 
 
 class FallbackAnyResponse(BaseModel):

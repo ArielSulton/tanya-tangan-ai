@@ -101,6 +101,7 @@ async def vocab_fallback_any(
             status_code=503,
             detail="Layanan pencarian kata tidak tersedia sementara.",
         )
+    await log_word_request(body.gesture_input, result.suggested_word, body.session_id, db)
     return result
 
 

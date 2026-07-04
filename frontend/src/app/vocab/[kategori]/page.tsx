@@ -24,6 +24,7 @@ import { TolongCard } from '@/components/vocab/TolongCard'
 import type { AdverbSubcategory, SliderConfig, TimelineConfig, CertaintyConfig, GaugeConfig } from '@/lib/adverb-types'
 import { getInteractionComponent } from '@/lib/adverb-types'
 import { CATEGORY_LABELS } from '@/lib/vocab/category-labels'
+import { isDynamicGestureWord } from '@/lib/vocab/sentence-composer'
 import { ArrowLeft, Loader2, Keyboard, Gamepad2 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -61,12 +62,6 @@ type LookupResult =
 
 const VALID_CATEGORIES = ['hewan', 'benda', 'alam', 'perasaan', 'kata_keterangan']
 
-// Dynamic SIBI gesture words rendered by hand-rolled visual cards
-// (BelajarCard / MaafCard / SepertiCard / TerimaKasihCard / TolongCard).
-// These bypass the DB lookup so users see the card even when the words
-// aren't seeded yet — without this short-circuit the page falls through
-// to AIFallbackCard ("Kata belum tersedia") for any dynamic SIBI sign.
-const DYNAMIC_GESTURE_WORDS = new Set(['belajar', 'maaf', 'seperti', 'terima kasih', 'tolong'])
 
 function buildSyntheticDynamicWord(text: string, category: string): WordResult {
   return {
@@ -109,7 +104,7 @@ export default function VocabKategoriPage() {
       // Normalize: lowercase + underscore→space so "terima_kasih" matches
       // "terima kasih". Display preserves the spaced form for readability.
       const normalized = word.toLowerCase().trim().replace(/_/g, ' ')
-      if (DYNAMIC_GESTURE_WORDS.has(normalized)) {
+      if (isDynamicGestureWord(normalized)) {
         setResult({
           state: 'found',
           word: buildSyntheticDynamicWord(normalized, kategori),

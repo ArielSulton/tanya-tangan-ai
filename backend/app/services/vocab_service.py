@@ -134,11 +134,10 @@ async def _fetch_category_vocab(category: str, db: AsyncSession) -> List[str]:
 
 
 async def _fetch_all_vocab(db: AsyncSession) -> List[str]:
-    """Fetch all word texts across all 5 categories combined."""
-    all_words: List[str] = []
-    for category in CATEGORIES:
-        all_words.extend(await _fetch_category_vocab(category, db))
-    return all_words
+    """Fetch all word texts across all 5 categories combined, in a single query."""
+    result = await db.execute(select(Word.text))
+    rows = result.scalars().all()
+    return [r.lower().strip() for r in rows]
 
 
 async def _fuzzy_lookup(
