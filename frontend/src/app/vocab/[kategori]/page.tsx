@@ -23,18 +23,11 @@ import { TerimaKasihCard } from '@/components/vocab/TerimaKasihCard'
 import { TolongCard } from '@/components/vocab/TolongCard'
 import type { AdverbSubcategory, SliderConfig, TimelineConfig, CertaintyConfig, GaugeConfig } from '@/lib/adverb-types'
 import { getInteractionComponent } from '@/lib/adverb-types'
+import { CATEGORY_LABELS } from '@/lib/vocab/category-labels'
 import { ArrowLeft, Loader2, Keyboard, Gamepad2 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-
-const CATEGORY_LABELS: Record<string, string> = {
-  hewan: 'Hewan',
-  benda: 'Benda',
-  alam: 'Alam',
-  perasaan: 'Perasaan',
-  kata_keterangan: 'Kata Keterangan Abstrak',
-}
 
 interface WordComparison {
   low_image_url: string

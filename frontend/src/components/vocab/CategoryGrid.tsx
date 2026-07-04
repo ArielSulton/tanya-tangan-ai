@@ -46,6 +46,17 @@ const CATEGORIES = [
     overlayColor: 'from-stone-900 via-stone-800/90 to-transparent',
     btnColor: 'text-stone-900 hover:bg-stone-50',
   },
+  {
+    slug: 'kalimat',
+    label: 'Latihan Kalimat',
+    count: 'Baru',
+    description:
+      'Susun kalimatmu sendiri dengan merangkai beberapa kata isyarat berturut-turut, dari kategori mana saja.',
+    tags: ['Latihan', 'Baru'],
+    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600&h=800',
+    overlayColor: 'from-stone-900 via-stone-800/90 to-transparent',
+    btnColor: 'text-stone-900 hover:bg-stone-50',
+  },
 ]
 
 export function CategoryGrid() {
