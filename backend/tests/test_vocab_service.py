@@ -23,3 +23,8 @@ def test_categories_constant_has_five_items():
     assert len(CATEGORIES) == 5
     assert "hewan" in CATEGORIES
     assert "kata_keterangan" in CATEGORIES
+
+
+def test_lookup_or_suggest_any_category_is_callable():
+    from app.services.vocab_service import lookup_or_suggest_any_category
+    assert callable(lookup_or_suggest_any_category)

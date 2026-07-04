@@ -19,7 +19,7 @@ from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
 from app.db.models import Word, WordRequest
-from app.models.vocab import FallbackResult, WordComparisonSchema, WordResult
+from app.models.vocab import FallbackAnyResult, FallbackResult, WordComparisonSchema, WordResult
 from app.services.typo_correction_service import (
     CORRECTION_THRESHOLDS,
     TypoCorrectionService,
@@ -59,6 +59,11 @@ async def lookup_word(
     if not db_word:
         return None
 
+    return await _word_to_result(db_word)
+
+
+async def _word_to_result(db_word: Word) -> WordResult:
+    """Map a DB Word row (with comparison eager-loaded) to the WordResult schema."""
     comparison = None
     if db_word.word_type == "abstrak" and db_word.comparison:
         comparison = WordComparisonSchema(
@@ -105,6 +110,20 @@ async def lookup_word(
     )
 
 
+async def _lookup_word_any_category(word: str, db: AsyncSession) -> Optional[WordResult]:
+    """Find a word by exact text match across all categories (no category filter)."""
+    result = await db.execute(
+        select(Word)
+        .options(selectinload(Word.comparison))
+        .where(Word.text == word.strip().lower())
+        .limit(1)
+    )
+    db_word = result.scalar_one_or_none()
+    if not db_word:
+        return None
+    return await _word_to_result(db_word)
+
+
 async def _fetch_category_vocab(category: str, db: AsyncSession) -> List[str]:
     """Fetch all word texts for a given category from DB.
     Used as candidates for fuzzy matching and LLM context.
@@ -112,6 +131,14 @@ async def _fetch_category_vocab(category: str, db: AsyncSession) -> List[str]:
     result = await db.execute(select(Word.text).where(Word.category == category))
     rows = result.scalars().all()
     return [r.lower().strip() for r in rows]
+
+
+async def _fetch_all_vocab(db: AsyncSession) -> List[str]:
+    """Fetch all word texts across all 5 categories combined."""
+    all_words: List[str] = []
+    for category in CATEGORIES:
+        all_words.extend(await _fetch_category_vocab(category, db))
+    return all_words
 
 
 async def _fuzzy_lookup(
@@ -143,29 +170,31 @@ async def _fuzzy_lookup_enhanced(
     db: AsyncSession,
     correction_service: TypoCorrectionService,
 ) -> Tuple[Optional[str], float]:
-    """Enhanced fuzzy lookup using Jaccard + Levenshtein similarity scoring.
-
-    Fetches all words in the category, computes similarity scores against
-    each candidate, and returns the best match with its confidence score.
-
-    Returns (best_match_text, confidence_score) or (None, 0.0).
+    """Enhanced fuzzy lookup using Jaccard + Levenshtein similarity scoring,
+    scoped to a single category's candidates.
     """
     candidates = await _fetch_category_vocab(category, db)
     if not candidates:
         return None, 0.0
+    return _score_best_candidate(gesture_input.strip().lower(), candidates, correction_service)
 
-    input_lower = gesture_input.strip().lower()
+
+def _score_best_candidate(
+    input_lower: str,
+    candidates: List[str],
+    correction_service: TypoCorrectionService,
+) -> Tuple[Optional[str], float]:
+    """Score every candidate against input_lower and return the best match
+    above the layer-2 fuzzy threshold, or (None, 0.0).
+    """
     best_match: Optional[str] = None
     best_score = 0.0
 
     for candidate in candidates:
-        # Combined similarity: Jaccard (0.7) + character overlap (0.3)
         similarity = correction_service.compute_similarity_score(input_lower, candidate)
-        # Also compute true Levenshtein similarity for short words
         levenshtein_sim = correction_service.compute_levenshtein_similarity(
             input_lower, candidate
         )
-        # Weight: prefer Jaccard+overlap for multi-word, Levenshtein for single short words
         if len(input_lower) <= 5 and len(candidate) <= 5:
             combined = 0.4 * similarity + 0.6 * levenshtein_sim
         else:
@@ -178,27 +207,40 @@ async def _fuzzy_lookup_enhanced(
     threshold = CORRECTION_THRESHOLDS["layer2_fuzzy_threshold"]
     if best_score >= threshold and best_match:
         logger.info(
-            f'Layer 2 fuzzy match: "{input_lower}" ~ "{best_match}" '
+            f'Fuzzy match: "{input_lower}" ~ "{best_match}" '
             f"(score={best_score:.3f}, threshold={threshold})"
         )
         return best_match, best_score
 
     logger.debug(
-        f'Layer 2 no match above threshold for "{input_lower}" '
+        f'No fuzzy match above threshold for "{input_lower}" '
         f'(best="{best_match}", score={best_score:.3f})'
     )
     return None, 0.0
 
 
+async def _fuzzy_lookup_any_category(
+    gesture_input: str,
+    db: AsyncSession,
+    correction_service: TypoCorrectionService,
+) -> Tuple[Optional[str], float]:
+    """Enhanced fuzzy lookup scoped across all 5 categories' candidates combined."""
+    candidates = await _fetch_all_vocab(db)
+    if not candidates:
+        return None, 0.0
+    return _score_best_candidate(gesture_input.strip().lower(), candidates, correction_service)
+
+
 async def _llm_correct(
     gesture_input: str,
-    category: str,
+    category: Optional[str],
     candidates: List[str],
 ) -> Tuple[Optional[str], str]:
     """Layer 3: LLM correction with DB vocab list as context.
 
     Unlike tunarasa's RAG-based approach, this uses the category's
     vocabulary list as context — no RAG documents needed.
+    `category=None` means the candidate list spans all categories.
 
     Returns (corrected_word_or_None, explanation).
     """
@@ -207,6 +249,7 @@ async def _llm_correct(
         return None, f"Kata '{gesture_input}' belum tersedia dalam kamus kami."
 
     candidate_list = ", ".join(candidates[:50]) if candidates else "(kosong)"
+    category_line = f"KATEGORI: {category}" if category else "KATEGORI: (seluruh kategori)"
 
     try:
         llm = ChatGroq(
@@ -219,8 +262,8 @@ async def _llm_correct(
         prompt = (
             f"Koreksi kata dari gerakan isyarat SIBI yang salah dikenali.\n\n"
             f"INPUT: {gesture_input}\n"
-            f"KATEGORI: {category}\n"
-            f"DAFTAR KATA DALAM KATEGORI: {candidate_list}\n\n"
+            f"{category_line}\n"
+            f"DAFTAR KATA: {candidate_list}\n\n"
             f"ATURAN:\n"
             f"1. Cari kata yang paling mirip dari DAFTAR KATA\n"
             f"2. Jika tidak ada yang cocok, kembalikan kata asli\n"
@@ -238,7 +281,6 @@ async def _llm_correct(
             else str(response).strip()
         )
 
-        # Parse "KATA|PENJELASAN" format
         if "|" in content:
             parts = content.split("|", 1)
             corrected = parts[0].strip()
@@ -249,7 +291,6 @@ async def _llm_correct(
                 f"Kata '{gesture_input}' mungkin yang dimaksud adalah '{content}'."
             )
 
-        # Clean markdown artifacts
         corrected = corrected.strip("*").strip("`").strip('"').strip("'")
 
         logger.info(
@@ -423,3 +464,101 @@ async def log_word_request(
     except Exception as e:
         logger.warning(f"Failed to persist word_request for '{gesture_input}': {e}")
         await db.rollback()
+
+
+async def fallback_suggest_any_category(gesture_input: str, db: AsyncSession) -> FallbackResult:
+    """Same 3-layer correction cascade as fallback_suggest, but the candidate
+    pool spans all 5 categories combined instead of one.
+    """
+    correction_service = get_typo_correction_service()
+    input_lower = gesture_input.strip().lower()
+
+    # Layer 1: SIBI confusion map (already category-agnostic)
+    layer1_result = correction_service.correct_layer1(input_lower)
+    if layer1_result.corrected_word:
+        exact_match = await _lookup_word_any_category(layer1_result.corrected_word, db)
+        if exact_match:
+            explanation = await _generate_explanation(exact_match.text)
+            return FallbackResult(
+                suggested_word=exact_match.text,
+                explanation=explanation,
+                correction_layer="layer1_sibi",
+                correction_confidence=layer1_result.confidence,
+            )
+
+    # Layer 2: combined fuzzy lookup across all categories
+    fuzzy_match, fuzzy_confidence = await _fuzzy_lookup_any_category(
+        input_lower, db, correction_service
+    )
+    if (
+        fuzzy_match
+        and fuzzy_confidence >= CORRECTION_THRESHOLDS["layer2_fuzzy_threshold"]
+    ):
+        explanation = await _generate_explanation(fuzzy_match)
+        return FallbackResult(
+            suggested_word=fuzzy_match,
+            explanation=explanation,
+            correction_layer="layer2_fuzzy",
+            correction_confidence=fuzzy_confidence,
+        )
+
+    if layer1_result.corrected_word:
+        fuzzy_match_l1, fuzzy_conf_l1 = await _fuzzy_lookup_any_category(
+            layer1_result.corrected_word, db, correction_service
+        )
+        if (
+            fuzzy_match_l1
+            and fuzzy_conf_l1 >= CORRECTION_THRESHOLDS["layer2_fuzzy_threshold"]
+        ):
+            explanation = await _generate_explanation(fuzzy_match_l1)
+            return FallbackResult(
+                suggested_word=fuzzy_match_l1,
+                explanation=explanation,
+                correction_layer="layer1_sibi+fuzzy",
+                correction_confidence=layer1_result.confidence * fuzzy_conf_l1,
+            )
+
+    # Layer 3: LLM correction with combined vocab context
+    candidates = await _fetch_all_vocab(db)
+    corrected_llm, explanation_llm = await _llm_correct(input_lower, None, candidates)
+
+    if corrected_llm and corrected_llm.lower() != input_lower:
+        llm_match = await _lookup_word_any_category(corrected_llm.lower(), db)
+        if llm_match:
+            return FallbackResult(
+                suggested_word=llm_match.text,
+                explanation=explanation_llm,
+                correction_layer="layer3_llm",
+                correction_confidence=CORRECTION_THRESHOLDS["layer3_llm_confidence"],
+            )
+        return FallbackResult(
+            suggested_word=corrected_llm,
+            explanation=explanation_llm,
+            correction_layer="layer3_llm",
+            correction_confidence=CORRECTION_THRESHOLDS["layer3_llm_confidence"] * 0.8,
+        )
+
+    explanation = await _generate_explanation(input_lower)
+    return FallbackResult(
+        suggested_word=None,
+        explanation=explanation,
+        correction_layer=None,
+        correction_confidence=0.0,
+    )
+
+
+async def lookup_or_suggest_any_category(word: str, db: AsyncSession) -> FallbackAnyResult:
+    """Single entry point for the sentence composer: exact cross-category
+    match first, then the cross-category correction cascade.
+    """
+    exact = await _lookup_word_any_category(word, db)
+    if exact:
+        return FallbackAnyResult(found=True, word=exact, suggested_word=None, explanation=None)
+
+    fallback = await fallback_suggest_any_category(word, db)
+    return FallbackAnyResult(
+        found=False,
+        word=None,
+        suggested_word=fallback.suggested_word,
+        explanation=fallback.explanation,
+    )

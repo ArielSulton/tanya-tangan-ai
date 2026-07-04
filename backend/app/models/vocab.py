@@ -137,6 +137,21 @@ class FallbackResponse(BaseModel):
 FallbackResult = FallbackResponse
 
 
+class FallbackAnyRequest(BaseModel):
+    gesture_input: str = Field(min_length=1, max_length=100)
+
+
+class FallbackAnyResponse(BaseModel):
+    found: bool
+    word: Optional[WordResult] = None
+    suggested_word: Optional[str] = None
+    explanation: Optional[str] = None
+
+
+# Internal service return type — same contract as FallbackAnyResponse
+FallbackAnyResult = FallbackAnyResponse
+
+
 class WordRequestItem(BaseModel):
     id: str
     gesture_input: str
