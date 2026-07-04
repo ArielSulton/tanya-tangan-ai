@@ -137,6 +137,17 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     setStabilityCount(0)
   }, [])
 
+  // Map a raw detected letter to its display label so the live badge matches
+  // the formed word (e.g. SIBI "Y" → "yang", "D" → "DAN"). Mirrors the
+  // mapping/underscore-normalization in addLetterToWord.
+  const toDisplayLabel = useCallback(
+    (letter: string, gestureType: 'static' | 'dynamic') => {
+      const mapped = letterMapping[letter] ?? letter
+      return gestureType === 'dynamic' ? mapped.replace(/_/g, ' ') : mapped
+    },
+    [letterMapping],
+  )
+
   // Send current word as text
   const sendCurrentWord = useCallback(() => {
     if (currentWord.trim() && onSendText) {
@@ -316,7 +327,9 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
                   }`}
                 >
                   <div className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold">{lastResult.letter}</span>
+                    <span className="text-2xl font-bold">
+                      {toDisplayLabel(lastResult.letter, lastResult.gestureType ?? 'static')}
+                    </span>
                     <div className="text-xs">
                       <div>Conf: {Math.round(lastResult.confidence * 100)}%</div>
                       <div className="mt-1 flex items-center gap-1">
@@ -425,7 +438,9 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
                 lastResult.validated ? 'scale-100 bg-emerald-500/90' : 'scale-95 bg-orange-500/90'
               }`}
             >
-              <span className="text-4xl font-black text-white">{lastResult.letter}</span>
+              <span className="text-4xl font-black text-white">
+                {toDisplayLabel(lastResult.letter, lastResult.gestureType ?? 'static')}
+              </span>
             </div>
           </div>
         )}
