@@ -97,7 +97,7 @@ export default function VocabKalimatPage() {
   )
 
   const handleManualSubmit = () => {
-    if (manualWord.trim()) {
+    if (manualWord.trim() && pending.state !== 'checking') {
       addWord(manualWord.trim())
       setManualWord('')
     }
