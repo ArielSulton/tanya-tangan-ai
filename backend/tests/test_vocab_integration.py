@@ -46,7 +46,7 @@ async def test_lookup_concrete_word_found() -> None:
             select(Word).where(Word.text == test_word, Word.category == "hewan")
         )
         for w in existing_result.scalars().all():
-            await session.delete(w)  # cascade to WordComparison via ORM
+            await session.delete(w)  # this word has no comparison row to cascade
         await session.commit()
 
     try:
@@ -81,6 +81,8 @@ async def test_lookup_concrete_word_found() -> None:
 
     finally:
         # Teardown — delete the seeded word
+        if not database.async_session_factory:
+            await database.init_database()
         async with database.async_session_factory() as session:
             word_obj = await session.get(Word, word_id)
             if word_obj is not None:
