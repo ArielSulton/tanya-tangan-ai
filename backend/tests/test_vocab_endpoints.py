@@ -79,3 +79,38 @@ async def test_fallback_returns_explanation_structure():
     data = response.json()
     assert "explanation" in data
     assert "suggested_word" in data
+
+
+@pytest.mark.asyncio
+async def test_fallback_any_returns_not_found_structure():
+    """Fallback-any endpoint returns correct JSON shape — does not require live DB/LLM."""
+    from unittest.mock import AsyncMock, patch
+    from app.models.vocab import FallbackAnyResponse
+
+    mock_result = FallbackAnyResponse(
+        found=False, word=None, suggested_word=None, explanation="Kata belum tersedia."
+    )
+
+    with patch(
+        "app.api.v1.endpoints.vocab.lookup_or_suggest_any_category",
+        new=AsyncMock(return_value=mock_result),
+    ):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            response = await client.post(
+                "/api/v1/vocab/fallback-any", json={"gesture_input": "xyznotexist"}
+            )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["found"] is False
+    assert "explanation" in data
+
+
+@pytest.mark.asyncio
+async def test_fallback_any_rejects_empty_input():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.post("/api/v1/vocab/fallback-any", json={"gesture_input": ""})
+    assert response.status_code == 422

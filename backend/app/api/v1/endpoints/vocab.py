@@ -7,6 +7,8 @@ from app.core.database import get_db_session
 from app.db.models import Word, WordRequest
 from app.models.vocab import (
     CategoryResponse,
+    FallbackAnyRequest,
+    FallbackAnyResponse,
     FallbackRequest,
     FallbackResponse,
     LookupResponse,
@@ -19,6 +21,7 @@ from app.services.vocab_service import (
     CATEGORIES,
     fallback_suggest,
     log_word_request,
+    lookup_or_suggest_any_category,
     lookup_word,
 )
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -75,6 +78,29 @@ async def vocab_fallback(
     await log_word_request(
         body.gesture_input, result.suggested_word, body.session_id, db
     )
+    return result
+
+
+@router.post("/fallback-any", response_model=FallbackAnyResponse)
+async def vocab_fallback_any(
+    body: FallbackAnyRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Cross-category word resolution for the sentence composer: exact match,
+    fuzzy/LLM correction, or explanation — searches all 5 categories at once.
+    """
+    try:
+        result = await lookup_or_suggest_any_category(body.gesture_input, db)
+    except Exception as exc:
+        logger.error(
+            "lookup_or_suggest_any_category failed for input=%r: %s",
+            body.gesture_input,
+            exc,
+        )
+        raise HTTPException(
+            status_code=503,
+            detail="Layanan pencarian kata tidak tersedia sementara.",
+        )
     return result
 
 
