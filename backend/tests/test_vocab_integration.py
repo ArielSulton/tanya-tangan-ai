@@ -12,8 +12,9 @@ import uuid
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import select
 
-from app.core.database import async_session_factory
+from app.core import database
 from app.db.models import Word, WordComparison
 from app.main import app
 
@@ -27,8 +28,20 @@ async def test_lookup_concrete_word_found() -> None:
     """Seed 'kucing/hewan/konkret', hit the lookup endpoint, assert shape."""
     word_id = str(uuid.uuid4())
 
+    # Pre-cleanup: remove any pre-existing 'kucing/hewan' rows so that
+    # scalar_one_or_none() doesn't raise MultipleResultsFound after we seed.
+    if not database.async_session_factory:
+        await database.init_database()
+    async with database.async_session_factory() as session:
+        existing_result = await session.execute(
+            select(Word).where(Word.text == "kucing", Word.category == "hewan")
+        )
+        for w in existing_result.scalars().all():
+            await session.delete(w)  # cascade to WordComparison via ORM
+        await session.commit()
+
     try:
-        async with async_session_factory() as session:
+        async with database.async_session_factory() as session:
             # Seed
             word = Word(
                 id=word_id,
@@ -59,7 +72,7 @@ async def test_lookup_concrete_word_found() -> None:
 
     finally:
         # Teardown — delete the seeded word
-        async with async_session_factory() as session:
+        async with database.async_session_factory() as session:
             word_obj = await session.get(Word, word_id)
             if word_obj is not None:
                 await session.delete(word_obj)
@@ -76,8 +89,20 @@ async def test_lookup_abstract_word_with_comparison() -> None:
     word_id = str(uuid.uuid4())
     comparison_id = str(uuid.uuid4())
 
+    # Pre-cleanup: remove any pre-existing 'sangat/kata_keterangan' rows so that
+    # scalar_one_or_none() doesn't raise MultipleResultsFound after we seed.
+    if not database.async_session_factory:
+        await database.init_database()
+    async with database.async_session_factory() as session:
+        existing_result = await session.execute(
+            select(Word).where(Word.text == "sangat", Word.category == "kata_keterangan")
+        )
+        for w in existing_result.scalars().all():
+            await session.delete(w)  # cascade to WordComparison via ORM
+        await session.commit()
+
     try:
-        async with async_session_factory() as session:
+        async with database.async_session_factory() as session:
             # Seed Word
             word = Word(
                 id=word_id,
@@ -123,7 +148,9 @@ async def test_lookup_abstract_word_with_comparison() -> None:
 
     finally:
         # Teardown — delete comparison first (FK), then word
-        async with async_session_factory() as session:
+        if not database.async_session_factory:
+            await database.init_database()
+        async with database.async_session_factory() as session:
             comp_obj = await session.get(WordComparison, comparison_id)
             if comp_obj is not None:
                 await session.delete(comp_obj)
@@ -132,3 +159,51 @@ async def test_lookup_abstract_word_with_comparison() -> None:
             if word_obj is not None:
                 await session.delete(word_obj)
             await session.commit()
+
+
+# ---------------------------------------------------------------------------
+# Test 3 — cross-category exact match via /vocab/fallback-any
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_fallback_any_finds_word_without_category() -> None:
+    """Seed 'gunung/alam/konkret', hit /fallback-any with no category param at all."""
+    word_id = str(uuid.uuid4())
+
+    try:
+        if not database.async_session_factory:
+            await database.init_database()
+        async with database.async_session_factory() as session:
+            word = Word(
+                id=word_id,
+                text="gunung",
+                category="alam",
+                word_type="konkret",
+                image_url="https://example.com/gunung.jpg",
+            )
+            session.add(word)
+            await session.commit()
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            response = await client.post(
+                "/api/v1/vocab/fallback-any",
+                json={"gesture_input": "gunung"},
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["found"] is True
+        assert data["word"]["text"] == "gunung"
+        assert data["word"]["category"] == "alam"
+        assert data["suggested_word"] is None
+
+    finally:
+        if not database.async_session_factory:
+            await database.init_database()
+        async with database.async_session_factory() as session:
+            word_obj = await session.get(Word, word_id)
+            if word_obj is not None:
+                await session.delete(word_obj)
+                await session.commit()
