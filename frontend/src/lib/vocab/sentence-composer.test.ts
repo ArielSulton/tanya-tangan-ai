@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import { addToken, classifyFallbackAnyResponse, isDynamicGestureWord, removeTokenAt, resetTokens } from './sentence-composer'
+import {
+  addToken,
+  classifyFallbackAnyResponse,
+  isDynamicGestureWord,
+  removeTokenAt,
+  resetTokens,
+} from './sentence-composer'
 
 describe('addToken', () => {
   test('appends a token to the end', () => {
