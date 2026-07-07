@@ -62,7 +62,6 @@ type LookupResult =
 
 const VALID_CATEGORIES = ['hewan', 'benda', 'alam', 'perasaan', 'kata_keterangan']
 
-
 function buildSyntheticDynamicWord(text: string, category: string): WordResult {
   return {
     id: `synthetic-${text}`,

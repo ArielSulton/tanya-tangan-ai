@@ -57,6 +57,25 @@ const CATEGORIES = [
     overlayColor: 'from-stone-900 via-stone-800/90 to-transparent',
     btnColor: 'text-stone-900 hover:bg-stone-50',
   },
+  {
+    slug: 'contoh-kalimat',
+    label: 'Contoh Kalimat',
+    count: '2 Kalimat',
+    description: 'Lihat contoh kalimat lengkap dengan visualisasinya, dirangkai dari kata-kata yang sudah dipelajari.',
+    tags: ['Contoh', 'Baru'],
+    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600&h=800',
+    overlayColor: 'from-amber-950 via-amber-900/90 to-transparent',
+    btnColor: 'text-amber-950 hover:bg-amber-50',
+  },
+  {
+    slug: 'coming-soon',
+    label: 'Segera Hadir',
+    count: '?',
+    description: 'Kategori dan fitur kosakata baru sedang kami siapkan untuk pengalaman belajar yang lebih lengkap.',
+    tags: ['Segera Hadir'],
+    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600&h=800',
+    overlayColor: 'from-gray-900 via-gray-800/90 to-transparent',
+  },
 ]
 
 export function CategoryGrid() {
