@@ -35,6 +35,9 @@ export interface SyntaxValidation {
 // a sentence needs a noun on each side of a connector.
 const CONNECTOR_WORDS = new Set(['dan', 'yang'])
 
+// Assumes `tokens[].word` is already lowercase-normalized by the caller (e.g. via normalizeWord in
+// the consuming page) — connector matching below is case-sensitive and will silently pass through
+// un-normalized input like "Dan" or "YANG" without flagging it as invalid.
 export function validateSentenceSyntax(tokens: SentenceToken[]): SyntaxValidation {
   if (tokens.length === 0) {
     return { valid: true, reason: null }
