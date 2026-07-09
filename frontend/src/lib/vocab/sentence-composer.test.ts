@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   addToken,
-  classifyFallbackAnyResponse,
+  compareToTarget,
   isDynamicGestureWord,
   removeTokenAt,
   resetTokens,
@@ -56,42 +56,6 @@ describe('isDynamicGestureWord', () => {
 
   test('returns false for a regular vocab word', () => {
     expect(isDynamicGestureWord('kucing')).toBe(false)
-  })
-})
-
-describe('classifyFallbackAnyResponse', () => {
-  test('exact match found', () => {
-    const outcome = classifyFallbackAnyResponse({
-      found: true,
-      word: { text: 'kucing', category: 'hewan' },
-      suggested_word: null,
-      explanation: null,
-    })
-    expect(outcome).toEqual({ kind: 'found', word: 'kucing', category: 'hewan' })
-  })
-
-  test('fuzzy/LLM suggestion', () => {
-    const outcome = classifyFallbackAnyResponse({
-      found: false,
-      word: null,
-      suggested_word: 'kucing',
-      explanation: 'Kucing adalah hewan peliharaan.',
-    })
-    expect(outcome).toEqual({
-      kind: 'suggestion',
-      suggestedWord: 'kucing',
-      explanation: 'Kucing adalah hewan peliharaan.',
-    })
-  })
-
-  test('not found at all', () => {
-    const outcome = classifyFallbackAnyResponse({
-      found: false,
-      word: null,
-      suggested_word: null,
-      explanation: 'Kata belum tersedia dalam kamus kami.',
-    })
-    expect(outcome).toEqual({ kind: 'not_found', explanation: 'Kata belum tersedia dalam kamus kami.' })
   })
 })
 
@@ -156,5 +120,39 @@ describe('validateSentenceSyntax', () => {
       valid: false,
       reason: 'Dua kata sambung "dan" dan "yang" tidak boleh berurutan.',
     })
+  })
+})
+
+describe('compareToTarget', () => {
+  test('every word matches → every result is correct', () => {
+    const result = compareToTarget(['kucing', 'dan', 'gajah'], ['kucing', 'dan', 'gajah'])
+    expect(result).toEqual([
+      { index: 0, word: 'kucing', correct: true },
+      { index: 1, word: 'dan', correct: true },
+      { index: 2, word: 'gajah', correct: true },
+    ])
+  })
+
+  test('every word differs → every result is incorrect', () => {
+    const result = compareToTarget(['a', 'b', 'c'], ['x', 'y', 'z'])
+    expect(result).toEqual([
+      { index: 0, word: 'a', correct: false },
+      { index: 1, word: 'b', correct: false },
+      { index: 2, word: 'c', correct: false },
+    ])
+  })
+
+  test('partial match → mixed correct/incorrect per position', () => {
+    const result = compareToTarget(['kucing', 'yang', 'besar'], ['kucing', 'besar', 'yang'])
+    expect(result).toEqual([
+      { index: 0, word: 'kucing', correct: true },
+      { index: 1, word: 'yang', correct: false },
+      { index: 2, word: 'besar', correct: false },
+    ])
+  })
+
+  test('shorter submitted list only compares up to its own length', () => {
+    const result = compareToTarget(['kucing'], ['kucing', 'dan', 'gajah'])
+    expect(result).toEqual([{ index: 0, word: 'kucing', correct: true }])
   })
 })
