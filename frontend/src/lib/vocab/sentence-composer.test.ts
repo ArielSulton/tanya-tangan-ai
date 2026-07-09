@@ -5,6 +5,7 @@ import {
   isDynamicGestureWord,
   removeTokenAt,
   resetTokens,
+  validateSentenceSyntax,
 } from './sentence-composer'
 
 describe('addToken', () => {
@@ -91,5 +92,69 @@ describe('classifyFallbackAnyResponse', () => {
       explanation: 'Kata belum tersedia dalam kamus kami.',
     })
     expect(outcome).toEqual({ kind: 'not_found', explanation: 'Kata belum tersedia dalam kamus kami.' })
+  })
+})
+
+describe('validateSentenceSyntax', () => {
+  test('empty sentence is valid', () => {
+    expect(validateSentenceSyntax([])).toEqual({ valid: true, reason: null })
+  })
+
+  test('single noun is valid', () => {
+    const tokens = [{ word: 'kucing', category: 'hewan' }]
+    expect(validateSentenceSyntax(tokens)).toEqual({ valid: true, reason: null })
+  })
+
+  test('noun-dan-noun is valid', () => {
+    const tokens = [
+      { word: 'kucing', category: 'hewan' },
+      { word: 'dan', category: 'kata_keterangan' },
+      { word: 'gajah', category: 'hewan' },
+    ]
+    expect(validateSentenceSyntax(tokens)).toEqual({ valid: true, reason: null })
+  })
+
+  test('noun-yang-modifier is valid', () => {
+    const tokens = [
+      { word: 'apel', category: 'benda' },
+      { word: 'yang', category: 'kata_keterangan' },
+      { word: 'besar', category: 'kata_keterangan' },
+    ]
+    expect(validateSentenceSyntax(tokens)).toEqual({ valid: true, reason: null })
+  })
+
+  test('sentence starting with a connector is invalid', () => {
+    const tokens = [
+      { word: 'dan', category: 'kata_keterangan' },
+      { word: 'kucing', category: 'hewan' },
+    ]
+    expect(validateSentenceSyntax(tokens)).toEqual({
+      valid: false,
+      reason: 'Kalimat tidak boleh diawali kata sambung "dan".',
+    })
+  })
+
+  test('sentence ending with a connector is invalid', () => {
+    const tokens = [
+      { word: 'kucing', category: 'hewan' },
+      { word: 'yang', category: 'kata_keterangan' },
+    ]
+    expect(validateSentenceSyntax(tokens)).toEqual({
+      valid: false,
+      reason: 'Kalimat tidak boleh diakhiri kata sambung "yang".',
+    })
+  })
+
+  test('two consecutive connectors is invalid', () => {
+    const tokens = [
+      { word: 'kucing', category: 'hewan' },
+      { word: 'dan', category: 'kata_keterangan' },
+      { word: 'yang', category: 'kata_keterangan' },
+      { word: 'gajah', category: 'hewan' },
+    ]
+    expect(validateSentenceSyntax(tokens)).toEqual({
+      valid: false,
+      reason: 'Dua kata sambung "dan" dan "yang" tidak boleh berurutan.',
+    })
   })
 })
