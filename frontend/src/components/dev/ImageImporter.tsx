@@ -4,8 +4,13 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { HandPoseService } from '@/lib/ai/services/handpose-service'
 import { sortHandsByXPosition } from '@/lib/gesture/normalize'
 import { extractFrameFeatures } from '@/lib/gesture/feature-extractor'
+import {
+  extractLabelFromPath,
+  normalizeImportLabel,
+  isValidImportLabel,
+} from '@/lib/gesture/recording/label-extraction'
 import { addStatic } from '@/lib/gesture/recording/storage'
-import { STATIC_CLASSES, type StaticSample } from '@/lib/gesture/recording/types'
+import type { StaticSample } from '@/lib/gesture/recording/types'
 
 interface Props {
   /** Shared HandPose service from the parent (reuses the loaded model). */
@@ -27,40 +32,7 @@ interface ImportStats {
   perClass: Record<string, number>
 }
 
-const STATIC_CLASS_SET = new Set<string>(STATIC_CLASSES)
 const CHUNK_SIZE = 10
-
-/**
- * Extract a label from either a subfolder name (preferred) or filename pattern.
- * Subfolder name takes precedence if present. Filename pattern strips trailing
- * digits before underscore + sequence number: "A_19.jpg" → "A",
- * "Besar1_05.jpg" → "Besar", "A2_09.jpg" → "A", "frame_00129.jpg" → "frame".
- * Returns null if no pattern matched.
- */
-function extractLabel(file: File & { webkitRelativePath?: string }): string | null {
-  const relPath = file.webkitRelativePath || ''
-  const parts = relPath.split('/')
-  // [rootFolder, ...subfolders, filename]. If subfolder exists, use it.
-  if (parts.length >= 3) {
-    const subfolder = parts[parts.length - 2]
-    if (subfolder) return subfolder
-  }
-  // Else parse filename
-  const name = file.name.replace(/\.[^/.]+$/, '')
-  const m = name.match(/^([A-Za-z]+?)\d*_\d+$/)
-  return m ? m[1] : null
-}
-
-/** Static accepts only single uppercase letters in STATIC_CLASSES. */
-function isValidStaticLabel(label: string): boolean {
-  return (
-    STATIC_CLASS_SET.has(label.toUpperCase()) && STATIC_CLASS_SET.has(label.toUpperCase()) && /^[A-Za-z]$/.test(label)
-  ) // exactly one alphabetic char
-}
-
-function normalizeStaticLabel(label: string): string {
-  return label.toUpperCase()
-}
 
 function genId(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -95,7 +67,7 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
   const [stage, setStage] = useState<'idle' | 'preview' | 'processing' | 'done'>('idle')
   const [parsed, setParsed] = useState<ParsedFile[]>([])
   const [labelCounts, setLabelCounts] = useState<Record<string, number>>({})
-  const [nonLetterSkipped, setNonLetterSkipped] = useState(0)
+  const [unlabeledSkipped, setUnlabeledSkipped] = useState(0)
   const [selectedLabels, setSelectedLabels] = useState<Set<string>>(new Set())
   const [progress, setProgress] = useState({ done: 0, total: 0 })
   const [liveStats, setLiveStats] = useState<ImportStats>({ imported: 0, skipped: 0, skippedNoHands: 0, perClass: {} })
@@ -125,27 +97,27 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
     if (files.length === 0) return
     const rows: ParsedFile[] = files
       .filter((f) => /\.(jpe?g|png|webp)$/i.test(f.name))
-      .map((f) => ({ file: f, label: extractLabel(f) }))
+      .map((f) => ({ file: f, label: extractLabelFromPath(f) }))
 
-    // Bucket by label, filter non-letter
+    // Bucket by normalized label, count unparseable/invalid ones
     const counts: Record<string, number> = {}
-    let nonLetter = 0
+    let unlabeled = 0
     for (const r of rows) {
       if (r.label === null) {
-        nonLetter++
+        unlabeled++
         continue
       }
-      if (!isValidStaticLabel(r.label)) {
-        nonLetter++
+      const norm = normalizeImportLabel(r.label)
+      if (!isValidImportLabel(norm)) {
+        unlabeled++
         continue
       }
-      const norm = normalizeStaticLabel(r.label)
       counts[norm] = (counts[norm] || 0) + 1
     }
     const labels = Object.keys(counts).sort()
     setParsed(rows)
     setLabelCounts(counts)
-    setNonLetterSkipped(nonLetter)
+    setUnlabeledSkipped(unlabeled)
     setSelectedLabels(new Set(labels))
     setStage('preview')
     // Reset both inputs so re-selecting the same folder/files fires onChange again
@@ -169,8 +141,8 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
     const queue: { file: File; label: string }[] = []
     for (const r of parsed) {
       if (r.label === null) continue
-      if (!isValidStaticLabel(r.label)) continue
-      const norm = normalizeStaticLabel(r.label)
+      const norm = normalizeImportLabel(r.label)
+      if (!isValidImportLabel(norm)) continue
       if (!selectedLabels.has(norm)) continue
       queue.push({ file: r.file, label: norm })
     }
@@ -183,7 +155,6 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
     setProgress({ done: 0, total: queue.length })
     setLiveStats({ imported: 0, skipped: 0, skippedNoHands: 0, perClass: {} })
 
-    const sessionId = genId()
     const newSamples: StaticSample[] = []
     let imported = 0
     let skippedNoHands = 0
@@ -235,8 +206,6 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
       await new Promise((r) => setTimeout(r, 0))
     }
 
-    // Suppress unused-variable warning for sessionId — kept for future audit.
-    void sessionId
     if (newSamples.length > 0) onImported(newSamples)
     setStage('done')
   }
@@ -245,7 +214,7 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
     setStage('idle')
     setParsed([])
     setLabelCounts({})
-    setNonLetterSkipped(0)
+    setUnlabeledSkipped(0)
     setSelectedLabels(new Set())
     setProgress({ done: 0, total: 0 })
     setLiveStats({ imported: 0, skipped: 0, skippedNoHands: 0, perClass: {} })
@@ -293,20 +262,21 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
             <div className="border-b border-slate-200 px-4 py-3">
               <h2 className="text-base font-semibold text-slate-800">Import preview</h2>
               <p className="mt-1 text-xs text-slate-500">
-                Static menerima huruf A–Y (J & Z dynamic). Non-letter labels otomatis di-skip.
+                Static menerima huruf A–Y atau nama kelas custom (dari folder/filename). Label yang tidak terbaca
+                otomatis di-skip.
               </p>
             </div>
             <div className="max-h-[50vh] overflow-y-auto px-4 py-3 text-sm">
               {validLabels.length === 0 ? (
                 <p className="text-slate-500">
-                  Tidak ada file dengan label huruf valid.{' '}
-                  {nonLetterSkipped > 0 && `${nonLetterSkipped} file di-skip karena label non-letter.`}
+                  Tidak ada file dengan label valid.{' '}
+                  {unlabeledSkipped > 0 && `${unlabeledSkipped} file di-skip karena tidak ada label valid.`}
                 </p>
               ) : (
                 <>
                   <p className="mb-2 text-xs text-slate-600">
-                    {parsed.length} file total &middot; {validLabels.length} kelas huruf valid
-                    {nonLetterSkipped > 0 && ` · ${nonLetterSkipped} di-skip (label non-letter)`}
+                    {parsed.length} file total &middot; {validLabels.length} kelas valid
+                    {unlabeledSkipped > 0 && ` · ${unlabeledSkipped} di-skip (tidak ada label valid)`}
                   </p>
                   <ul className="divide-y divide-slate-100">
                     {validLabels.map((label) => (
