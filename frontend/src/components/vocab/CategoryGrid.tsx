@@ -47,21 +47,10 @@ const CATEGORIES = [
     btnColor: 'text-stone-900 hover:bg-stone-50',
   },
   {
-    slug: 'kalimat',
-    label: 'Latihan Kalimat',
-    count: 'Baru',
-    description:
-      'Susun kalimatmu sendiri dengan merangkai beberapa kata isyarat berturut-turut, dari kategori mana saja.',
-    tags: ['Latihan', 'Baru'],
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600&h=800',
-    overlayColor: 'from-stone-900 via-stone-800/90 to-transparent',
-    btnColor: 'text-stone-900 hover:bg-stone-50',
-  },
-  {
     slug: 'contoh-kalimat',
     label: 'Contoh Kalimat',
-    count: '2 Kalimat',
-    description: 'Lihat contoh kalimat lengkap dengan visualisasinya, dirangkai dari kata-kata yang sudah dipelajari.',
+    count: '2 Level',
+    description: 'Latih susunan kalimatmu lewat kamera, dari level dasar sampai lanjut, langsung dapat koreksi.',
     tags: ['Contoh', 'Baru'],
     image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600&h=800',
     overlayColor: 'from-amber-950 via-amber-900/90 to-transparent',
