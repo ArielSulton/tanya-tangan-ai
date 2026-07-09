@@ -221,8 +221,8 @@ export default function VocabKategoriPage() {
         ) : (
           <div className="overflow-hidden rounded-[2.5rem] border border-white bg-white/70 p-6 shadow-2xl ring-1 ring-slate-900/5 backdrop-blur-xl sm:p-8">
             <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-12">
-              {/* Left Column: Camera & Manual Input */}
-              <div className="flex flex-col gap-6 lg:col-span-7">
+              {/* Camera & Manual Input — second on mobile (order-2), left column on desktop (lg:order-1) */}
+              <div className="order-2 flex flex-col gap-6 lg:order-1 lg:col-span-7">
                 {/* Camera/Gesture Area */}
                 <div className="min-h-[460px] flex-grow overflow-hidden rounded-[2.5rem] bg-slate-50 p-2 shadow-inner ring-1 ring-black/5">
                   <GestureRecognition
@@ -352,8 +352,8 @@ export default function VocabKategoriPage() {
                 </div>
               </div>
 
-              {/* Right Column: Results Area */}
-              <div className="relative flex h-full min-h-[400px] flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white/50 p-6 shadow-sm lg:col-span-5">
+              {/* Results Area — first on mobile (order-1) so meaning/definition shows before detection, right column on desktop (lg:order-2) */}
+              <div className="relative order-1 flex h-full min-h-[400px] flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white/50 p-6 shadow-sm lg:order-2 lg:col-span-5">
                 <div className="pointer-events-none absolute top-0 right-0 p-4 opacity-10">
                   <svg className="h-32 w-32 text-emerald-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
