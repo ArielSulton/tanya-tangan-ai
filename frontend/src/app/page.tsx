@@ -2,18 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  CheckCircle2,
-  ArrowRight,
-  Hand,
-  Globe,
-  Radio,
-  Eye,
-  Scale,
-  Sparkles,
-  Library,
-  LayoutDashboard,
-} from 'lucide-react'
+import { CheckCircle2, ArrowRight, Hand, Eye, Scale, Sparkles, Library, LayoutDashboard } from 'lucide-react'
 
 const techStack = [
   { name: 'YOLO Ultralytics', logo: '/assets/tech/ultralytics_yolo.svg' },
@@ -130,36 +119,19 @@ export default function Beranda() {
               </div>
 
               <h1 className="text-5xl leading-tight font-extrabold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-                Platform Pemahaman Kosakata Abstrak Berbasis Sistem Isyarat Bahasa Indonesia dan Kecerdasan Buatan untuk
-                Siswa{' '}
+                Belajar Kata Abstrak Lewat Isyarat{' '}
                 <span
                   className="relative inline-block bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent"
                   style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}
                 >
-                  SDLB-B
-                </span>{' '}
-                Tingkat Pemula
+                  SIBI
+                </span>
               </h1>
 
               <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-600 sm:text-xl">
-                Siswa memasukkan kata melalui gestur bahasa isyarat SIBI, lalu platform menampilkan gambar visual
-                maknanya. Dari kata keterangan abstrak hingga kata konkret dengan teknologi AI.
+                Peragakan isyarat lewat kamera, langsung lihat artinya lewat gambar dan AI — dirancang untuk siswa
+                SDLB-B.
               </p>
-
-              <div className="flex flex-wrap justify-center gap-4 pt-4">
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white/80 px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
-                  <Hand className="h-4 w-4 text-emerald-600" />
-                  <span>SIBI Support</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white/80 px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
-                  <Globe className="h-4 w-4 text-emerald-600" />
-                  <span>Berbasis Browser</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white/80 px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
-                  <Radio className="h-4 w-4 animate-pulse text-emerald-600" />
-                  <span>System Online</span>
-                </div>
-              </div>
 
               <div className="pt-8">
                 <Link href="/vocab">
@@ -171,6 +143,10 @@ export default function Beranda() {
                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
+                <p className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-slate-500">
+                  <Hand className="h-4 w-4 text-emerald-600" />
+                  Gratis · Tanpa instalasi · Langsung dari browser
+                </p>
               </div>
             </div>
           </div>
@@ -179,8 +155,9 @@ export default function Beranda() {
 
       {/* Statistics Section */}
       <section className="relative z-20 mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-        <div className="sr-only mb-16 text-center">
-          <h2>Statistik Pentingnya Kosakata Visual</h2>
+        <div className="mb-16 text-center">
+          <h2 className="mb-2 text-sm font-bold tracking-widest text-slate-400 uppercase">Landasan Riset</h2>
+          <p className="text-lg text-slate-500">Kenapa kosakata visual penting untuk siswa tunarungu</p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
