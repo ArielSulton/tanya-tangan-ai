@@ -229,12 +229,20 @@ export function VideoImporter({ handpose, onImported }: Props): ReactNode {
         if (video) releaseVideo(video)
       }
       setProgress({ done: i + 1, total: queue.length })
+      // Flush stats after every video too, not just every frame — a video
+      // that fails in loadVideo/seekTo increments `skipped` in the catch
+      // above, outside the frame loop's setLiveStats call, so without this
+      // the done screen can under-report errors if the last video(s) fail.
+      setLiveStats({ imported, skipped, skippedNoHands, perClass: { ...perClass } })
     }
 
     if (newSamples.length > 0) onImported(newSamples)
     setStage('done')
   }
 
+  // Note: intervalMs is intentionally NOT reset here — a user who dials in
+  // a interval for their recording setup expects it to persist across
+  // consecutive import batches, not snap back to the default each time.
   function reset(): void {
     setStage('idle')
     setParsed([])
@@ -267,7 +275,7 @@ export function VideoImporter({ handpose, onImported }: Props): ReactNode {
         ref={filesInputRef}
         type="file"
         multiple
-        accept="video/mp4,video/webm,video/quicktime"
+        accept="video/mp4,video/webm,video/quicktime,video/x-m4v"
         style={{ display: 'none' }}
         onChange={handleFiles}
       />
