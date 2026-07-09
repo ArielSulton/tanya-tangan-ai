@@ -9,6 +9,7 @@ import {
   normalizeImportLabel,
   isValidImportLabel,
 } from '@/lib/gesture/recording/label-extraction'
+import { computeSampleTimestamps } from '@/lib/gesture/recording/video-frame-sampler'
 import { addStatic } from '@/lib/gesture/recording/storage'
 import type { StaticSample } from '@/lib/gesture/recording/types'
 
@@ -32,7 +33,9 @@ interface ImportStats {
   perClass: Record<string, number>
 }
 
-const CHUNK_SIZE = 10
+const DEFAULT_INTERVAL_MS = 150
+const MIN_INTERVAL_MS = 50
+const MAX_INTERVAL_MS = 1000
 
 function genId(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -40,28 +43,50 @@ function genId(): string {
     : `s-${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
-/** Load a File as an HTMLImageElement, resolving when decode is complete. */
-function loadImage(file: File): Promise<HTMLImageElement> {
+/** Load a File as an offscreen HTMLVideoElement, resolving once metadata (incl. duration) is ready. */
+function loadVideo(file: File): Promise<HTMLVideoElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => resolve(img)
-    img.onerror = () => {
+    const video = document.createElement('video')
+    video.muted = true
+    video.playsInline = true
+    video.preload = 'auto'
+    video.onloadedmetadata = () => resolve(video)
+    video.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(new Error('image load failed'))
+      reject(new Error('video load failed'))
     }
-    img.src = url
+    video.src = url
     // Caller revokes URL once done. Storing on element for later cleanup.
-    ;(img as HTMLImageElement & { __objectUrl?: string }).__objectUrl = url
+    ;(video as HTMLVideoElement & { __objectUrl?: string }).__objectUrl = url
   })
 }
 
-function releaseImage(img: HTMLImageElement): void {
-  const url = (img as HTMLImageElement & { __objectUrl?: string }).__objectUrl
+function releaseVideo(video: HTMLVideoElement): void {
+  const url = (video as HTMLVideoElement & { __objectUrl?: string }).__objectUrl
   if (url) URL.revokeObjectURL(url)
 }
 
-export function ImageImporter({ handpose, onImported }: Props): ReactNode {
+/** Seek a video to a given timestamp (seconds), resolving once the frame is ready to read. */
+function seekTo(video: HTMLVideoElement, t: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const onSeeked = () => {
+      video.removeEventListener('seeked', onSeeked)
+      video.removeEventListener('error', onError)
+      resolve()
+    }
+    const onError = () => {
+      video.removeEventListener('seeked', onSeeked)
+      video.removeEventListener('error', onError)
+      reject(new Error('video seek failed'))
+    }
+    video.addEventListener('seeked', onSeeked)
+    video.addEventListener('error', onError)
+    video.currentTime = t
+  })
+}
+
+export function VideoImporter({ handpose, onImported }: Props): ReactNode {
   const folderInputRef = useRef<HTMLInputElement>(null)
   const filesInputRef = useRef<HTMLInputElement>(null)
   const [stage, setStage] = useState<'idle' | 'preview' | 'processing' | 'done'>('idle')
@@ -69,6 +94,7 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
   const [labelCounts, setLabelCounts] = useState<Record<string, number>>({})
   const [unlabeledSkipped, setUnlabeledSkipped] = useState(0)
   const [selectedLabels, setSelectedLabels] = useState<Set<string>>(new Set())
+  const [intervalMs, setIntervalMs] = useState(DEFAULT_INTERVAL_MS)
   const [progress, setProgress] = useState({ done: 0, total: 0 })
   const [liveStats, setLiveStats] = useState<ImportStats>({ imported: 0, skipped: 0, skippedNoHands: 0, perClass: {} })
   const cancelRef = useRef(false)
@@ -93,10 +119,10 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
   }
 
   function handleFiles(e: React.ChangeEvent<HTMLInputElement>): void {
-    const files = Array.from(e.target.files || [])
+    const files = Array.from(e.target.files ?? [])
     if (files.length === 0) return
     const rows: ParsedFile[] = files
-      .filter((f) => /\.(jpe?g|png|webp)$/i.test(f.name))
+      .filter((f) => /\.(mp4|webm|mov|m4v)$/i.test(f.name))
       .map((f) => ({ file: f, label: extractLabelFromPath(f) }))
 
     // Bucket by normalized label, count unparseable/invalid ones
@@ -120,7 +146,6 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
     setUnlabeledSkipped(unlabeled)
     setSelectedLabels(new Set(labels))
     setStage('preview')
-    // Reset both inputs so re-selecting the same folder/files fires onChange again
     if (folderInputRef.current) folderInputRef.current.value = ''
     if (filesInputRef.current) filesInputRef.current.value = ''
   }
@@ -137,7 +162,6 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
       alert('HandPose belum siap. Tunggu sebentar.')
       return
     }
-    // Filter to selected, valid, labeled rows
     const queue: { file: File; label: string }[] = []
     for (const r of parsed) {
       if (r.label === null) continue
@@ -161,16 +185,16 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
     let skipped = 0
     const perClass: Record<string, number> = {}
 
-    for (let i = 0; i < queue.length; i += CHUNK_SIZE) {
+    for (let i = 0; i < queue.length; i++) {
       if (cancelRef.current) break
-      const chunk = queue.slice(i, i + CHUNK_SIZE)
-      // Process chunk sequentially (MediaPipe instance is single-threaded; parallel calls
-      // queue up internally anyway).
-      for (const item of chunk) {
-        let img: HTMLImageElement | null = null
-        try {
-          img = await loadImage(item.file)
-          const raws = await handpose.detectRawHandsFromImage(img)
+      const item = queue[i]
+      let video: HTMLVideoElement | null = null
+      try {
+        video = await loadVideo(item.file)
+        const timestamps = computeSampleTimestamps(video.duration, intervalMs)
+        for (const t of timestamps) {
+          await seekTo(video, t)
+          const raws = await handpose.detectRawHands(video)
           if (raws.length === 0) {
             skippedNoHands++
           } else {
@@ -193,23 +217,32 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
               perClass[item.label] = (perClass[item.label] || 0) + 1
             }
           }
-        } catch (err) {
-          skipped++
-          console.warn(`[importer] ${item.file.name} skipped:`, err)
-        } finally {
-          if (img) releaseImage(img)
+          setLiveStats({ imported, skipped, skippedNoHands, perClass: { ...perClass } })
+          // Yield to event loop after each frame so the UI stays responsive
+          // during a single long video's processing.
+          await new Promise((r) => setTimeout(r, 0))
         }
+      } catch (err) {
+        skipped++
+        console.warn(`[video-importer] ${item.file.name} skipped:`, err)
+      } finally {
+        if (video) releaseVideo(video)
       }
-      setProgress({ done: Math.min(i + chunk.length, queue.length), total: queue.length })
+      setProgress({ done: i + 1, total: queue.length })
+      // Flush stats after every video too, not just every frame — a video
+      // that fails in loadVideo/seekTo increments `skipped` in the catch
+      // above, outside the frame loop's setLiveStats call, so without this
+      // the done screen can under-report errors if the last video(s) fail.
       setLiveStats({ imported, skipped, skippedNoHands, perClass: { ...perClass } })
-      // Yield to event loop so UI updates between chunks
-      await new Promise((r) => setTimeout(r, 0))
     }
 
     if (newSamples.length > 0) onImported(newSamples)
     setStage('done')
   }
 
+  // Note: intervalMs is intentionally NOT reset here — a user who dials in
+  // a interval for their recording setup expects it to persist across
+  // consecutive import batches, not snap back to the default each time.
   function reset(): void {
     setStage('idle')
     setParsed([])
@@ -231,18 +264,9 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
         onClick={openFolderPicker}
         className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-slate-400"
         disabled={!handpose || stage === 'processing'}
-        title="Import dari folder (subfolder name = label, atau filename pattern)"
+        title="Import video dari folder (subfolder name = label, atau filename pattern)"
       >
-        Import folder
-      </button>
-      <button
-        type="button"
-        onClick={openFilesPicker}
-        className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-slate-400"
-        disabled={!handpose || stage === 'processing'}
-        title="Import multiple files (label dari filename pattern)"
-      >
-        Import files
+        Import video
       </button>
       {/* Folder picker — webkitdirectory attribute applied via ref (React strips it from JSX). */}
       <input ref={folderInputRef} type="file" multiple style={{ display: 'none' }} onChange={handleFiles} />
@@ -251,31 +275,40 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
         ref={filesInputRef}
         type="file"
         multiple
-        accept="image/jpeg,image/png,image/webp"
+        accept="video/mp4,video/webm,video/quicktime,video/x-m4v"
         style={{ display: 'none' }}
         onChange={handleFiles}
       />
+      <button
+        type="button"
+        onClick={openFilesPicker}
+        className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-slate-400"
+        disabled={!handpose || stage === 'processing'}
+        title="Import multiple video files (label dari filename pattern)"
+      >
+        Import video files
+      </button>
 
       {stage === 'preview' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="max-h-[80vh] w-full max-w-lg overflow-hidden rounded-lg bg-white shadow-xl">
             <div className="border-b border-slate-200 px-4 py-3">
-              <h2 className="text-base font-semibold text-slate-800">Import preview</h2>
+              <h2 className="text-base font-semibold text-slate-800">Video import preview</h2>
               <p className="mt-1 text-xs text-slate-500">
-                Static menerima huruf A–Y atau nama kelas custom (dari folder/filename). Label yang tidak terbaca
-                otomatis di-skip.
+                Tiap video akan diekstrak jadi banyak sample statis (satu per frame yang di-sample). Label diambil dari
+                nama folder/filename, sama seperti import gambar.
               </p>
             </div>
             <div className="max-h-[50vh] overflow-y-auto px-4 py-3 text-sm">
               {validLabels.length === 0 ? (
                 <p className="text-slate-500">
-                  Tidak ada file dengan label valid.{' '}
-                  {unlabeledSkipped > 0 && `${unlabeledSkipped} file di-skip karena tidak ada label valid.`}
+                  Tidak ada video dengan label valid.{' '}
+                  {unlabeledSkipped > 0 && `${unlabeledSkipped} video di-skip karena tidak ada label valid.`}
                 </p>
               ) : (
                 <>
                   <p className="mb-2 text-xs text-slate-600">
-                    {parsed.length} file total &middot; {validLabels.length} kelas valid
+                    {parsed.length} video total &middot; {validLabels.length} kelas valid
                     {unlabeledSkipped > 0 && ` · ${unlabeledSkipped} di-skip (tidak ada label valid)`}
                   </p>
                   <ul className="divide-y divide-slate-100">
@@ -289,7 +322,7 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
                           />
                           <span className="font-mono text-sm">{label}</span>
                         </label>
-                        <span className="text-xs text-slate-500">{labelCounts[label]}</span>
+                        <span className="text-xs text-slate-500">{labelCounts[label]} video</span>
                       </li>
                     ))}
                   </ul>
@@ -297,9 +330,23 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
               )}
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3">
-              <span className="text-xs text-slate-600">
-                Akan di-import: <b>{totalSelected}</b>
-              </span>
+              <label className="flex items-center gap-1.5 text-xs text-slate-600">
+                Interval
+                <input
+                  type="number"
+                  min={MIN_INTERVAL_MS}
+                  max={MAX_INTERVAL_MS}
+                  step={10}
+                  value={intervalMs}
+                  onChange={(e) => {
+                    const v = Number.parseInt(e.target.value, 10)
+                    if (!Number.isNaN(v)) setIntervalMs(Math.max(MIN_INTERVAL_MS, Math.min(MAX_INTERVAL_MS, v)))
+                  }}
+                  className="w-16 rounded border border-slate-300 px-1.5 py-0.5 text-center font-mono text-sm focus:border-emerald-500 focus:outline-none"
+                  aria-label="Sampling interval in milliseconds"
+                />
+                ms
+              </label>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -314,7 +361,7 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
                   disabled={totalSelected === 0}
                   className="rounded-md border border-emerald-500 bg-emerald-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
                 >
-                  Import {totalSelected}
+                  Import {totalSelected} video
                 </button>
               </div>
             </div>
@@ -328,7 +375,7 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
             <div className="border-b border-slate-200 px-4 py-3">
               <h2 className="text-base font-semibold text-slate-800">Importing…</h2>
               <p className="mt-1 text-xs text-slate-500">
-                {progress.done} / {progress.total} files processed
+                {progress.done} / {progress.total} video processed
               </p>
             </div>
             <div className="px-4 py-4">
@@ -357,7 +404,7 @@ export function ImageImporter({ handpose, onImported }: Props): ReactNode {
                   }}
                   className="text-xs text-rose-600 hover:underline"
                 >
-                  Cancel after current chunk
+                  Cancel after current video
                 </button>
               </div>
             </div>

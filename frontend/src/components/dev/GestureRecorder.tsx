@@ -31,6 +31,7 @@ import {
 } from '@/lib/gesture/recording/types'
 import { DynamicClassInput } from './DynamicClassInput'
 import { ImageImporter } from './ImageImporter'
+import { VideoImporter } from './VideoImporter'
 
 const AUTO_LABEL_INTERVAL_MS = 600 // throttle YOLO calls so we don't flood backend
 
@@ -472,12 +473,16 @@ export function GestureRecorder() {
                   </button>
                 )}
               </div>
-              <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                 <ImageImporter
                   handpose={handposeRef.current}
                   onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
                 />
-                <span>Bulk-label dari folder (subfolder/filename pattern). Static only.</span>
+                <VideoImporter
+                  handpose={handposeRef.current}
+                  onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
+                />
+                <span>Bulk-label dari folder/video (subfolder/filename pattern). Static only.</span>
               </div>
             </>
           )}
