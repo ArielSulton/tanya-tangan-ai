@@ -119,12 +119,25 @@ export default function Beranda() {
               </div>
 
               <h1 className="text-5xl leading-tight font-extrabold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-                Belajar Kata Abstrak Lewat Isyarat{' '}
-                <span
-                  className="relative inline-block bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent"
-                  style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}
-                >
-                  SIBI
+                <span className="lg:hidden">
+                  Belajar Kata Abstrak Lewat Isyarat{' '}
+                  <span
+                    className="relative inline-block bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent"
+                    style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}
+                  >
+                    SIBI
+                  </span>
+                </span>
+                <span className="hidden lg:inline">
+                  Platform Pemahaman Kosakata Abstrak Berbasis Sistem Isyarat Bahasa Indonesia dan Kecerdasan Buatan
+                  untuk Siswa{' '}
+                  <span
+                    className="relative inline-block bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent"
+                    style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}
+                  >
+                    SDLB-B
+                  </span>{' '}
+                  Tingkat Pemula
                 </span>
               </h1>
 
