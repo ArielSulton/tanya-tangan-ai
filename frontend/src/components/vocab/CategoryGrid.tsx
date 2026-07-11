@@ -67,6 +67,15 @@ const CATEGORIES = [
   },
 ]
 
+// Desktop-only (lg+) 2x2 order: Contoh Kalimat, Hewan / Benda, Alam.
+// Below lg, cards keep their natural array order (Hewan, Benda, Alam, Contoh Kalimat) — unchanged.
+const DESKTOP_ORDER: Record<string, string> = {
+  'contoh-kalimat': 'lg:order-1',
+  hewan: 'lg:order-2',
+  benda: 'lg:order-3',
+  alam: 'lg:order-4',
+}
+
 export function CategoryGrid() {
   const featuredCategory = CATEGORIES.find((c) => c.isFeatured)
   const otherCategories = CATEGORIES.filter((c) => !c.isFeatured)
@@ -124,15 +133,16 @@ export function CategoryGrid() {
         </Link>
       )}
 
-      <div className="grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2">
         {otherCategories.map((cat) => {
           const isComingSoon = cat.slug === 'coming-soon'
+          const desktopOrderClass = DESKTOP_ORDER[cat.slug] ?? ''
 
           if (isComingSoon) {
             return (
               <div
                 key={cat.slug}
-                className="group relative h-[480px] w-full max-w-[340px] cursor-not-allowed overflow-hidden rounded-[2.5rem] bg-slate-900 opacity-90 shadow-xl grayscale-[20%]"
+                className="group relative h-[480px] w-full max-w-[340px] cursor-not-allowed overflow-hidden rounded-[2.5rem] bg-slate-900 opacity-90 shadow-xl grayscale-[20%] lg:hidden"
               >
                 <div className="absolute inset-0 h-[60%]">
                   <Image src={cat.image} alt={cat.label} fill className="object-cover" />
@@ -176,7 +186,7 @@ export function CategoryGrid() {
             <Link
               key={cat.slug}
               href={`/vocab/${cat.slug}`}
-              className="group relative h-[480px] w-full max-w-[340px] overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+              className={`group relative h-[480px] w-full max-w-[340px] overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${desktopOrderClass}`}
             >
               <div className="absolute inset-0 h-[60%]">
                 <Image
