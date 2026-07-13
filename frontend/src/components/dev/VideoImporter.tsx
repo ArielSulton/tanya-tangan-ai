@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { HandPoseService } from '@/lib/ai/services/handpose-service'
-import { sortHandsByXPosition } from '@/lib/gesture/normalize'
-import { extractFrameFeatures } from '@/lib/gesture/feature-extractor'
 import {
   extractLabelFromPath,
   normalizeImportLabel,
   isValidImportLabel,
 } from '@/lib/gesture/recording/label-extraction'
 import { computeSampleTimestamps } from '@/lib/gesture/recording/video-frame-sampler'
+import { loadVideo, releaseVideo, seekTo } from '@/lib/gesture/recording/video-element'
+import { extractStaticSampleFromVideoFrame } from '@/lib/gesture/recording/frame-sample-extractor'
 import { addStatic } from '@/lib/gesture/recording/storage'
 import type { StaticSample } from '@/lib/gesture/recording/types'
 
@@ -36,55 +36,6 @@ interface ImportStats {
 const DEFAULT_INTERVAL_MS = 150
 const MIN_INTERVAL_MS = 50
 const MAX_INTERVAL_MS = 1000
-
-function genId(): string {
-  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
-    ? crypto.randomUUID()
-    : `s-${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
-
-/** Load a File as an offscreen HTMLVideoElement, resolving once metadata (incl. duration) is ready. */
-function loadVideo(file: File): Promise<HTMLVideoElement> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file)
-    const video = document.createElement('video')
-    video.muted = true
-    video.playsInline = true
-    video.preload = 'auto'
-    video.onloadedmetadata = () => resolve(video)
-    video.onerror = () => {
-      URL.revokeObjectURL(url)
-      reject(new Error('video load failed'))
-    }
-    video.src = url
-    // Caller revokes URL once done. Storing on element for later cleanup.
-    ;(video as HTMLVideoElement & { __objectUrl?: string }).__objectUrl = url
-  })
-}
-
-function releaseVideo(video: HTMLVideoElement): void {
-  const url = (video as HTMLVideoElement & { __objectUrl?: string }).__objectUrl
-  if (url) URL.revokeObjectURL(url)
-}
-
-/** Seek a video to a given timestamp (seconds), resolving once the frame is ready to read. */
-function seekTo(video: HTMLVideoElement, t: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const onSeeked = () => {
-      video.removeEventListener('seeked', onSeeked)
-      video.removeEventListener('error', onError)
-      resolve()
-    }
-    const onError = () => {
-      video.removeEventListener('seeked', onSeeked)
-      video.removeEventListener('error', onError)
-      reject(new Error('video seek failed'))
-    }
-    video.addEventListener('seeked', onSeeked)
-    video.addEventListener('error', onError)
-    video.currentTime = t
-  })
-}
 
 export function VideoImporter({ handpose, onImported }: Props): ReactNode {
   const folderInputRef = useRef<HTMLInputElement>(null)
@@ -194,28 +145,14 @@ export function VideoImporter({ handpose, onImported }: Props): ReactNode {
         const timestamps = computeSampleTimestamps(video.duration, intervalMs)
         for (const t of timestamps) {
           await seekTo(video, t)
-          const raws = await handpose.detectRawHands(video)
-          if (raws.length === 0) {
+          const sample = await extractStaticSampleFromVideoFrame(video, handpose, item.label)
+          if (sample === null) {
             skippedNoHands++
           } else {
-            const pair = sortHandsByXPosition(raws)
-            const features = extractFrameFeatures(pair)
-            const allZero = features.every((v) => v === 0)
-            if (allZero) {
-              skippedNoHands++
-            } else {
-              const sample: StaticSample = {
-                id: genId(),
-                label: item.label,
-                features,
-                capturedAt: Date.now(),
-                source: 'manual',
-              }
-              await addStatic(sample)
-              newSamples.push(sample)
-              imported++
-              perClass[item.label] = (perClass[item.label] || 0) + 1
-            }
+            await addStatic(sample)
+            newSamples.push(sample)
+            imported++
+            perClass[item.label] = (perClass[item.label] || 0) + 1
           }
           setLiveStats({ imported, skipped, skippedNoHands, perClass: { ...perClass } })
           // Yield to event loop after each frame so the UI stays responsive
