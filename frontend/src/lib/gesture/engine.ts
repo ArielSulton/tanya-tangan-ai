@@ -10,12 +10,17 @@ import { GestureRecognitionService, type GestureRecognitionResult } from '../ai/
 import type { BrowserGestureResult, EngineStatus, GestureEngineCallbacks } from './types'
 import { sortHandsByXPosition } from './normalize'
 import { extractFrameFeatures } from './feature-extractor'
-import { MotionDetector } from './motion-detector'
-import type { FrameFeatures, MotionState, RawHand } from './types'
-import { dynamicClassifier } from './inference/dynamic-classifier'
+import type { FrameFeatures, RawHand } from './types'
 import { staticClassifier } from './inference/static-classifier'
-import { DYNAMIC_HISTORY_SIZE, type HistoryPoint } from './recording/types'
-import { DYNAMIC_BUFFER_DURATION_MS, resampleToN, type TimedPoint } from './recording/resample'
+import { dynamicClassifierV2 } from './inference/dynamic-classifier-v2'
+import {
+  SequenceStateMachine,
+  majorityVote,
+  SMOOTH_WINDOW,
+  VOTE_MIN_COUNT,
+  MIN_FINAL_CONFIDENCE,
+  type SequenceState,
+} from './sequence-state-machine'
 
 type StaticEngineMode = 'fingerpose' | 'mlp'
 
@@ -28,25 +33,17 @@ export class BrowserGestureEngine {
   private callbacks: BrowserGestureEngineCallbacks
   private state: EngineStatus = 'uninitialized'
   private frameBuffer: FrameFeatures[] = []
-  private motionDetector = new MotionDetector()
-  // Timestamped wrist trajectory — kept under a rolling DYNAMIC_BUFFER_DURATION_MS
-  // window and resampled to DYNAMIC_HISTORY_SIZE uniform points at motion_end
-  // so model input shape is constant regardless of host laptop's framerate.
-  private dynamicHistory: TimedPoint[] = []
-  private readonly DYNAMIC_HISTORY_SIZE = DYNAMIC_HISTORY_SIZE
   private readonly FRAME_BUFFER_SIZE = 24
-  // Video reference retained so we can normalize wrist pixel coords to [0,1]
-  // before pushing to the dynamic history — matches the standalone recorder's
-  // coord space so a single trained model works in both contexts.
-  private video: HTMLVideoElement | null = null
+  private sequenceStateMachine = new SequenceStateMachine()
+  private dynamicPredictionHistory: string[] = []
   // Static-engine selection. Read from NEXT_PUBLIC_STATIC_ENGINE at init.
   // 'mlp' attempts to load the trained classifier; falls back to fingerpose
   // (mlpReady stays false) if model files are missing.
   private staticEngineMode: StaticEngineMode = 'fingerpose'
   private mlpReady = false
   private mlpInflight = false
-  // Dev-only: track last motion state so we log transitions, not every frame.
-  private lastLoggedMotionState: MotionState | null = null
+  // Dev-only: track last sequence state so we log transitions, not every frame.
+  private lastLoggedSequenceState: SequenceState | null = null
 
   constructor(callbacks: BrowserGestureEngineCallbacks = {}) {
     this.callbacks = callbacks
@@ -58,7 +55,6 @@ export class BrowserGestureEngine {
 
   async initialize(video: HTMLVideoElement, canvas: HTMLCanvasElement): Promise<void> {
     this.setState('initializing')
-    this.video = video
     this.service = new GestureRecognitionService()
 
     // Resolve static engine selection from env. Validate explicitly — anything
@@ -78,17 +74,17 @@ export class BrowserGestureEngine {
         }
       })
     }
-    // Preload dynamic LSTM in parallel so the first motion_end doesn't pay
-    // the download + WebGL kernel compile cost (otherwise the user's first
-    // dynamic gesture silently misses while the model lazy-loads).
-    void dynamicClassifier.load().then((ok) => {
+    // Preload dynamic_v2 model in parallel so the first completed window
+    // doesn't pay the download + WebGL kernel compile cost (otherwise the
+    // user's first dynamic gesture silently misses while it lazy-loads).
+    void dynamicClassifierV2.load().then((ok) => {
       if (ok) {
-        this.callbacks.onStatus?.('Dynamic engine: LSTM ready')
+        this.callbacks.onStatus?.('Dynamic engine: GRU ready')
         if (process.env.NODE_ENV === 'development') {
-          console.log('[engine] LSTM model loaded ✓')
+          console.log('[engine] dynamic_v2 GRU model loaded ✓')
         }
       } else if (process.env.NODE_ENV === 'development') {
-        console.warn('[engine] LSTM model failed to load — dynamic gestures will never fire')
+        console.warn('[engine] dynamic_v2 model failed to load — dynamic gestures will never fire')
       }
     })
 
@@ -123,15 +119,15 @@ export class BrowserGestureEngine {
   async stop(): Promise<void> {
     if (!this.service) return
     await this.service.stop()
-    this.dynamicHistory = []
-    this.motionDetector.update(null)
+    this.sequenceStateMachine.reset()
+    this.dynamicPredictionHistory = []
     this.setState('stopped')
   }
 
   dispose(): void {
     this.frameBuffer = []
-    this.dynamicHistory = []
-    this.motionDetector.update(null)
+    this.sequenceStateMachine.reset()
+    this.dynamicPredictionHistory = []
     if (this.service) {
       void this.service.stop()
       this.service.dispose()
@@ -141,10 +137,10 @@ export class BrowserGestureEngine {
   }
 
   /**
-   * Phase 2A: handler invoked by GestureRecognitionService every processed
-   * frame with raw multi-hand detections (before sort/normalize). Pushes
-   * an 84-float feature vector into the rolling buffer and updates the
-   * motion detector with the raw (image-space) wrist of slot 0.
+   * Handler invoked by GestureRecognitionService every processed frame with
+   * raw multi-hand detections (before sort/normalize). Pushes an 84-float
+   * feature vector into the static rolling buffer, and steps the dynamic_v2
+   * sequence state machine (Task 10) with the same raw detections.
    */
   private handleRawHands(raws: RawHand[]): void {
     const pair = sortHandsByXPosition(raws)
@@ -163,73 +159,14 @@ export class BrowserGestureEngine {
         this.mlpInflight = false
       })
     }
-    // Wrist trajectory tracked twice for two different consumers:
-    //   - MotionDetector keeps PIXEL coords (its variance thresholds are tuned
-    //     for pixel-scale jitter/motion).
-    //   - dynamicHistory holds [0,1] NORMALIZED coords so the trained model
-    //     sees the same coord space whether trained from /dev/ recorder, the
-    //     standalone HTML, or live inference here.
-    const sortedRawByX = [...raws].sort((a, b) => a.landmarks[0].x - b.landmarks[0].x)
-    const rawSlot0 = sortedRawByX[0]
-    if (rawSlot0) {
-      // Motion detection tracks INDEX FINGER TIP (landmark 8), not wrist.
-      // For SIBI dynamic signs like J/Z the fingertip traces the letter while
-      // the wrist stays nearly stationary — tracking wrist alone misses these
-      // entirely. For whole-hand gestures (terima_kasih) wrist + fingertip
-      // move together so trigger still fires reliably.
-      const motionLm = rawSlot0.landmarks[8] ?? rawSlot0.landmarks[0]
-      const px = { x: motionLm.x, y: motionLm.y }
-      this.motionDetector.update(px)
-      if (process.env.NODE_ENV === 'development' && this.motionDetector.state !== this.lastLoggedMotionState) {
-        console.log(
-          `[engine] motion: ${this.lastLoggedMotionState ?? 'init'} → ${this.motionDetector.state} (buffer=${this.dynamicHistory.length})`,
-        )
-        this.lastLoggedMotionState = this.motionDetector.state
-      }
-      const vw = this.video?.videoWidth || 0
-      const vh = this.video?.videoHeight || 0
-      const normX = vw > 0 && vh > 0 ? px.x / vw : px.x
-      const normY = vw > 0 && vh > 0 ? px.y / vh : px.y
-      const t = Date.now()
-      this.dynamicHistory.push({ x: normX, y: normY, t })
-      // Same hysteresis as PointHistoryRecorder: drop oldest only if the
-      // second-oldest is still inside the window, so the buffer reliably
-      // reaches the target duration before we resample.
-      while (
-        this.dynamicHistory.length > 1 &&
-        this.dynamicHistory[this.dynamicHistory.length - 1].t - this.dynamicHistory[1].t >= DYNAMIC_BUFFER_DURATION_MS
-      ) {
-        this.dynamicHistory.shift()
-      }
-    } else {
-      this.motionDetector.update(null)
-    }
 
-    // On motion_end, resample buffer to fixed N points spanning the fixed
-    // duration window, then dispatch async. The model only sees this shape;
-    // laptop FPS variation drops out.
-    //
-    // Clear `dynamicHistory` after dispatch (or after a too-short reject) so
-    // the next gesture starts with a clean buffer — otherwise tail points
-    // from gesture N contaminate gesture N+1's window.
-    if (this.motionDetector.state === 'motion_end' && this.dynamicHistory.length >= 2) {
-      const span = this.dynamicHistory[this.dynamicHistory.length - 1].t - this.dynamicHistory[0].t
-      if (span >= DYNAMIC_BUFFER_DURATION_MS * 0.5) {
-        const resampled: HistoryPoint[] = resampleToN(
-          [...this.dynamicHistory],
-          this.DYNAMIC_HISTORY_SIZE,
-          DYNAMIC_BUFFER_DURATION_MS,
-        )
-        if (process.env.NODE_ENV === 'development') {
-          console.log(
-            `[engine] dynamic dispatch: span=${span}ms, n=${this.dynamicHistory.length} → resampled to ${this.DYNAMIC_HISTORY_SIZE}`,
-          )
-        }
-        void this.runDynamicInference(resampled)
-      } else if (process.env.NODE_ENV === 'development') {
-        console.log(`[engine] dynamic skip: span=${span}ms < ${DYNAMIC_BUFFER_DURATION_MS * 0.5}ms floor`)
-      }
-      this.dynamicHistory = []
+    const step = this.sequenceStateMachine.step(raws)
+    if (process.env.NODE_ENV === 'development' && step.state !== this.lastLoggedSequenceState) {
+      console.log(`[engine] sequence: ${this.lastLoggedSequenceState ?? 'init'} → ${step.state}`)
+      this.lastLoggedSequenceState = step.state
+    }
+    if (step.shouldPredict && step.frames) {
+      void this.runDynamicInference(step.frames)
     }
   }
 
@@ -253,19 +190,29 @@ export class BrowserGestureEngine {
     }
   }
 
-  private async runDynamicInference(history: HistoryPoint[]): Promise<void> {
+  private async runDynamicInference(frames: number[][]): Promise<void> {
     try {
-      const result = await dynamicClassifier.classify(history)
-      if (process.env.NODE_ENV === 'development') {
-        if (result) {
-          console.log(`[engine] dynamic result: ${result.label} (conf=${result.confidence.toFixed(3)})`)
-        } else {
+      const result = await dynamicClassifierV2.classify(frames)
+      if (!result) {
+        if (process.env.NODE_ENV === 'development') {
           console.log('[engine] dynamic result: NULL (confidence below classifier threshold)')
         }
+        return
       }
-      if (result) {
+
+      this.dynamicPredictionHistory.push(result.label)
+      if (this.dynamicPredictionHistory.length > SMOOTH_WINDOW) {
+        this.dynamicPredictionHistory.shift()
+      }
+      const voted = majorityVote(this.dynamicPredictionHistory, VOTE_MIN_COUNT)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `[engine] dynamic candidate: ${result.label} (conf=${result.confidence.toFixed(3)}) vote=${voted ?? 'none'}`,
+        )
+      }
+      if (voted && result.confidence >= MIN_FINAL_CONFIDENCE) {
         const adapted: BrowserGestureResult = {
-          letter: result.label,
+          letter: voted,
           confidence: result.confidence,
           alternatives: [],
           timestamp: Date.now(),
@@ -274,6 +221,8 @@ export class BrowserGestureEngine {
           gestureType: 'dynamic',
         }
         this.callbacks.onResult?.(adapted)
+        this.sequenceStateMachine.acceptPrediction()
+        this.dynamicPredictionHistory = []
       }
     } catch (err) {
       console.warn('[engine] dynamic inference error:', err)
@@ -286,9 +235,9 @@ export class BrowserGestureEngine {
     return this.frameBuffer.length === 0 ? null : this.frameBuffer[this.frameBuffer.length - 1]
   }
 
-  /** Phase 2A introspection helper — returns the current motion state. */
-  getMotionState(): MotionState {
-    return this.motionDetector.state
+  /** Introspection helper — returns the current dynamic-sequence trigger state. */
+  getSequenceState(): SequenceState {
+    return this.sequenceStateMachine.getState()
   }
 
   private handleServiceResult(r: GestureRecognitionResult): void {
