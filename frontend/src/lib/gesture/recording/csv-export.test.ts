@@ -101,3 +101,56 @@ describe('dynamicSamplesToCsv', () => {
     expect(() => dynamicSamplesToCsv([bad])).toThrow(new RegExp(String(N)))
   })
 })
+
+import { dynamicV2SamplesToCsv } from './csv-export'
+import type { DynamicSampleV2 } from './dynamic-v2-types'
+import type { RawFrameRow } from './recording-state-machine'
+
+describe('dynamicV2SamplesToCsv', () => {
+  function makeRow(handCount: number): RawFrameRow {
+    return {
+      handCount,
+      leftPresent: handCount >= 1,
+      rightPresent: handCount >= 2,
+      left: handCount >= 1 ? new Array(63).fill(1) : null,
+      right: handCount >= 2 ? new Array(63).fill(2) : null,
+    }
+  }
+
+  function makeSample(label: string, rows: RawFrameRow[]): DynamicSampleV2 {
+    return { id: 'x1', label, capturedAt: 0, source: 'manual', rows }
+  }
+
+  test('header matches the reference SEQUENCE_HEADER column layout', () => {
+    const csv = dynamicV2SamplesToCsv([])
+    const header = csv.split('\n')[0].split(',')
+    expect(header.slice(0, 5)).toEqual(['label', 'sample_id', 'hand_count', 'left_present', 'right_present'])
+    expect(header).toHaveLength(5 + 63 + 63)
+    expect(header[5]).toBe('left_x0')
+    expect(header[5 + 63]).toBe('right_x0')
+  })
+
+  test('emits one row per frame, zero-filling the absent hand', () => {
+    const csv = dynamicV2SamplesToCsv([makeSample('halo', [makeRow(1), makeRow(2)])])
+    const lines = csv.split('\n')
+    expect(lines).toHaveLength(3) // header + 2 frame rows
+    const row0 = lines[1].split(',')
+    expect(row0[0]).toBe('halo')
+    expect(row0[1]).toBe('x1') // sample_id
+    expect(row0[2]).toBe('1') // hand_count
+    expect(row0[3]).toBe('1') // left_present
+    expect(row0[4]).toBe('0') // right_present
+    expect(Number(row0[5])).toBe(1) // left_x0
+    expect(Number(row0[5 + 63])).toBe(0) // right_x0, zero-filled (absent)
+
+    const row1 = lines[2].split(',')
+    expect(row1[3]).toBe('1') // left_present
+    expect(row1[4]).toBe('1') // right_present
+    expect(Number(row1[5 + 63])).toBe(2) // right_x0 populated
+  })
+
+  test('multiple samples each contribute their own rows, all sharing one CSV', () => {
+    const csv = dynamicV2SamplesToCsv([makeSample('halo', [makeRow(1)]), makeSample('yang', [makeRow(1), makeRow(1)])])
+    expect(csv.split('\n')).toHaveLength(1 + 1 + 2) // header + 1 + 2
+  })
+})

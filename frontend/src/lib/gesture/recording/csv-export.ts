@@ -1,7 +1,11 @@
 import { DYNAMIC_HISTORY_SIZE, type StaticSample, type DynamicSample } from './types'
+import type { DynamicSampleV2 } from './dynamic-v2-types'
+import type { RawFrameRow } from './recording-state-machine'
 
 const STATIC_FEATURE_LENGTH = 84
 const DYNAMIC_HISTORY_LENGTH = DYNAMIC_HISTORY_SIZE
+const NUM_LANDMARKS = 21
+const HAND_RAW_LEN = NUM_LANDMARKS * 3
 
 /**
  * Serialize a list of static samples to CSV.
@@ -37,6 +41,47 @@ export function dynamicSamplesToCsv(samples: DynamicSample[]): string {
     }
     const flat = s.history.flatMap((p) => [p.x, p.y])
     lines.push([s.label, ...flat].join(','))
+  }
+  return lines.join('\n')
+}
+
+function landmarkCols(prefix: 'left' | 'right'): string[] {
+  const cols: string[] = []
+  for (let i = 0; i < NUM_LANDMARKS; i++) {
+    cols.push(`${prefix}_x${i}`, `${prefix}_y${i}`, `${prefix}_z${i}`)
+  }
+  return cols
+}
+
+function rowValues(row: RawFrameRow): number[] {
+  const left = row.left ?? new Array(HAND_RAW_LEN).fill(0)
+  const right = row.right ?? new Array(HAND_RAW_LEN).fill(0)
+  return [row.handCount, row.leftPresent ? 1 : 0, row.rightPresent ? 1 : 0, ...left, ...right]
+}
+
+/**
+ * Serialize dynamic_v2 takes to a raw, wide-schema CSV — ONE ROW PER FRAME,
+ * matching the reference project's SEQUENCE_HEADER exactly:
+ * label,sample_id,hand_count,left_present,right_present,left_x0..z20,right_x0..z20
+ * (131 columns). Deliberately NOT normalized or resampled here — that's
+ * Task 6's Python preprocessing script's job, mirroring how the reference
+ * project separates raw capture from offline feature engineering.
+ */
+export function dynamicV2SamplesToCsv(samples: DynamicSampleV2[]): string {
+  const headers = [
+    'label',
+    'sample_id',
+    'hand_count',
+    'left_present',
+    'right_present',
+    ...landmarkCols('left'),
+    ...landmarkCols('right'),
+  ]
+  const lines: string[] = [headers.join(',')]
+  for (const s of samples) {
+    for (const row of s.rows) {
+      lines.push([s.label, s.id, ...rowValues(row)].join(','))
+    }
   }
   return lines.join('\n')
 }

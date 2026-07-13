@@ -5,11 +5,13 @@
  */
 
 import type { StaticSample, DynamicSample } from './types'
+import type { DynamicSampleV2 } from './dynamic-v2-types'
 
 const DB_NAME = 'gesture-recorder'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STATIC_STORE = 'staticSamples'
 const DYNAMIC_STORE = 'dynamicSamples'
+const DYNAMIC_V2_STORE = 'dynamicV2Samples'
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -21,6 +23,9 @@ function openDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(DYNAMIC_STORE)) {
         db.createObjectStore(DYNAMIC_STORE, { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains(DYNAMIC_V2_STORE)) {
+        db.createObjectStore(DYNAMIC_V2_STORE, { keyPath: 'id' })
       }
     }
     req.onsuccess = () => resolve(req.result)
@@ -59,12 +64,20 @@ export async function addDynamic(sample: DynamicSample): Promise<void> {
   await txAll(DYNAMIC_STORE, 'readwrite', (s) => s.add(sample) as IDBRequest<unknown> as IDBRequest<void>)
 }
 
+export async function addDynamicV2(sample: DynamicSampleV2): Promise<void> {
+  await txAll(DYNAMIC_V2_STORE, 'readwrite', (s) => s.add(sample) as IDBRequest<unknown> as IDBRequest<void>)
+}
+
 export async function listStatic(): Promise<StaticSample[]> {
   return txAll(STATIC_STORE, 'readonly', (s) => s.getAll() as IDBRequest<StaticSample[]>)
 }
 
 export async function listDynamic(): Promise<DynamicSample[]> {
   return txAll(DYNAMIC_STORE, 'readonly', (s) => s.getAll() as IDBRequest<DynamicSample[]>)
+}
+
+export async function listDynamicV2(): Promise<DynamicSampleV2[]> {
+  return txAll(DYNAMIC_V2_STORE, 'readonly', (s) => s.getAll() as IDBRequest<DynamicSampleV2[]>)
 }
 
 export async function deleteStatic(id: string): Promise<void> {
@@ -75,12 +88,20 @@ export async function deleteDynamic(id: string): Promise<void> {
   await txAll(DYNAMIC_STORE, 'readwrite', (s) => s.delete(id) as IDBRequest<unknown> as IDBRequest<void>)
 }
 
+export async function deleteDynamicV2(id: string): Promise<void> {
+  await txAll(DYNAMIC_V2_STORE, 'readwrite', (s) => s.delete(id) as IDBRequest<unknown> as IDBRequest<void>)
+}
+
 export async function clearStatic(): Promise<void> {
   await txAll(STATIC_STORE, 'readwrite', (s) => s.clear() as IDBRequest<unknown> as IDBRequest<void>)
 }
 
 export async function clearDynamic(): Promise<void> {
   await txAll(DYNAMIC_STORE, 'readwrite', (s) => s.clear() as IDBRequest<unknown> as IDBRequest<void>)
+}
+
+export async function clearDynamicV2(): Promise<void> {
+  await txAll(DYNAMIC_V2_STORE, 'readwrite', (s) => s.clear() as IDBRequest<unknown> as IDBRequest<void>)
 }
 
 async function deleteByLabel(store: string, label: string): Promise<number> {
@@ -119,12 +140,17 @@ export async function deleteDynamicByLabel(label: string): Promise<number> {
   return deleteByLabel(DYNAMIC_STORE, label)
 }
 
+export async function deleteDynamicV2ByLabel(label: string): Promise<number> {
+  return deleteByLabel(DYNAMIC_V2_STORE, label)
+}
+
 export async function clearAll(): Promise<void> {
   const db = await openDb()
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction([STATIC_STORE, DYNAMIC_STORE], 'readwrite')
+    const tx = db.transaction([STATIC_STORE, DYNAMIC_STORE, DYNAMIC_V2_STORE], 'readwrite')
     tx.objectStore(STATIC_STORE).clear()
     tx.objectStore(DYNAMIC_STORE).clear()
+    tx.objectStore(DYNAMIC_V2_STORE).clear()
     tx.oncomplete = () => {
       db.close()
       resolve()
