@@ -32,6 +32,7 @@ import {
 import { DynamicClassInput } from './DynamicClassInput'
 import { ImageImporter } from './ImageImporter'
 import { VideoImporter } from './VideoImporter'
+import { VideoRecordReview } from './VideoRecordReview'
 
 const AUTO_LABEL_INTERVAL_MS = 600 // throttle YOLO calls so we don't flood backend
 
@@ -101,6 +102,7 @@ export function GestureRecorder() {
 
   const [mode, setMode] = useState<'static' | 'dynamic'>('static')
   const [activeClass, setActiveClass] = useState<string | null>(null)
+  const [recordReviewOpen, setRecordReviewOpen] = useState(false)
   const [autoLabel, setAutoLabel] = useState(false)
   // Dynamic buffer progress reported in ms (wall-clock duration of recorder
   // buffer). UI shows "X.XXs / 1.50s" so user knows when buffer is ready
@@ -241,8 +243,12 @@ export function GestureRecorder() {
   }, [])
 
   // Hotkey: Space → record sample (static) or save take (dynamic).
+  // Guarded by recordReviewOpen so this doesn't fire at the same time as
+  // VideoRecordReview's own Space handler (accept reviewed frame) while
+  // that modal is open.
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
+      if (recordReviewOpen) return
       if (ev.code !== 'Space') return
       const target = ev.target as HTMLElement | null
       const tag = target?.tagName ?? ''
@@ -254,7 +260,7 @@ export function GestureRecorder() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, activeClass, latestPair])
+  }, [mode, activeClass, latestPair, recordReviewOpen])
 
   const captureStaticNow = useCallback(async () => {
     if (!activeClass) return
@@ -410,131 +416,157 @@ export function GestureRecorder() {
   const isAlphabetActive = activeClass !== null && (STATIC_CLASSES as readonly string[]).includes(activeClass)
 
   return (
-    <div className="mx-auto grid max-w-7xl grid-cols-1 items-stretch gap-4 p-4 lg:grid-cols-12">
-      <div className="flex min-w-0 flex-col lg:col-span-7">
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2.5rem] bg-slate-50 p-2 shadow-inner ring-1 ring-black/5">
-          <div className="relative h-full w-full overflow-hidden rounded-[2rem] bg-slate-900">
-            <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 h-full w-full object-cover" />
-            <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-            {countdown !== null && (
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
-                <span className="font-mono text-[14rem] leading-none font-bold text-white drop-shadow-lg">
-                  {countdown}
-                </span>
-              </div>
+    <>
+      <div className="mx-auto grid max-w-7xl grid-cols-1 items-stretch gap-4 p-4 lg:grid-cols-12">
+        <div className="flex min-w-0 flex-col lg:col-span-7">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2.5rem] bg-slate-50 p-2 shadow-inner ring-1 ring-black/5">
+            <div className="relative h-full w-full overflow-hidden rounded-[2rem] bg-slate-900">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+              {countdown !== null && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
+                  <span className="font-mono text-[14rem] leading-none font-bold text-white drop-shadow-lg">
+                    {countdown}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="mt-2 text-xs text-slate-600">{status}</div>
+          <div className="mt-4">
+            <RecordingControls
+              mode={mode}
+              onModeChange={setMode}
+              onRecordStatic={() => void handleRecordStatic()}
+              staticAutoLabel={autoLabel}
+              onToggleAutoLabel={() => setAutoLabel((v) => !v)}
+              dynamicBufferDurationMs={bufferDurationMs}
+              onSaveDynamicTake={() => void handleSaveDynamicTake()}
+              onResetDynamicBuffer={handleResetBuffer}
+              onExportCsv={handleExportCsv}
+              onClearAll={() => void handleClearAll()}
+              classSelected={activeClass !== null}
+            />
+            {mode === 'static' && (
+              <>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                  <label className="flex items-center gap-1.5">
+                    Delay
+                    <input
+                      type="number"
+                      min={0}
+                      max={30}
+                      value={recordDelaySec}
+                      onChange={(e) => {
+                        const v = Number.parseInt(e.target.value, 10)
+                        if (!Number.isNaN(v)) setRecordDelaySec(Math.max(0, Math.min(30, v)))
+                      }}
+                      className="w-14 rounded border border-slate-300 px-1.5 py-0.5 text-center font-mono text-sm focus:border-emerald-500 focus:outline-none"
+                      aria-label="Recording delay in seconds"
+                      disabled={countdown !== null}
+                    />
+                    detik
+                  </label>
+                  <span className="text-slate-500">
+                    — countdown sebelum capture (0 = langsung). Press Space lagi untuk cancel.
+                  </span>
+                  {countdown !== null && (
+                    <button
+                      type="button"
+                      onClick={cancelCountdown}
+                      className="rounded border border-red-300 px-2 py-0.5 text-xs text-red-600 hover:bg-red-50"
+                    >
+                      Cancel ({countdown}s)
+                    </button>
+                  )}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                  <ImageImporter
+                    handpose={handposeRef.current}
+                    onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
+                  />
+                  <VideoImporter
+                    handpose={handposeRef.current}
+                    onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setRecordReviewOpen(true)}
+                    disabled={!activeClass || !handposeRef.current || !videoRef.current?.srcObject}
+                    className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-slate-400 disabled:opacity-50"
+                    title="Rekam video singkat lewat kamera, lalu review per-frame untuk kelas aktif"
+                  >
+                    Rekam video
+                  </button>
+                  <span>Bulk-label dari folder/video (subfolder/filename pattern). Static only.</span>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="mt-4">
+            {mode === 'static' ? (
+              <>
+                <div className="mb-1 text-xs font-semibold text-slate-500 uppercase">Alphabet class</div>
+                <ClassPicker
+                  classes={STATIC_CLASSES}
+                  active={isAlphabetActive ? activeClass : null}
+                  onSelect={setActiveClass}
+                  counts={staticCounts}
+                />
+                <div className="mt-3 mb-1 text-xs font-semibold text-slate-500 uppercase">Or custom static class</div>
+                <DynamicClassInput
+                  active={!isAlphabetActive ? activeClass : null}
+                  onSelect={setActiveClass}
+                  suggestions={[]}
+                  counts={staticCustomCounts}
+                />
+              </>
+            ) : (
+              <>
+                <div className="mb-1 text-xs font-semibold text-slate-500 uppercase">Dynamic class</div>
+                <DynamicClassInput
+                  active={activeClass}
+                  onSelect={setActiveClass}
+                  suggestions={DYNAMIC_CLASS_SUGGESTIONS}
+                  counts={dynamicCounts}
+                />
+              </>
             )}
           </div>
         </div>
-        <div className="mt-2 text-xs text-slate-600">{status}</div>
-        <div className="mt-4">
-          <RecordingControls
-            mode={mode}
-            onModeChange={setMode}
-            onRecordStatic={() => void handleRecordStatic()}
-            staticAutoLabel={autoLabel}
-            onToggleAutoLabel={() => setAutoLabel((v) => !v)}
-            dynamicBufferDurationMs={bufferDurationMs}
-            onSaveDynamicTake={() => void handleSaveDynamicTake()}
-            onResetDynamicBuffer={handleResetBuffer}
-            onExportCsv={handleExportCsv}
-            onClearAll={() => void handleClearAll()}
-            classSelected={activeClass !== null}
+        <div className="flex min-w-0 flex-col gap-4 lg:col-span-5">
+          <SampleList
+            title="Static samples"
+            samples={staticSamples}
+            onDelete={(id) => void handleDeleteStatic(id)}
+            onClear={() => void handleClearStatic()}
+            onDeleteClass={(label) => void handleDeleteStaticClass(label)}
           />
-          {mode === 'static' && (
-            <>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                <label className="flex items-center gap-1.5">
-                  Delay
-                  <input
-                    type="number"
-                    min={0}
-                    max={30}
-                    value={recordDelaySec}
-                    onChange={(e) => {
-                      const v = Number.parseInt(e.target.value, 10)
-                      if (!Number.isNaN(v)) setRecordDelaySec(Math.max(0, Math.min(30, v)))
-                    }}
-                    className="w-14 rounded border border-slate-300 px-1.5 py-0.5 text-center font-mono text-sm focus:border-emerald-500 focus:outline-none"
-                    aria-label="Recording delay in seconds"
-                    disabled={countdown !== null}
-                  />
-                  detik
-                </label>
-                <span className="text-slate-500">
-                  — countdown sebelum capture (0 = langsung). Press Space lagi untuk cancel.
-                </span>
-                {countdown !== null && (
-                  <button
-                    type="button"
-                    onClick={cancelCountdown}
-                    className="rounded border border-red-300 px-2 py-0.5 text-xs text-red-600 hover:bg-red-50"
-                  >
-                    Cancel ({countdown}s)
-                  </button>
-                )}
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                <ImageImporter
-                  handpose={handposeRef.current}
-                  onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
-                />
-                <VideoImporter
-                  handpose={handposeRef.current}
-                  onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
-                />
-                <span>Bulk-label dari folder/video (subfolder/filename pattern). Static only.</span>
-              </div>
-            </>
-          )}
-        </div>
-        <div className="mt-4">
-          {mode === 'static' ? (
-            <>
-              <div className="mb-1 text-xs font-semibold text-slate-500 uppercase">Alphabet class</div>
-              <ClassPicker
-                classes={STATIC_CLASSES}
-                active={isAlphabetActive ? activeClass : null}
-                onSelect={setActiveClass}
-                counts={staticCounts}
-              />
-              <div className="mt-3 mb-1 text-xs font-semibold text-slate-500 uppercase">Or custom static class</div>
-              <DynamicClassInput
-                active={!isAlphabetActive ? activeClass : null}
-                onSelect={setActiveClass}
-                suggestions={[]}
-                counts={staticCustomCounts}
-              />
-            </>
-          ) : (
-            <>
-              <div className="mb-1 text-xs font-semibold text-slate-500 uppercase">Dynamic class</div>
-              <DynamicClassInput
-                active={activeClass}
-                onSelect={setActiveClass}
-                suggestions={DYNAMIC_CLASS_SUGGESTIONS}
-                counts={dynamicCounts}
-              />
-            </>
-          )}
+          <SampleList
+            title="Dynamic samples"
+            samples={dynamicSamples}
+            onDelete={(id) => void handleDeleteDynamic(id)}
+            onClear={() => void handleClearDynamic()}
+            onDeleteClass={(label) => void handleDeleteDynamicClass(label)}
+          />
         </div>
       </div>
-      <div className="flex min-w-0 flex-col gap-4 lg:col-span-5">
-        <SampleList
-          title="Static samples"
-          samples={staticSamples}
-          onDelete={(id) => void handleDeleteStatic(id)}
-          onClear={() => void handleClearStatic()}
-          onDeleteClass={(label) => void handleDeleteStaticClass(label)}
+      {recordReviewOpen && activeClass && (
+        <VideoRecordReview
+          stream={(videoRef.current?.srcObject as MediaStream | null) ?? null}
+          activeClass={activeClass}
+          handpose={handposeRef.current}
+          onImported={(samples) => setStaticSamples((prev) => [...prev, ...samples])}
+          onClose={() => setRecordReviewOpen(false)}
         />
-        <SampleList
-          title="Dynamic samples"
-          samples={dynamicSamples}
-          onDelete={(id) => void handleDeleteDynamic(id)}
-          onClear={() => void handleClearDynamic()}
-          onDeleteClass={(label) => void handleDeleteDynamicClass(label)}
-        />
-      </div>
-    </div>
+      )}
+    </>
   )
 }
 
