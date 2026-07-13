@@ -7,28 +7,24 @@ import { SampleList } from './SampleList'
 import { HandPoseService } from '@/lib/ai/services/handpose-service'
 import { sortHandsByXPosition } from '@/lib/gesture/normalize'
 import { captureStaticSample } from '@/lib/gesture/recording/keypoint-recorder'
-import { PointHistoryRecorder } from '@/lib/gesture/recording/point-history-recorder'
-import { staticSamplesToCsv, dynamicSamplesToCsv } from '@/lib/gesture/recording/csv-export'
+import { RecordingStateMachine } from '@/lib/gesture/recording/recording-state-machine'
+import { staticSamplesToCsv, dynamicV2SamplesToCsv } from '@/lib/gesture/recording/csv-export'
 import {
   addStatic,
-  addDynamic,
+  addDynamicV2,
   listStatic,
-  listDynamic,
+  listDynamicV2,
   deleteStatic,
-  deleteDynamic,
+  deleteDynamicV2,
   deleteStaticByLabel,
-  deleteDynamicByLabel,
+  deleteDynamicV2ByLabel,
   clearStatic as clearStaticStorage,
-  clearDynamic as clearDynamicStorage,
+  clearDynamicV2 as clearDynamicV2Storage,
   clearAll as clearAllStorage,
 } from '@/lib/gesture/recording/storage'
 import { labelFrameViaYolo } from '@/lib/gesture/recording/yolo-labeler'
-import {
-  STATIC_CLASSES,
-  DYNAMIC_CLASS_SUGGESTIONS,
-  type StaticSample,
-  type DynamicSample,
-} from '@/lib/gesture/recording/types'
+import { STATIC_CLASSES, type StaticSample } from '@/lib/gesture/recording/types'
+import { DYNAMIC_V2_CLASS_SUGGESTIONS, type DynamicSampleV2 } from '@/lib/gesture/recording/dynamic-v2-types'
 import { DynamicClassInput } from './DynamicClassInput'
 import { ImageImporter } from './ImageImporter'
 import { VideoImporter } from './VideoImporter'
@@ -98,18 +94,16 @@ export function GestureRecorder() {
   )
   const rafRef = useRef<number | null>(null)
   const lastAutoLabelTsRef = useRef(0)
-  const recorderRef = useRef<PointHistoryRecorder>(new PointHistoryRecorder())
+  const recorderRef = useRef<RecordingStateMachine>(new RecordingStateMachine())
 
   const [mode, setMode] = useState<'static' | 'dynamic'>('static')
   const [activeClass, setActiveClass] = useState<string | null>(null)
   const [recordReviewOpen, setRecordReviewOpen] = useState(false)
   const [autoLabel, setAutoLabel] = useState(false)
-  // Dynamic buffer progress reported in ms (wall-clock duration of recorder
-  // buffer). UI shows "X.XXs / 1.50s" so user knows when buffer is ready
-  // regardless of the host laptop's frame rate.
-  const [bufferDurationMs, setBufferDurationMs] = useState(0)
+  const [dynamicRecordingState, setDynamicRecordingState] = useState<'idle' | 'recording'>('idle')
+  const [dynamicLastTake, setDynamicLastTake] = useState<{ discarded: boolean; frameCount: number } | null>(null)
   const [staticSamples, setStaticSamples] = useState<StaticSample[]>([])
-  const [dynamicSamples, setDynamicSamples] = useState<DynamicSample[]>([])
+  const [dynamicV2Samples, setDynamicV2Samples] = useState<DynamicSampleV2[]>([])
   const [status, setStatus] = useState('Initialising…')
   const [latestPair, setLatestPair] = useState<ReturnType<typeof sortHandsByXPosition> | null>(null)
   // Delay (seconds) between pressing Record/Space and actually capturing the
@@ -132,9 +126,9 @@ export function GestureRecorder() {
   useEffect(() => {
     void (async () => {
       try {
-        const [s, d] = await Promise.all([listStatic(), listDynamic()])
+        const [s, d] = await Promise.all([listStatic(), listDynamicV2()])
         setStaticSamples(s)
-        setDynamicSamples(d)
+        setDynamicV2Samples(d)
       } catch (e) {
         console.warn('[recorder] load failed:', e)
       }
@@ -185,21 +179,33 @@ export function GestureRecorder() {
             const pair = sortHandsByXPosition(raws)
             setLatestPair(pair)
             drawSkeleton(canvasRef.current, video, raws)
-            // Push wrist of leftmost hand to dynamic recorder. Normalize to
-            // [0,1] by dividing by video dimensions — matches the production
-            // engine + standalone recorder so a single trained dynamic model
-            // works regardless of which UI collected the data.
-            if (raws.length > 0) {
-              const vw = video.videoWidth || 1
-              const vh = video.videoHeight || 1
-              recorderRef.current.push({
-                x: raws[0].landmarks[0].x / vw,
-                y: raws[0].landmarks[0].y / vh,
-              })
-            } else {
-              recorderRef.current.push(null)
+            // Only step the automatic capture state machine while in dynamic
+            // mode — otherwise a lingering "recording" state could span a
+            // mode switch and auto-save a half-static-half-dynamic take.
+            if (modeRef.current === 'dynamic') {
+              const step = recorderRef.current.step(raws)
+              setDynamicRecordingState(step.state)
+              if (step.finished) {
+                const activeCount = step.finished.rows.filter((r) => r.handCount > 0).length
+                setDynamicLastTake({ discarded: step.finished.discarded, frameCount: activeCount })
+                const currentClass = activeClassRef.current
+                if (!step.finished.discarded && currentClass) {
+                  const sample: DynamicSampleV2 = {
+                    id:
+                      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+                        ? crypto.randomUUID()
+                        : `dv2-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                    label: currentClass,
+                    capturedAt: Date.now(),
+                    source: 'manual',
+                    rows: step.finished.rows,
+                  }
+                  void addDynamicV2(sample)
+                    .then(() => setDynamicV2Samples((prev) => [...prev, sample]))
+                    .catch((e) => console.warn('[recorder] addDynamicV2 failed:', e))
+                }
+              }
             }
-            setBufferDurationMs(recorderRef.current.durationMs)
             // Auto-label tick (throttled). Read live values from refs so this
             // pump doesn't have to re-mount on every interaction.
             const currentMode = modeRef.current
@@ -242,6 +248,11 @@ export function GestureRecorder() {
     // Empty deps: camera + handpose set up once. Live state read via refs above.
   }, [])
 
+  const handleAbortDynamicTake = useCallback(() => {
+    recorderRef.current.reset()
+    setDynamicRecordingState('idle')
+  }, [])
+
   // Hotkey: Space → record sample (static) or save take (dynamic).
   // Guarded by recordReviewOpen so this doesn't fire at the same time as
   // VideoRecordReview's own Space handler (accept reviewed frame) while
@@ -255,12 +266,12 @@ export function GestureRecorder() {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || target?.isContentEditable) return
       ev.preventDefault()
       if (mode === 'static') void handleRecordStatic()
-      else void handleSaveDynamicTake()
+      else handleAbortDynamicTake()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, activeClass, latestPair, recordReviewOpen])
+  }, [mode, activeClass, latestPair, recordReviewOpen, handleAbortDynamicTake])
 
   const captureStaticNow = useCallback(async () => {
     if (!activeClass) return
@@ -322,36 +333,29 @@ export function GestureRecorder() {
     }
   }, [])
 
-  const handleSaveDynamicTake = useCallback(async () => {
-    if (!activeClass) return
-    try {
-      const sample = recorderRef.current.takeSample(activeClass)
-      await addDynamic(sample)
-      setDynamicSamples((prev) => [...prev, sample])
+  // Leaving dynamic mode mid-take would otherwise leave the state machine
+  // "recording" — a subsequent switch back to dynamic mode would then
+  // auto-save a take stitched from two unrelated recording sessions.
+  useEffect(() => {
+    if (mode !== 'dynamic') {
       recorderRef.current.reset()
-      setBufferDurationMs(0)
-    } catch (e) {
-      console.warn('[recorder] takeSample failed:', e)
+      setDynamicRecordingState('idle')
+      setDynamicLastTake(null)
     }
-  }, [activeClass])
-
-  const handleResetBuffer = useCallback(() => {
-    recorderRef.current.reset()
-    setBufferDurationMs(0)
-  }, [])
+  }, [mode])
 
   const handleExportCsv = useCallback(() => {
     const staticCsv = staticSamplesToCsv(staticSamples)
-    const dynamicCsv = dynamicSamplesToCsv(dynamicSamples)
+    const dynamicCsv = dynamicV2SamplesToCsv(dynamicV2Samples)
     download(staticCsv, 'keypoint.csv')
-    download(dynamicCsv, 'point_history.csv')
-  }, [staticSamples, dynamicSamples])
+    download(dynamicCsv, 'sequences_raw.csv')
+  }, [staticSamples, dynamicV2Samples])
 
   const handleClearAll = useCallback(async () => {
     if (!confirm('Delete ALL recorded samples? This cannot be undone.')) return
     await clearAllStorage()
     setStaticSamples([])
-    setDynamicSamples([])
+    setDynamicV2Samples([])
   }, [])
 
   const handleClearStatic = useCallback(async () => {
@@ -362,8 +366,8 @@ export function GestureRecorder() {
 
   const handleClearDynamic = useCallback(async () => {
     if (!confirm('Delete all DYNAMIC samples? This cannot be undone.')) return
-    await clearDynamicStorage()
-    setDynamicSamples([])
+    await clearDynamicV2Storage()
+    setDynamicV2Samples([])
   }, [])
 
   const handleDeleteStaticClass = useCallback(async (label: string) => {
@@ -374,8 +378,8 @@ export function GestureRecorder() {
 
   const handleDeleteDynamicClass = useCallback(async (label: string) => {
     if (!confirm(`Hapus semua sample dynamic kelas "${label}"? Tidak bisa di-undo.`)) return
-    await deleteDynamicByLabel(label)
-    setDynamicSamples((prev) => prev.filter((s) => s.label !== label))
+    await deleteDynamicV2ByLabel(label)
+    setDynamicV2Samples((prev) => prev.filter((s) => s.label !== label))
   }, [])
 
   const handleDeleteStatic = useCallback(async (id: string) => {
@@ -384,8 +388,8 @@ export function GestureRecorder() {
   }, [])
 
   const handleDeleteDynamic = useCallback(async (id: string) => {
-    await deleteDynamic(id)
-    setDynamicSamples((prev) => prev.filter((s) => s.id !== id))
+    await deleteDynamicV2(id)
+    setDynamicV2Samples((prev) => prev.filter((s) => s.id !== id))
   }, [])
 
   const staticCounts = useMemo(() => {
@@ -407,9 +411,9 @@ export function GestureRecorder() {
   }, [staticSamples])
   const dynamicCounts = useMemo(() => {
     const c: Record<string, number> = {}
-    for (const s of dynamicSamples) c[s.label] = (c[s.label] ?? 0) + 1
+    for (const s of dynamicV2Samples) c[s.label] = (c[s.label] ?? 0) + 1
     return c
-  }, [dynamicSamples])
+  }, [dynamicV2Samples])
 
   // Highlight the active class in the right component: letter picker if it
   // matches A-Y, custom input otherwise.
@@ -446,9 +450,9 @@ export function GestureRecorder() {
               onRecordStatic={() => void handleRecordStatic()}
               staticAutoLabel={autoLabel}
               onToggleAutoLabel={() => setAutoLabel((v) => !v)}
-              dynamicBufferDurationMs={bufferDurationMs}
-              onSaveDynamicTake={() => void handleSaveDynamicTake()}
-              onResetDynamicBuffer={handleResetBuffer}
+              dynamicRecordingState={dynamicRecordingState}
+              dynamicLastTake={dynamicLastTake}
+              onAbortDynamicTake={handleAbortDynamicTake}
               onExportCsv={handleExportCsv}
               onClearAll={() => void handleClearAll()}
               classSelected={activeClass !== null}
@@ -533,7 +537,7 @@ export function GestureRecorder() {
                 <DynamicClassInput
                   active={activeClass}
                   onSelect={setActiveClass}
-                  suggestions={DYNAMIC_CLASS_SUGGESTIONS}
+                  suggestions={DYNAMIC_V2_CLASS_SUGGESTIONS}
                   counts={dynamicCounts}
                 />
               </>
@@ -550,7 +554,7 @@ export function GestureRecorder() {
           />
           <SampleList
             title="Dynamic samples"
-            samples={dynamicSamples}
+            samples={dynamicV2Samples}
             onDelete={(id) => void handleDeleteDynamic(id)}
             onClear={() => void handleClearDynamic()}
             onDeleteClass={(label) => void handleDeleteDynamicClass(label)}

@@ -1,7 +1,12 @@
 'use client'
 
 import { type ReactNode } from 'react'
-import { DYNAMIC_BUFFER_DURATION_MS } from '@/lib/gesture/recording/resample'
+import type { RecordingState } from '@/lib/gesture/recording/recording-state-machine'
+
+export interface LastTakeStatus {
+  discarded: boolean
+  frameCount: number
+}
 
 interface Props {
   mode: 'static' | 'dynamic'
@@ -10,11 +15,11 @@ interface Props {
   onRecordStatic: () => void
   staticAutoLabel: boolean
   onToggleAutoLabel: () => void
-  // Dynamic mode — wall-clock duration of the rolling time-windowed buffer.
-  // Save take enabled when this reaches DYNAMIC_BUFFER_DURATION_MS.
-  dynamicBufferDurationMs: number
-  onSaveDynamicTake: () => void
-  onResetDynamicBuffer: () => void
+  // Dynamic mode (v2) — fully automatic capture (Task 3's RecordingStateMachine).
+  // There's no "Save take" button: recording starts/stops/saves on its own.
+  dynamicRecordingState: RecordingState
+  dynamicLastTake: LastTakeStatus | null
+  onAbortDynamicTake: () => void
   // Common
   onExportCsv: () => void
   onClearAll: () => void
@@ -29,9 +34,9 @@ export function RecordingControls(props: Props): ReactNode {
     onRecordStatic,
     staticAutoLabel,
     onToggleAutoLabel,
-    dynamicBufferDurationMs,
-    onSaveDynamicTake,
-    onResetDynamicBuffer,
+    dynamicRecordingState,
+    dynamicLastTake,
+    onAbortDynamicTake,
     onExportCsv,
     onClearAll,
     classSelected,
@@ -83,33 +88,43 @@ export function RecordingControls(props: Props): ReactNode {
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 text-sm text-slate-700">
-            <span>Buffer:</span>
-            <span className="font-mono">
-              {(Math.min(dynamicBufferDurationMs, DYNAMIC_BUFFER_DURATION_MS) / 1000).toFixed(2)}s /{' '}
-              {(DYNAMIC_BUFFER_DURATION_MS / 1000).toFixed(2)}s
+          <span
+            className={
+              'flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold ' +
+              (dynamicRecordingState === 'recording'
+                ? 'border-red-400 bg-red-50 text-red-700'
+                : 'border-slate-300 bg-white text-slate-500')
+            }
+          >
+            <span
+              className={
+                'inline-block h-2 w-2 rounded-full ' +
+                (dynamicRecordingState === 'recording' ? 'animate-pulse bg-red-500' : 'bg-slate-400')
+              }
+            />
+            {dynamicRecordingState === 'recording' ? 'Recording…' : 'Waiting for hand'}
+          </span>
+          {dynamicLastTake && (
+            <span
+              className={
+                'rounded-md border px-2 py-1 text-xs ' +
+                (dynamicLastTake.discarded
+                  ? 'border-amber-300 bg-amber-50 text-amber-700'
+                  : 'border-emerald-300 bg-emerald-50 text-emerald-700')
+              }
+            >
+              {dynamicLastTake.discarded
+                ? `Discarded (only ${dynamicLastTake.frameCount} active frames)`
+                : `Saved (${dynamicLastTake.frameCount} frames)`}
             </span>
-            <span className="inline-block h-1.5 w-24 overflow-hidden rounded bg-slate-200">
-              <span
-                className="block h-full bg-emerald-500 transition-all"
-                style={{ width: `${Math.min(100, (dynamicBufferDurationMs / DYNAMIC_BUFFER_DURATION_MS) * 100)}%` }}
-              />
-            </span>
-          </div>
+          )}
           <button
             type="button"
-            onClick={onSaveDynamicTake}
-            disabled={!classSelected || dynamicBufferDurationMs < DYNAMIC_BUFFER_DURATION_MS}
-            className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-40"
+            onClick={onAbortDynamicTake}
+            disabled={!classSelected || dynamicRecordingState !== 'recording'}
+            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-400 disabled:opacity-40"
           >
-            Save take (Space)
-          </button>
-          <button
-            type="button"
-            onClick={onResetDynamicBuffer}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-400"
-          >
-            Reset buffer
+            Abort take (Space)
           </button>
         </div>
       )}
