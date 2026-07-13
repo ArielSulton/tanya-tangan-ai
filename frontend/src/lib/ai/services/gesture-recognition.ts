@@ -265,6 +265,7 @@ export class GestureRecognitionService {
           const raws: RawHand[] = handDetections.map((d) => ({
             landmarks: d.landmarks.map((lm) => ({ x: lm.x, y: lm.y, z: lm.z })),
             confidence: d.confidence,
+            handedness: d.handedness,
           }))
           this.onRawHandsCallback(raws)
         }

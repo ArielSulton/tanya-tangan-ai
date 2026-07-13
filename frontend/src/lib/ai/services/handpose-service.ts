@@ -30,6 +30,7 @@ export interface HandPoseDetection {
   landmarks: HandLandmark[]
   confidence: number
   timestamp: number
+  handedness?: 'Left' | 'Right'
 }
 
 export interface GestureRecognitionResult {
@@ -187,6 +188,7 @@ export class HandPoseService {
           landmarks,
           confidence: prediction.score ?? 0.8,
           timestamp: Date.now(),
+          handedness: prediction.handedness,
         }
       })
     } catch (error) {
@@ -234,6 +236,7 @@ export class HandPoseService {
           z: kp3d[i] && typeof kp3d[i].z === 'number' ? kp3d[i].z * zScale : 0,
         })),
         confidence: p.score ?? 0.8,
+        handedness: p.handedness,
       }
     })
     return dedupeOverlappingHands(raw)
@@ -269,6 +272,7 @@ export class HandPoseService {
           z: kp3d[i] && typeof kp3d[i].z === 'number' ? kp3d[i].z * zScale : 0,
         })),
         confidence: p.score ?? 0.8,
+        handedness: p.handedness,
       }
     })
     return dedupeOverlappingHands(raw)

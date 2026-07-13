@@ -57,11 +57,15 @@ export interface RawHandLandmark {
 
 /**
  * A raw hand observation from MediaPipe HandPose: 21 landmarks plus a
- * confidence score. No ordering / handedness implied yet.
+ * confidence score. No ordering implied — `handedness`, when present, is
+ * MediaPipe's own Left/Right classification (used by the dual-hand dynamic
+ * feature builder to assign hands to the right/left slot; the static path's
+ * `sortHandsByXPosition` still ignores it and sorts by screen position).
  */
 export interface RawHand {
   landmarks: RawHandLandmark[]
   confidence: number
+  handedness?: 'Left' | 'Right'
 }
 
 /**
