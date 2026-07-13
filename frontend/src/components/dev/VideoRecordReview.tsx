@@ -42,6 +42,7 @@ export function VideoRecordReview({ stream, activeClass, handpose, onImported, o
   const videoPreviewRef = useRef<HTMLVideoElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
+  const isAcceptingRef = useRef(false)
 
   const [reviewVideo, setReviewVideo] = useState<HTMLVideoElement | null>(null)
   const [timestamps, setTimestamps] = useState<number[]>([])
@@ -50,12 +51,15 @@ export function VideoRecordReview({ stream, activeClass, handpose, onImported, o
   const [pendingSample, setPendingSample] = useState<StaticSample | null | 'loading'>('loading')
 
   // Bind the reused camera stream to the preview <video> for both idle
-  // (framing check) and recording stages.
+  // (framing check) and recording stages. Re-runs on every stage change
+  // because idle and recording each mount their own <video> element (React
+  // unmounts/remounts across the stage switch, detaching the ref) — stream
+  // alone as a dep wouldn't catch that since the stream itself never changes.
   useEffect(() => {
     if (videoPreviewRef.current && stream) {
       videoPreviewRef.current.srcObject = stream
     }
-  }, [stream])
+  }, [stream, stage])
 
   const acceptedCount = frameOutcomes.filter((o) => o === 'accepted').length
   const skippedCount = frameOutcomes.filter((o) => o === 'skipped').length
@@ -70,14 +74,20 @@ export function VideoRecordReview({ stream, activeClass, handpose, onImported, o
 
   const handleAccept = useCallback(async () => {
     if (pendingSample === 'loading' || pendingSample === null) return
-    await addStatic(pendingSample)
-    onImported([pendingSample])
-    setFrameOutcomes((prev) => {
-      const next = [...prev]
-      next[frameIndex] = 'accepted'
-      return next
-    })
-    advance()
+    if (isAcceptingRef.current) return
+    isAcceptingRef.current = true
+    try {
+      await addStatic(pendingSample)
+      onImported([pendingSample])
+      setFrameOutcomes((prev) => {
+        const next = [...prev]
+        next[frameIndex] = 'accepted'
+        return next
+      })
+      advance()
+    } finally {
+      isAcceptingRef.current = false
+    }
   }, [pendingSample, advance, onImported, frameIndex])
 
   const handleSkip = useCallback(() => {
