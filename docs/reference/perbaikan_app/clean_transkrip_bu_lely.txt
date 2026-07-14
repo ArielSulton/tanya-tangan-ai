@@ -1,0 +1,179 @@
+TRANSKRIP BERSIH — DISKUSI BIMBINGAN (BU LELY)
+Sumber: bu_lely.mpeg (durasi ± 54 menit)
+Catatan: Ini adalah versi yang dirapikan dari transkrip mentah hasil speech-to-text (lihat raw_transkrip_bu_lely.txt). Karena audio berupa percakapan santai dua arah tanpa penanda pembicara (no speaker diarization) dan kualitas rekaman/pengenalan suara di beberapa bagian rendah (banyak potongan kalimat, kata terputus, dan bunyi tidak jelas seperti "lgd" yang berulang), pembersihan berikut menghilangkan pengulangan kata, kata pengisi ("eh", "kan", "gitu", "coba coba coba"), dan menyusun ulang potongan-potongan kalimat menjadi kalimat/paragraf yang mengalir sesuai urutan topik aslinya. Isi disusun berdasarkan konteks — bagian yang benar-benar tidak dapat dipahami dari transkrip mentah ditandai [tidak jelas] alih-alih ditebak.
+
+Konteks umum: ini adalah sesi bimbingan skripsi/penelitian antara seorang dosen pembimbing (disapa "Bu Lely" / "Buleli") dan mahasiswa (disapa "Aril" / "Ariel"), membahas aplikasi pembelajaran bahasa isyarat (SIBI) untuk anak-anak SDLB, khususnya fitur pengajaran kata abstrak.
+
+======================================================================
+1. KURIKULUM DAN KATA ABSTRAK
+======================================================================
+Bu Lely menanyakan apakah materi kata abstrak sudah ada di kurikulum atau belum, dan kalau sudah ada, di kelas berapa diajarkan. Aril diminta mengecek ulang tiga kemungkinan: (1) kata abstrak memang tidak ada di kurikulum, (2) sudah ada di kurikulum tapi belum diajarkan di kelas yang diteliti, atau (3) sudah diajarkan tapi siswa belum bisa menangkap maknanya dengan cepat.
+
+Hal ini penting karena akan menentukan apakah intervensi yang dilakukan Aril adalah soal cara mengajarkan, atau soal memperkaya kosakata siswa — dua hal yang berbeda. Aril mengaku belum melakukan pengecekan ulang tersebut dan diminta untuk melakukannya.
+
+======================================================================
+2. REVIEW TAMPILAN WEBSITE / RESPONSIVITAS
+======================================================================
+Pembahasan beralih ke website aplikasi. Bu Lely bertanya apakah website ini untuk pengguna (anak-anak dan guru) dan apakah tampilannya sudah responsif, termasuk versi mobile. Saat dicoba di tampilan HP, Bu Lely menilai tampilan awal terlalu panjang dan berisi terlalu banyak informasi/poin (dihitung ada 8 poin) sebelum di-scroll.
+
+Bu Lely menekankan pentingnya membedakan antara aplikasi untuk pengguna (user) dan aplikasi/materi untuk kebutuhan penelitian — keduanya harus memakai gaya bahasa yang berbeda. Untuk halaman yang ditujukan ke pengguna/masyarakat awam sebaiknya memakai bahasa yang mudah dipahami dan "menjual" (bahasa sales), bukan bahasa akademis/penelitian. Ia menyarankan Aril mencoba memasukkan tampilan ini ke AI lain (disebut sebagai "AI lokal", kemungkinan merujuk pada model AI tertentu) dan memintanya mengkritik secara blak-blakan (harsh) dari sudut pandang target pengguna.
+
+======================================================================
+3. MENCOBA FITUR "AYO BELAJAR"
+======================================================================
+Mereka mencoba fitur "Ayo Belajar" melalui tampilan HP. Dibahas juga tipe pengguna aplikasi — disebutkan "tipe B", yaitu anak dengan gangguan pendengaran dan tuna wicara.
+
+Bu Lely bertanya apakah tampilan ini sudah pernah diperlihatkan sebelumnya dan bagaimana kesan pertamanya — menurutnya tampilan ini mungkin terkesan seperti dashboard admin/penelitian, bukan tampilan yang menarik untuk anak SDLB. Ia membedakan: kalau untuk mempromosikan hasil penelitian ke dosen/pihak dinas, tampilan seperti ini oke-oke saja (fokus ke angka: berapa banyak yang sudah pakai, respons pengguna, berapa banyak anak yang butuh bantuan ini). Tapi kalau target penggunanya adalah anak-anak SDLB langsung, tampilannya kurang menarik.
+
+Disinggung pula soal bagaimana proses uji coba dengan anak SDLB dilakukan: karena keterbatasan komunikasi langsung ke anak, Aril bertanya lewat guru sebagai mediator, bukan langsung ke anak. Bu Lely menyoroti bahwa ini penting dibedakan — pendekatan lewat guru berarti persepsi terhadap aplikasi bisa berbeda dibanding kalau langsung dari anak.
+
+======================================================================
+4. STRUKTUR MATERI: ABSTRAK, HEWAN, BENDA, ALAM
+======================================================================
+Aril menjelaskan urutan materi belajar: kata abstrak diletakkan paling atas, disusul hewan, benda, lalu alam. Alasannya, fitur utama aplikasi ini memang kata abstrak, karena berdasarkan temuan di lapangan siswa cenderung cepat memahami kata benda konkret/fisik, tetapi kesulitan memahami kata-kata abstrak.
+
+Bu Lely menanyakan dasar data temuan ini. Aril menjawab berasal dari survei/wawancara langsung ke dua sekolah. Untuk sekolah pertama (Aditama) sekitar belasan siswa, dan sekolah kedua (Karya Mulia) mengambil semua siswa kelas 3–4, berkisar 30 anak.
+
+Bu Lely mengoreksi cara penyampaian data: hindari kata-kata seperti "kisaran" atau "hampir sekitar" tanpa angka pasti. Ia mencontohkan cara yang lebih baik: "Saya melakukan survei ke dua sekolah dengan total kurang lebih 40 siswa (plus-minus 40)" — dan angka ini harus benar-benar diingat karena akan sering ditanyakan. Temuan divalidasi oleh guru bahwa kesulitan terbesar siswa memang ada pada kata abstrak.
+
+======================================================================
+5. KOMPARASI DENGAN APLIKASI SEJENIS
+======================================================================
+Bu Lely menanyakan apakah Aril sudah membandingkan dengan aplikasi sejenis, dan apakah ada aplikasi lain yang juga fokus pada kata abstrak. Aril menjawab dari total empat aplikasi (mobile dan web) yang disurvei, tidak ada satu pun yang membahas kata abstrak — semuanya kosong di aspek ini.
+
+Ditanya lebih lanjut, sumber daftar kosakata abstrak berasal dari wawancara dengan guru SDLB (sebagai expert) yang dilibatkan untuk menyusun daftar kosakata abstrak yang dibutuhkan siswa.
+
+======================================================================
+6. KBBI, KAMUS BAHASA ISYARAT, DAN JUMLAH KATA ABSTRAK
+======================================================================
+Bu Lely mempertanyakan: kalau memang sudah ada kamus/lembaga bahasa isyarat resmi di Indonesia yang mengeluarkan daftar kosakata (termasuk kata abstrak), kenapa masih perlu melibatkan expert/guru secara terpisah? Aril menjelaskan bahwa meski kamus tersebut sudah ada, pemahaman siswa terhadap makna kata-kata tersebut belum tentu ada — kamus hanya menyediakan istilah, bukan pemahaman makna.
+
+Dicek lebih lanjut, kata abstrak yang sudah terinput ke sistem aplikasi baru ada 5 kata, sementara di kamus rujukan sendiri terdapat sekitar 50 kata abstrak. Bu Lely mempertanyakan kenapa hanya 5 dari 50 yang dipilih — apakah karena keterbatasan data, atau karena rekomendasi dari hasil wawancara guru. Aril menjawab: dari wawancara, guru menyebutkan 5 kata abstrak tersebut sebagai yang paling sering menyulitkan mereka saat mengajar, karena belum ada data visual/real untuk kata-kata tersebut — bukan berarti kata abstrak lain sudah dikuasai siswa.
+
+Bu Lely menegaskan poin penting: masalah sebenarnya bukan karena guru "hanya butuh 5 kata abstrak", melainkan karena guru kesulitan mengajarkan kata abstrak secara umum. Jika begitu, kenapa tidak semua kata abstrak (dari daftar 50) dimasukkan ke platform? Aril mengonfirmasi bahwa kendalanya adalah dataset (data gerakan/video) untuk kata-kata tersebut harus dibuat sendiri, dan proses ini yang membatasi jumlah kata yang bisa dimasukkan — jadi hambatannya lebih ke sisi teknis (pembuatan dataset), bukan karena kata abstrak lain dianggap tidak penting. Karena ada expert yang bisa membantu menyusun dataset, secara teori seluruh kata abstrak bisa dikejar, hanya soal waktu dan sumber daya teknis.
+
+======================================================================
+7. CARA APLIKASI MENGAJARKAN MAKNA KATA ABSTRAK
+======================================================================
+Ditegaskan bahwa masalah sebenarnya bukan anak-anak tidak tahu gerakan isyaratnya, melainkan tidak tahu gerakan itu digunakan untuk makna/konteks apa. Jadi yang lebih dibutuhkan adalah penjelasan definisi/konteks penggunaan, bukan sekadar gerakan.
+
+Aril menjelaskan pendekatan aplikasi: memakai visualisasi plus teks. Contoh: kata abstrak "apel yang hijau" digunakan untuk mengenalkan kata keterangan (mereferensikan sifat pada benda). Siswa diberi pemahaman lewat visualisasi ini dengan bantuan guru, lalu bisa menggunakan mode kuis untuk melatih dan mengecek pemahaman mereka.
+
+======================================================================
+8. FITUR DETEKSI GERAKAN
+======================================================================
+Ada fitur di atas (bagian lain dari layar) yang berfungsi sebagai deteksi gerakan — sistem akan mendeteksi dan mengenali kata yang diperagakan pengguna lewat gerakan tangan (menggunakan model deteksi, kemungkinan berbasis skeleton/pose tangan).
+
+======================================================================
+9. PRIORITAS: DEFINISI VS DETEKSI GERAKAN
+======================================================================
+Bu Lely mempertanyakan prioritas dua fitur: bagian bawah (definisi/makna kata) versus bagian atas (deteksi gerakan). Karena akar masalahnya adalah anak tidak paham definisi/konteks penggunaan gerakan (bukan gerakannya sendiri), maka bagian definisi seharusnya dianggap lebih penting dan diletakkan lebih menonjol (reorder) dibanding fitur deteksi — tergantung masalah utama apa yang ingin diselesaikan oleh aplikasi.
+
+======================================================================
+10. FUNGSI VISUALISASI SKELETON PADA DETEKSI
+======================================================================
+Dibahas visualisasi garis-garis/skeleton (mirip motion tracking) yang muncul saat sistem mendeteksi gerakan tangan pengguna. Bu Lely mempertanyakan fungsi visual ini bagi pengguna — apakah hanya untuk menunjukkan sistem berhasil mendeteksi, atau memberi umpan balik lebih jauh.
+
+Ia mencontohkan: kalau siswa melakukan gerakan yang salah, tampilan skeleton saat ini hanya menunjukkan "terdeteksi/tidak", tanpa memberi tahu bagian mana yang salah. Ini kontraproduktif dengan tujuan menampilkan garis-garis tersebut — idealnya, visualisasi ini harus bisa menunjukkan target posisi gerakan yang benar (misalnya posisi tangan seharusnya lebih ke atas), sehingga siswa tahu persis bagian mana yang perlu diperbaiki dan bagaimana caranya, bukan sekadar tahu bahwa polanya cocok atau tidak dengan pola tersimpan.
+
+Analoginya seperti aplikasi instruksi yoga: yang sulit bukan menunjukkan instruksi gerakan (itu sudah banyak di video/YouTube), tapi memberi tahu apakah gerakan yang dilakukan pengguna sudah sesuai atau belum, dan kalau belum, bagian mana yang salah dan bagaimana koreksinya — apalagi untuk pembelajaran mandiri (tanpa bantuan guru), fitur koreksi semacam ini jauh lebih penting daripada sekadar validasi "sesuai/tidak sesuai".
+
+======================================================================
+11. PROGRAM DOSEN PEMBINA (PAMU) DAN ARAH FITUR
+======================================================================
+Disinggung soal keterkaitan dengan program pendanaan/dosen pembimbing (disebut sebagai "PAMU" — Program dosen pembina/sejenisnya), termasuk kebutuhan proposal terkait fitur ini. Bu Lely menyampaikan pandangannya bahwa dari aplikasi serupa yang sudah ada, alur idealnya adalah: tunjukkan tutorial gerakan → siswa mempraktikkan → sistem mengecek kebenaran gerakan dan kosakata (benar/salah) → jika salah, tunjukkan cara yang benar (bukan sekadar bilang salah tanpa penjelasan).
+
+======================================================================
+12. MODE QUIZ DAN KEBUTUHAN AI
+======================================================================
+Dibahas mode kuis pada aplikasi. Muncul pertanyaan kenapa dibutuhkan komponen AI ("syarat AI") dalam pengembangan — terkait masukan dari sesi sebelumnya (kemungkinan sidang/bimbingan lain) tentang soal kuis yang dinilai monoton karena soalnya selalu sama sehingga membosankan bila diulang-ulang. Mode kuis ini disebut baru sebatas rencana tambahan yang akan dimasukkan setelah tahap uji coba/nasional, belum final di versi saat ini.
+
+======================================================================
+13. FILOSOFI PENGEMBANGAN FITUR: JANGAN TERJEBAK "BISA DIDETEKSI"
+======================================================================
+Bu Lely mengingatkan: di era sekarang, kemungkinan pengembangan fitur nyaris tanpa batas ("the limit is the sky") sehingga mudah tergoda menambah fitur macam-macam. Tapi jangan sampai terjebak pada logika "oh ini sudah bisa terdeteksi jadi tambahkan saja" — harus selalu dilihat dari sudut pandang pengguna, apa masalah nyata mereka. Masalah pengguna tidak selalu soal "terdeteksi atau tidak", tapi juga soal bagaimana cara penyampaian (delivery) materinya, termasuk soal kata abstrak dan tingkat kompleksitas kalimat (besar-kecil kompleksitas materi).
+
+======================================================================
+14. DATASET UNTUK PENGENALAN GERAKAN
+======================================================================
+Dibahas soal kompleksitas dataset: menambah kosakata abstrak berarti menambah kebutuhan data latih. Untuk sumber data latih, di luar dari guru, Aril menyebut ada dataset alfabet isyarat (SIBI) yang tersedia publik, tapi menurutnya kurang cocok/relevan untuk kebutuhan kata abstrak (berbeda konteks penggunaan).
+
+Bu Lely menekankan bahwa meskipun dataset belum lengkap, hal ini bisa menjadi bagian dari kontribusi penelitian itu sendiri — yaitu kontribusi pada metode pembuatan data (bagaimana cara membangun dataset kata abstrak yang belum tersedia), bukan semata soal hasil akhir aplikasi. Ini bisa jadi nilai tambah dan dipublikasikan (jurnal) sebagai kontribusi metode.
+
+======================================================================
+15. RELEVANSI KATA ABSTRAK DALAM KEHIDUPAN SEHARI-HARI
+======================================================================
+Bu Lely mengangkat pertanyaan reflektif: seberapa penting/urgen sebenarnya kata abstrak ini dalam kehidupan sehari-hari, dibanding dalam konteks pendidikan formal? Ia mencontohkan bahwa dalam bahasa lisan sehari-hari pun, orang jarang memakai kalimat lengkap secara gramatikal (misalnya cukup bilang "makan yuk" tanpa kalimat lengkap "mari kita makan bersama"), dan lawan bicara tetap paham tanpa perlu kata abstrak yang rumit.
+
+Ia mempertanyakan apakah hal serupa berlaku juga di bahasa isyarat — apakah kata abstrak benar-benar esensial dipahami, atau lebih ke arah "nice to have". Ia mendorong Aril untuk mendalami: dari sekian kata abstrak yang ada, mana yang betul-betul esensial harus dikuasai anak (karena berdampak nyata bila tidak dipahami), dan mana yang levelnya hanya pelengkap. Pemilihan kata abstrak yang akan diajarkan harus didasarkan pada tingkat kepentingan/signifikansinya bagi siswa, bukan semata karena ketersediaan dataset ("jangan bilang karena datasetnya sudah ada, makanya dipilih kata itu" — logikanya harus dibalik: pilih dulu kata yang penting, baru buat datasetnya, karena dataset toh bisa dibuat sendiri).
+
+Sebagai ilustrasi kata abstrak yang mungkin kurang esensial dibanding kata benda biasa: dicontohkan kata sifat seperti "hijau" (mendekati kata benda/predikat sederhana) dibandingkan kata sambung seperti "dan"/konjungsi, yang oleh Bu Lely dinilai kurang signifikan secara mandiri, sementara kata seperti "dan" (dalam konteks menggabungkan subjek, misalnya "saya dan siapa") dinilai berpotensi lebih relevan.
+
+======================================================================
+16. POSISI KATA ABSTRAK: KURIKULUM VS TAMBAHAN
+======================================================================
+Bu Lely meminta Aril memetakan ulang posisi fitur ini: apakah kata abstrak yang diajarkan aplikasi ini sudah ada di kurikulum tapi siswa belum paham (berarti aplikasi berfungsi memperkuat/melengkapi pengajaran di sekolah), ataukah sama sekali tidak diajarkan di kurikulum tapi penting untuk diketahui siswa (berarti aplikasi mengisi kekosongan kurikulum).
+
+Kalau memang sudah diajarkan bersama di sekolah, perlu dicek apakah pengajaran itu sudah efektif atau belum — kalau belum efektif dan siswa butuh belajar mandiri di rumah, maka posisi aplikasi ini bersifat melengkapi/menguatkan pengajaran sekolah. Kalau ternyata di sekolah hanya mengajarkan sebagian kecil (misal 20 kosakata) padahal jumlah kosakata sebenarnya jauh lebih banyak, maka aplikasi berfungsi mengajarkan kosakata di luar 20 yang sudah ada di kurikulum. Positioning ini akan menentukan narasi penelitian, dan bukan didasarkan pada dataset yang kebetulan sudah dibuat, melainkan dari kajian kepentingan kata abstrak tersebut bagi siswa terlebih dahulu.
+
+======================================================================
+17. PROSES PENGAMBILAN DATA (VIDEO GERAKAN)
+======================================================================
+Dibahas proses pengumpulan dataset gerakan: untuk satu set data (misalnya sekitar 200–250 gambar), Aril menyebut proses pengambilan memakan waktu hampir 40 menit karena dilakukan dengan cara mengambil gambar (screenshot/capture) satu per satu secara manual dari kamera.
+
+Bu Lely mengoreksi pendekatan ini: karena video pada dasarnya adalah rangkaian gambar bergerak (frame), seharusnya cukup merekam video singkat lalu diekstrak menjadi frame-frame secara otomatis (misalnya menggunakan library seperti OpenCV), bukan menangkap gambar satu-satu secara manual yang jauh lebih lama dan tidak efisien.
+
+Aril menjelaskan alasannya memilih cara manual: saat mencoba pendekatan ekstraksi otomatis dari video sebelumnya, titik-titik koordinat yang dideteksi oleh MediaPipe (library pendeteksi pose/tangan yang dipakai) sering tidak akurat/berpindah-pindah, sehingga ia memilih menangkap gambar satu per satu secara manual untuk memastikan posisi terdeteksi dengan pas.
+
+Bu Lely menjelaskan lebih detail alur teknis yang seharusnya: input ke MediaPipe tetap berupa gambar per-frame (bukan video langsung), tapi proses ekstraksi frame dari video (misalnya video 1 menit menjadi sekian ratus frame sesuai FPS kamera) seharusnya dilakukan secara otomatis lewat tool ekstraksi video-ke-frame, baru masing-masing frame itu yang dimasukkan ke MediaPipe satu per satu untuk mendapatkan koordinat titik gerakan (landmark) dan disimpan. Ini akan jauh lebih cepat dibanding capture manual satu-satu, karena kebutuhan sebenarnya hanyalah data per-frame, bukan cara pengambilannya harus manual.
+
+Ia menyarankan Aril mencoba pendekatan ini: rekam video pendek (1–2 menit) dengan gerakan bervariasi (maju-mundur, dsb) untuk mendapatkan variasi data, lalu ekstrak jadi frame otomatis, dan cek keakuratan deteksi dari hasil ekstraksi tersebut — bukan berarti idle/statis, harus tetap bergerak selama rekaman agar variasi gambar cukup banyak. Ke depannya, saat meminta guru merekam video contoh gerakan, cukup minta durasi 1–2 menit saja, tidak perlu 40 menit seperti sekarang.
+
+======================================================================
+18. KOMPETISI DAN MOTIVASI MAHASISWA (DI LUAR TOPIK UTAMA)
+======================================================================
+Ada bagian percakapan yang menyimpang sejenak dari topik utama, membahas soal pengalaman lomba/kompetisi mahasiswa (termasuk disinggung soal kompetisi yang dianggap kurang "internasional" secara resmi meski melibatkan peserta luar negeri), serta cerita santai soal kesibukan mahasiswa dan pola pengelompokan minat/potensi mahasiswa sejak tahun pertama oleh dosen. Bagian ini bersifat obrolan santai/interupsi dan tidak berkaitan langsung dengan pengembangan aplikasi. [beberapa kalimat di bagian ini tidak jelas dan sebagian tidak dapat direkonstruksi secara akurat dari audio]
+
+======================================================================
+19. REVISI DARI SIDANG/UJIAN: TINGKATKAN AKURASI DAN PENYUSUNAN KALIMAT
+======================================================================
+Kembali ke topik utama, dibahas hasil revisi dari sesi ujian/sidang sebelumnya (disebut sebagai "LLDIKTI" atau sejenisnya). Ada dua poin revisi utama: (1) tingkatkan akurasi sistem deteksi, dan (2) perjelas bagaimana cara aplikasi menangani penyusunan kalimat, bukan hanya kata per kata.
+
+Ditegaskan bahwa kata abstrak menjadi salah satu pembeda utama aplikasi ini dibanding aplikasi sejenis yang sudah ada.
+
+======================================================================
+20. STRUKTUR KALIMAT: SPOK DAN TINGKAT KOMPLEKSITAS
+======================================================================
+Dibahas rencana fitur penyusunan kalimat. Tingkat paling dasar yang direkomendasikan adalah kalimat dengan struktur Subjek-Predikat (S-P), lalu berkembang ke Subjek-Predikat-Objek-Keterangan (SPOK) di level yang lebih tinggi/advanced.
+
+Ditunjukkan juga bahwa memasukkan kata abstrak ke dalam kalimat adalah nilai tambah ("good news")nya. Namun Bu Lely mengingatkan agar contoh kalimat yang dipakai jangan terlalu dipaksakan atau terlalu rumit secara struktur — misalnya kalimat majemuk/berinduk kalimat (seperti "dia yang kemarin tidur di lab dimarahi dosen") sebaiknya masuk ke level lanjutan (advanced), bukan level dasar. Untuk level dasar, gunakan kalimat sederhana yang tetap bisa memuat kata abstrak, misalnya "kucing dan gajah bermain bola".
+
+======================================================================
+21. MENYUSUN KALIMAT VS MENEBAK KALIMAT — DAN VALIDASI SINTAKSIS
+======================================================================
+Muncul pertanyaan mendasar: apakah tujuan pembelajaran adalah agar siswa bisa menyusun kalimat sendiri, atau sekadar menebak/mengenali kalimat yang sudah disediakan? Keduanya berbeda kebutuhan.
+
+Kalau tujuannya menyusun kalimat sendiri, siswa harus lebih dulu paham cara menyusun kalimat (prerequisite): dikenalkan dulu contoh kalimat dan penggunaannya, lalu siswa mencoba meniru/mempraktikkan pola tersebut, baru kemudian mencoba menyusun kalimatnya sendiri sesuai keinginan.
+
+Yang perlu divalidasi sistem ada dua hal berbeda: (1) apakah susunan katanya benar secara sintaksis (urutan kata, misalnya "kucing dan gajah" bukan "gajah dan kucing" jika urutan tersebut yang dianggap baku), dan (2) apakah gerakan isyaratnya benar. Ini soal sintaksis (urutan/struktur), bukan sekadar soal semantik makna kata.
+
+Disarankan alur idealnya: berikan dulu contoh kalimat dan aturannya (misal harus ada subjek dulu baru predikat, dengan contoh seperti "saya makan", "dia minum", "dia berlari"), dan pastikan kosakata contoh yang dipakai berkesinambungan dengan modul kosakata yang sudah diajarkan sebelumnya (hewan, benda, alam), supaya antar-modul saling terhubung.
+
+======================================================================
+22. KETERSEDIAAN KATA KERJA DI KOSAKATA
+======================================================================
+Muncul pertanyaan kenapa kategori kosakata yang ada baru hewan, benda, dan alam — tidak ada kategori kata kerja, padahal kata kerja dibutuhkan untuk menyusun kalimat (subjek-predikat). Definisi juga diperjelas: kata benda abstrak adalah kata benda yang berasal dari kata kerja atau kata sifat yang tidak menunjuk objek fisik langsung (misalnya "pencurian" adalah kata benda abstrak yang berasal dari kata kerja "mencuri"), sehingga kategori "kata kerja" sendiri sebenarnya berbeda dari kategori "kata abstrak".
+
+Mereka lalu mencoba mencari di KBBI (disebut "kamu cibi"/KBBI) dan pada database kosakata bahasa isyarat yang dipakai untuk mengecek ketersediaan kata kerja (misalnya "makan"), dan ditemukan bahwa kata kerja tersebut memang tersedia di database/kamus bahasa isyarat yang mereka gunakan sebagai rujukan.
+
+======================================================================
+23. PENUTUP: TIMELINE PROYEK
+======================================================================
+Bu Lely mengingatkan Aril untuk segera membuat timeline proyek. Metode penyusunannya disarankan dengan menarik mundur (backward planning) dari tenggat akhir — tentukan dulu semua pekerjaan harus selesai kapan, baru tarik mundur menentukan kapan setiap tahapan pekerjaan harus dikerjakan — bukan menyusun maju dari sekarang tanpa mengacu ke deadline akhir, karena kalau menyusun maju berisiko kehilangan gambaran apakah semua akan selesai tepat waktu.
+
+======================================================================
+CATATAN TAMBAHAN
+======================================================================
+- Sepanjang percakapan terdapat sejumlah interupsi/obrolan santai di luar topik utama (candaan, orang yang datang ke ruangan, dsb.) yang telah diringkas atau dihilangkan dari versi bersih ini karena tidak relevan dengan substansi bimbingan.
+- Beberapa istilah teknis (nama tool, nama program pendanaan, nama kompetisi) kemungkinan salah dengar oleh mesin speech-to-text dan disalin apa adanya sesuai konteks terdekat; disarankan verifikasi ulang dengan mendengarkan audio asli bila istilah tersebut penting untuk dokumentasi resmi.
+- Untuk detail kata demi kata (verbatim), lihat raw_transkrip_bu_lely.txt.

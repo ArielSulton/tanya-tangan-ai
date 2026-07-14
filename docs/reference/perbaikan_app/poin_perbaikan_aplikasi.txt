@@ -1,0 +1,83 @@
+POIN-POIN PERBAIKAN APLIKASI (HASIL BIMBINGAN DENGAN BU LELY)
+Sumber: bu_lely.mpeg — diringkas dari clean_transkrip_bu_lely.txt / raw_transkrip_bu_lely.txt
+
+======================================================================
+1. RISET & JUSTIFIKASI MASALAH
+======================================================================
+[ ] Cek ulang status kata abstrak di kurikulum: apakah memang tidak ada di kurikulum, sudah ada tapi belum diajarkan di kelas 3-4, atau sudah diajarkan tapi siswa belum paham maknanya. Ini menentukan apakah aplikasi ini soal "cara mengajarkan" atau "memperkaya kosakata" — dua hal berbeda, harus jelas posisinya.
+[ ] Tentukan positioning aplikasi terhadap kurikulum: apakah melengkapi/menguatkan materi yang sudah diajarkan sekolah, atau mengisi materi yang sama sekali tidak ada di kurikulum. Jangan tentukan berdasarkan dataset yang sudah dibuat — tentukan dulu urgensinya, baru sesuaikan datasetnya.
+[ ] Perjelas seberapa esensial kata abstrak dalam kehidupan sehari-hari vs hanya penting untuk konteks pendidikan formal. Pilah kata abstrak mana yang esensial (berdampak nyata jika tidak dipahami) vs yang sifatnya "nice to have".
+[ ] Perbaiki cara menyampaikan data survei: hindari kata seperti "kisaran"/"hampir sekitar" tanpa angka pasti. Gunakan angka konkret, misalnya "survei ke 2 sekolah, total ±40 siswa" — angka ini harus diingat dan konsisten setiap ditanya.
+[ ] Perjelas metodologi pemilihan 5 kata abstrak dari total ±50 kata di kamus rujukan: jelaskan bahwa hambatannya adalah dataset/teknis (bukan karena kata lain tidak penting), dan bahwa seluruh kata abstrak berpotensi dikejar karena ada expert yang bisa membantu menyusun dataset.
+
+======================================================================
+2. TAMPILAN / UI-UX WEBSITE & APLIKASI
+======================================================================
+[v] Pangkas tampilan awal (landing/home) yang saat ini terlalu panjang dan berisi terlalu banyak poin (±8 poin) sebelum di-scroll — buat lebih ringkas dan langsung to the point.
+[ ] Pisahkan dengan jelas antara halaman/konten untuk PENGGUNA (anak & guru) dan konten untuk kebutuhan PENELITIAN/presentasi — gunakan gaya bahasa berbeda: bahasa yang mudah dipahami & persuasif ("bahasa sales") untuk pengguna awam, bahasa akademis untuk keperluan penelitian.
+[ ] Halaman/dashboard yang sekarang terkesan seperti dashboard admin/penelitian — kurang menarik untuk anak SDLB. Perlu didesain ulang agar lebih ramah untuk target pengguna anak-anak.
+[ ] Uji tampilan lewat AI lain untuk mendapat kritik blak-blakan (harsh) dari sudut pandang target pengguna sebelum finalisasi desain.
+[v] Pastikan tampilan mobile/responsif benar-benar nyaman dipakai (sudah dicoba tapi masih perlu penyesuaian dari poin di atas).
+
+======================================================================
+3. FITUR PEMBELAJARAN KATA ABSTRAK
+======================================================================
+[v] Prioritaskan ulang urutan fitur: bagian "definisi/makna kata" (bawah) harus lebih ditonjolkan/didahulukan dibanding "deteksi gerakan" (atas), karena akar masalah anak adalah TIDAK PAHAM KONTEKS/MAKNA gerakan, bukan tidak tahu gerakannya.
+
+======================================================================
+4. FITUR DETEKSI GERAKAN (SKELETON/VISUALISASI)
+======================================================================
+[ ] Perbaiki fungsi visualisasi garis/skeleton saat deteksi gerakan — saat ini hanya menunjukkan "terdeteksi/tidak", padahal harusnya bisa menunjukkan BAGIAN MANA yang salah dan APA target posisi yang benar (mis. "tangan kurang ke atas").
+[ ] Tambahkan mekanisme koreksi eksplisit: kalau gerakan salah, tunjukkan cara yang benar (bukan sekadar validasi cocok/tidak cocok dengan pola tersimpan) — terutama penting untuk mode belajar mandiri tanpa bantuan guru.
+[ ] Rancang alur ideal: tutorial gerakan → siswa praktik → sistem cek kebenaran gerakan & kosakata → jika salah, tampilkan cara perbaikannya.
+
+======================================================================
+5. MODE QUIZ
+======================================================================
+[ ] Perbaiki variasi soal pada mode kuis — saat ini soal cenderung selalu sama sehingga membosankan jika diulang. Perlu variasi soal (kemungkinan memerlukan komponen AI untuk generate variasi).
+[ ] Pastikan mode kuis dan fitur terkait sudah matang sebelum tahap uji coba/nasional, karena saat ini masih berstatus rencana tambahan.
+
+======================================================================
+6. FILOSOFI PENGEMBANGAN FITUR
+======================================================================
+[ ] Jangan menambah fitur hanya karena "secara teknis bisa dideteksi" — validasi selalu dari sudut pandang masalah nyata pengguna, bukan dari kemampuan teknis semata.
+[ ] Fokus pada delivery/penyampaian materi (termasuk kompleksitas kalimat & pemilihan kata abstrak), bukan hanya soal akurasi deteksi.
+
+======================================================================
+7. PENYUSUNAN KALIMAT [on progress]
+======================================================================
+[ ] Susun tingkatan level kalimat secara bertahap: level dasar = Subjek-Predikat (S-P), level lanjut = Subjek-Predikat-Objek-Keterangan (SPOK).
+[ ] Hindari contoh kalimat yang terlalu rumit/dipaksakan (kalimat majemuk/berinduk kalimat) di level dasar — simpan untuk level advanced. Gunakan kalimat sederhana yang tetap memuat kata abstrak (contoh: "kucing dan gajah bermain bola").
+[ ] Tentukan dengan jelas tujuan fitur ini: apakah melatih siswa MENYUSUN kalimat sendiri, atau MENEBAK/mengenali kalimat yang sudah ada — karena keduanya butuh desain dan validasi yang berbeda.
+[ ] Kalau tujuannya menyusun kalimat: sediakan tahapan — contoh kalimat & penggunaannya → siswa meniru pola → siswa menyusun kalimat sendiri.
+[ ] Tambahkan validasi SINTAKSIS (urutan kata benar/salah, mis. "kucing dan gajah" vs "gajah dan kucing"), terpisah dari validasi gerakan isyarat — ini dua hal yang berbeda dan perlu dicek masing-masing.
+[ ] Pastikan kosakata pada contoh kalimat berkesinambungan dengan modul kosakata yang sudah diajarkan sebelumnya (hewan, benda, alam), supaya antar-modul saling terhubung.
+
+======================================================================
+8. KATEGORI KOSAKATA
+======================================================================
+[ ] Tambahkan kategori KATA KERJA pada kosakata — saat ini baru ada hewan, benda, dan alam, padahal kata kerja dibutuhkan untuk menyusun kalimat berstruktur Subjek-Predikat.
+[ ] Perjelas definisi & batasan "kata abstrak" agar tidak tertukar dengan "kata kerja" (kata benda abstrak = berasal dari kata kerja/sifat yang tidak menunjuk objek fisik, mis. "pencurian").
+[ ] Manfaatkan KBBI dan kamus bahasa isyarat rujukan yang sudah ada untuk memastikan ketersediaan kosakata kata kerja & istilah lain yang dibutuhkan.
+
+======================================================================
+9. PENGUMPULAN DATASET (VIDEO/GAMBAR GERAKAN)
+======================================================================
+[ ] Ganti metode pengambilan data dari CAPTURE MANUAL SATU-SATU (memakan waktu hingga 40 menit untuk 200-250 gambar) menjadi REKAM VIDEO PENDEK (1-2 menit) lalu ekstrak otomatis jadi frame (mis. pakai OpenCV/tool ekstraksi video-ke-frame).
+[ ] Alur teknis yang benar: rekam video → ekstrak ke frame otomatis sesuai FPS → tiap frame dimasukkan ke MediaPipe satu per satu untuk mendapatkan koordinat landmark → simpan hasil. Input ke MediaPipe tetap per-frame, tapi proses ekstraksinya diotomatisasi, bukan capture manual.
+[ ] Saat merekam, pastikan gerakan bervariasi (maju-mundur, dsb.), jangan idle/diam, supaya variasi data cukup untuk melatih model.
+[ ] Uji ulang akurasi deteksi MediaPipe menggunakan hasil ekstraksi otomatis dari video (sebelumnya dianggap kurang akurat/koordinat berpindah-pindah dengan cara lama) — validasi apakah masalah akurasi itu benar-benar dari metode capture atau dari faktor lain.
+[ ] Ke depan, saat minta guru merekam contoh gerakan untuk dataset, cukup minta durasi 1-2 menit, tidak perlu 40 menit seperti sekarang.
+[ ] Pertimbangkan mendokumentasikan proses pembuatan dataset kata abstrak sebagai KONTRIBUSI METODE penelitian (bukan hanya hasil akhir aplikasi) — berpotensi jadi nilai tambah publikasi.
+[ ] Tingkatkan akurasi sistem deteksi (revisi sebelumnya).
+[ ] Tegaskan kata abstrak sebagai pembeda utama aplikasi ini dibanding aplikasi sejenis (dari 4 aplikasi yang disurvei, tidak ada yang membahas kata abstrak).
+
+======================================================================
+10. MANAJEMEN PROYEK
+======================================================================
+[ ] Buat timeline proyek dengan metode TARIK MUNDUR (backward planning): tentukan dulu deadline akhir dan semua yang harus selesai, baru tentukan kapan tiap tahapan harus dikerjakan — jangan menyusun maju dari sekarang tanpa acuan deadline akhir.
+
+======================================================================
+CATATAN
+======================================================================
+Daftar ini disusun dari transkrip sesi bimbingan (clean_transkrip_bu_lely.txt). Untuk detail konteks tiap poin, rujuk ke bagian terkait di file tersebut atau dengarkan ulang bu_lely.mpeg bila diperlukan kepastian lebih lanjut.
