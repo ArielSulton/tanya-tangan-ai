@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/components/auth/SupabaseAuthProvider'
 import { useSupabaseUser, useIsAdmin } from '@/hooks/use-supabase-auth'
 import { useState, useEffect } from 'react'
-import { User, LogOut, AlertTriangle, Loader2 } from 'lucide-react'
+import { User, LogOut, AlertTriangle, Loader2, LayoutDashboard } from 'lucide-react'
 
 /**
  * Sign In component
@@ -448,15 +448,23 @@ function AuthStatusInternalContent() {
         <p className="mb-1 font-medium text-gray-900">{user.fullName ?? user.firstName ?? 'Admin User'}</p>
         <p className="mb-4 text-sm text-gray-600">{user.email}</p>
       </div>
-      <Button
-        variant="outline"
-        onClick={() => void handleSignOut()}
-        className="flex items-center space-x-2 px-6 py-2"
-        disabled={signOutLoading}
-      >
-        <LogOut className="h-4 w-4" />
-        <span>{signOutLoading ? 'Keluar...' : 'Keluar'}</span>
-      </Button>
+      <div className="flex items-center space-x-2">
+        <Button variant="default" asChild className="flex items-center space-x-2 px-6 py-2">
+          <a href="/dashboard">
+            <LayoutDashboard className="h-4 w-4" />
+            <span>Dashboard</span>
+          </a>
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => void handleSignOut()}
+          className="flex items-center space-x-2 px-6 py-2"
+          disabled={signOutLoading}
+        >
+          <LogOut className="h-4 w-4" />
+          <span>{signOutLoading ? 'Keluar...' : 'Keluar'}</span>
+        </Button>
+      </div>
     </div>
   )
 }

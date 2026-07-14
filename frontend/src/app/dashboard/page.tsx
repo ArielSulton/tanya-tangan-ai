@@ -42,6 +42,7 @@ import {
   Edit,
   Plus,
   Trash2,
+  Code2,
 } from 'lucide-react'
 import { useUserRole } from '@/components/auth/SuperAdminOnly'
 import { AdminOnly } from '@/components/auth/AdminOnly'
@@ -745,6 +746,12 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
             <p className="text-muted-foreground mt-2">Kelola administrator dan monitor kesehatan sistem</p>
           </div>
           <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" asChild>
+              <a href="/dev/gesture-recorder">
+                <Code2 className="mr-2 h-4 w-4" />
+                Dev Menu
+              </a>
+            </Button>
             <Button variant="outline" size="sm" onClick={() => void fetchAdminData()} disabled={loading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Perbarui
