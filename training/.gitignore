@@ -1,6 +1,7 @@
 # Collected datasets (large CSVs, never tracked)
 keypoint_csv/sibi.csv
 point_history_csv/dynamic.csv
+data/
 
 # Python virtualenv
 .venv/

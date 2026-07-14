@@ -160,6 +160,7 @@ QWEN.md
 
 # Reference
 superpowers/
+.superpowers/
 reference/
 # Un-ignore docs/reference/ dir only (needed as stepping stone — reference/ pattern above blocks it).
 # Contents of docs/reference/ other than revisi/ remain untracked.
