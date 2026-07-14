@@ -129,7 +129,11 @@ export async function middleware(request: NextRequest) {
     // Fetch from database if no valid cache
     if (!userData) {
       try {
-        const dbResults = await db
+        // Race against a timeout — an unbounded await here would hang the
+        // entire request (perceived as infinite loading in the browser) if
+        // the DB connection is slow to wake up (e.g. pooled/serverless
+        // connection idle for a while), matching the dashboard route check.
+        const queryPromise = db
           .select({
             role_id: users.roleId,
             is_active: users.isActive,
@@ -137,6 +141,15 @@ export async function middleware(request: NextRequest) {
           .from(users)
           .where(eq(users.supabaseUserId, user.id))
           .limit(1)
+
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Database query timeout')), 3000)
+        })
+
+        const dbResults = (await Promise.race([queryPromise, timeoutPromise])) as Array<{
+          role_id: number
+          is_active: boolean
+        }>
 
         const data = dbResults[0] || null
 

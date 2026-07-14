@@ -7,6 +7,8 @@ import { GestureRecognition } from '@/components/gesture/gesture-recognition'
 import { WordChip } from '@/components/vocab/WordChip'
 import { SentenceTreeSizeCard } from '@/components/vocab/SentenceTreeSizeCard'
 import { SentenceCombinationCard } from '@/components/vocab/SentenceCombinationCard'
+import { SentenceComboSizeCard } from '@/components/vocab/SentenceComboSizeCard'
+import { SentenceFruitSizeCard } from '@/components/vocab/SentenceFruitSizeCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -45,11 +47,18 @@ const EXAMPLE_SENTENCES: ExampleSentence[] = [
     Illustration: SentenceCombinationCard,
   },
   {
-    id: 'kucing-besar-gajah-kecil',
-    text: 'Kucing yang besar dan gajah yang kecil',
-    words: ['kucing', 'yang', 'besar', 'dan', 'gajah', 'yang', 'kecil'],
+    id: 'kucing-kecil-gajah-besar',
+    text: 'Kucing yang kecil dan gajah yang besar',
+    words: ['kucing', 'yang', 'kecil', 'dan', 'gajah', 'yang', 'besar'],
     level: 'lanjut',
-    Illustration: null,
+    Illustration: SentenceComboSizeCard,
+  },
+  {
+    id: 'apel-besar-jeruk-kecil',
+    text: 'Apel yang besar dan jeruk yang kecil',
+    words: ['apel', 'yang', 'besar', 'dan', 'jeruk', 'yang', 'kecil'],
+    level: 'lanjut',
+    Illustration: SentenceFruitSizeCard,
   },
 ]
 

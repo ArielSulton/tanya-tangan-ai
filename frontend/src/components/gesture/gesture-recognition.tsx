@@ -142,6 +142,11 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
   // mapping/underscore-normalization in addLetterToWord.
   const toDisplayLabel = useCallback(
     (letter: string, gestureType: 'static' | 'dynamic') => {
+      // Suppress the raw "Unknown" fallback (set in handpose-service.ts when
+      // no gesture clears the score threshold) from ever reaching the UI.
+      // Not deleted below for backward compatibility — remove this guard to
+      // restore the old behavior of showing "Unknown" in the badge.
+      if (letter === 'Unknown') return ''
       const mapped = letterMapping[letter] ?? letter
       return gestureType === 'dynamic' ? mapped.replace(/_/g, ' ') : mapped
     },

@@ -17,6 +17,16 @@ const CATEGORIES = [
     isFeatured: true,
   },
   {
+    slug: 'contoh-kalimat',
+    label: 'Contoh Kalimat',
+    count: '2 Level',
+    description: 'Latih susunan kalimatmu lewat kamera, dari level dasar sampai lanjut, langsung dapat koreksi.',
+    tags: ['Contoh', 'Baru'],
+    image: 'https://images.unsplash.com/photo-1483546416237-76fd26bbcdd1?auto=format&fit=crop&q=80&w=600&h=800',
+    overlayColor: 'from-amber-950 via-amber-900/90 to-transparent',
+    btnColor: 'text-amber-950 hover:bg-amber-50',
+  },
+  {
     slug: 'hewan',
     label: 'Hewan',
     count: '32 Kata',
@@ -46,35 +56,7 @@ const CATEGORIES = [
     overlayColor: 'from-stone-900 via-stone-800/90 to-transparent',
     btnColor: 'text-stone-900 hover:bg-stone-50',
   },
-  {
-    slug: 'contoh-kalimat',
-    label: 'Contoh Kalimat',
-    count: '2 Level',
-    description: 'Latih susunan kalimatmu lewat kamera, dari level dasar sampai lanjut, langsung dapat koreksi.',
-    tags: ['Contoh', 'Baru'],
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600&h=800',
-    overlayColor: 'from-amber-950 via-amber-900/90 to-transparent',
-    btnColor: 'text-amber-950 hover:bg-amber-50',
-  },
-  {
-    slug: 'coming-soon',
-    label: 'Segera Hadir',
-    count: '?',
-    description: 'Kategori dan fitur kosakata baru sedang kami siapkan untuk pengalaman belajar yang lebih lengkap.',
-    tags: ['Segera Hadir'],
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600&h=800',
-    overlayColor: 'from-gray-900 via-gray-800/90 to-transparent',
-  },
 ]
-
-// Desktop-only (lg+) 2x2 order: Contoh Kalimat, Hewan / Benda, Alam.
-// Below lg, cards keep their natural array order (Hewan, Benda, Alam, Contoh Kalimat) — unchanged.
-const DESKTOP_ORDER: Record<string, string> = {
-  'contoh-kalimat': 'lg:order-1',
-  hewan: 'lg:order-2',
-  benda: 'lg:order-3',
-  alam: 'lg:order-4',
-}
 
 export function CategoryGrid() {
   const featuredCategory = CATEGORIES.find((c) => c.isFeatured)
@@ -96,6 +78,7 @@ export function CategoryGrid() {
               className="object-cover transition-transform duration-700 group-hover:scale-105"
             />
           </div>
+          <div className={`absolute inset-0 bg-gradient-to-t ${featuredCategory.overlayColor} opacity-100`} />
 
           <div className="relative flex flex-col justify-end px-8 pt-40 pb-8">
             <div className="mb-3 flex items-center gap-2">
@@ -133,60 +116,13 @@ export function CategoryGrid() {
         </Link>
       )}
 
-      <div className="grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
         {otherCategories.map((cat) => {
-          const isComingSoon = cat.slug === 'coming-soon'
-          const desktopOrderClass = DESKTOP_ORDER[cat.slug] ?? ''
-
-          if (isComingSoon) {
-            return (
-              <div
-                key={cat.slug}
-                className="group relative h-[480px] w-full max-w-[340px] cursor-not-allowed overflow-hidden rounded-[2.5rem] bg-slate-900 opacity-90 shadow-xl grayscale-[20%] lg:hidden"
-              >
-                <div className="absolute inset-0 h-[60%]">
-                  <Image src={cat.image} alt={cat.label} fill className="object-cover" />
-                </div>
-                <div className={`absolute inset-0 bg-gradient-to-t ${cat.overlayColor} opacity-100`} />
-                <div className="absolute inset-0 flex flex-col justify-end p-6">
-                  <div className="mb-4 ml-1 flex gap-1.5 opacity-60">
-                    <div className="h-1.5 w-1.5 rounded-full bg-white"></div>
-                    <div className="h-1.5 w-1.5 rounded-full bg-white/40"></div>
-                    <div className="h-1.5 w-1.5 rounded-full bg-white/40"></div>
-                  </div>
-                  <div className="mb-2 flex items-center justify-between">
-                    <h2 className="text-2xl font-bold tracking-tight text-white">{cat.label}</h2>
-                    <span className="rounded-full bg-black/40 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
-                      {cat.count}
-                    </span>
-                  </div>
-                  <p className="mb-5 line-clamp-3 text-sm leading-relaxed text-slate-300">{cat.description}</p>
-                  <div className="mb-6 flex flex-wrap gap-2">
-                    {cat.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-white/5 bg-white/10 px-3 py-1 text-xs font-medium text-slate-200 backdrop-blur-sm"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <button
-                    disabled
-                    className="w-full cursor-not-allowed rounded-full bg-white py-3.5 text-sm font-bold text-slate-950 opacity-80"
-                  >
-                    Segera Hadir
-                  </button>
-                </div>
-              </div>
-            )
-          }
-
           return (
             <Link
               key={cat.slug}
               href={`/vocab/${cat.slug}`}
-              className={`group relative h-[480px] w-full max-w-[340px] overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${desktopOrderClass}`}
+              className="group relative h-[480px] w-full overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
             >
               <div className="absolute inset-0 h-[60%]">
                 <Image
