@@ -1,10 +1,10 @@
-import { notFound } from 'next/navigation'
 import { GestureRecorder } from '@/components/dev/GestureRecorder'
 
+// Access control lives in middleware.ts (auth + admin role check), not here —
+// this used to hard-block anything but NODE_ENV=development, which also
+// blocked it on prod for admins who legitimately need it (e.g. to collect
+// gesture training data remotely).
 export default function GestureRecorderPage() {
-  if (process.env.NODE_ENV !== 'development') {
-    notFound()
-  }
   return (
     <main className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
