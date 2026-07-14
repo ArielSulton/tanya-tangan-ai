@@ -1,6 +1,6 @@
 /**
  * Tiny IndexedDB wrapper for persisting gesture-recorder samples.
- * Two object stores: 'staticSamples' and 'dynamicSamples', keyed by id.
+ * Three object stores: 'staticSamples', 'dynamicSamples', and 'dynamicV2Samples', keyed by id.
  * All operations are async via Promise.
  */
 

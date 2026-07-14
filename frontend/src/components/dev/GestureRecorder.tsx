@@ -187,9 +187,10 @@ export function GestureRecorder() {
               setDynamicRecordingState(step.state)
               if (step.finished) {
                 const activeCount = step.finished.rows.filter((r) => r.handCount > 0).length
-                setDynamicLastTake({ discarded: step.finished.discarded, frameCount: activeCount })
                 const currentClass = activeClassRef.current
-                if (!step.finished.discarded && currentClass) {
+                const persisted = !step.finished.discarded && !!currentClass
+                setDynamicLastTake({ discarded: !persisted, frameCount: activeCount })
+                if (persisted && currentClass) {
                   const sample: DynamicSampleV2 = {
                     id:
                       typeof crypto !== 'undefined' && 'randomUUID' in crypto

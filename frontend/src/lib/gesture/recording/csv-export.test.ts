@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
-import { staticSamplesToCsv, dynamicSamplesToCsv } from './csv-export'
+import { staticSamplesToCsv, dynamicSamplesToCsv, dynamicV2SamplesToCsv } from './csv-export'
 import { DYNAMIC_HISTORY_SIZE, type StaticSample, type DynamicSample } from './types'
+import type { DynamicSampleV2 } from './dynamic-v2-types'
+import type { RawFrameRow } from './recording-state-machine'
 
 const N = DYNAMIC_HISTORY_SIZE
 const COLS = 1 + N * 2 // label + 2N coords
@@ -101,10 +103,6 @@ describe('dynamicSamplesToCsv', () => {
     expect(() => dynamicSamplesToCsv([bad])).toThrow(new RegExp(String(N)))
   })
 })
-
-import { dynamicV2SamplesToCsv } from './csv-export'
-import type { DynamicSampleV2 } from './dynamic-v2-types'
-import type { RawFrameRow } from './recording-state-machine'
 
 describe('dynamicV2SamplesToCsv', () => {
   function makeRow(handCount: number): RawFrameRow {

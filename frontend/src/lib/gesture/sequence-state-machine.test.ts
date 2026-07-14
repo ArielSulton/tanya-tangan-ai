@@ -45,8 +45,15 @@ describe('SequenceStateMachine', () => {
       result = sm.step(makeHands(1))
     }
     expect(sm.getState()).toBe('predicting')
-    // Buffer full: shouldPredict is gated by SLIDE_STEP cadence on the frame counter.
-    expect(result!.frames === null || result!.frames?.length === SEQ_LENGTH).toBe(true)
+
+    // Keep stepping until shouldPredict fires; if it never fires within the
+    // safety cap the loop exits and the assertions below will fail loudly,
+    // catching any regression in the SLIDE_STEP cadence gate.
+    for (let i = 0; i < SEQ_LENGTH + SLIDE_STEP && !result!.shouldPredict; i++) {
+      result = sm.step(makeHands(1))
+    }
+    expect(result!.shouldPredict).toBe(true)
+    expect(result!.frames).toHaveLength(SEQ_LENGTH)
   })
 
   test('resets to idle if hand is lost for HAND_LOST_FRAMES while recording', () => {
@@ -91,7 +98,7 @@ describe('majorityVote', () => {
     expect(majorityVote([], 1)).toBeNull()
   })
 
-  test('SLIDE_STEP and SEQ_LENGTH are re-exported from dual-hand-features (single source of truth)', () => {
+  test('SEQ_LENGTH is re-exported from dual-hand-features (single source of truth); SLIDE_STEP is a local constant', () => {
     expect(SLIDE_STEP).toBeGreaterThan(0)
     expect(SEQ_LENGTH).toBe(30)
   })

@@ -64,7 +64,7 @@ function normalizeHandBlock(hand: RawHand | null): number[] {
   }
   const handSize = sumDist / KNUCKLE_IDXS.length
 
-  if (!(handSize > NORMALIZATION_EPSILON) || !Number.isFinite(handSize)) {
+  if (!(handSize > NORMALIZATION_EPSILON)) {
     return new Array(HAND_BLOCK_SIZE).fill(0)
   }
 

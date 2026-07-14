@@ -42,6 +42,7 @@ export class BrowserGestureEngine {
   private staticEngineMode: StaticEngineMode = 'fingerpose'
   private mlpReady = false
   private mlpInflight = false
+  private dynamicInflight = false
   // Dev-only: track last sequence state so we log transitions, not every frame.
   private lastLoggedSequenceState: SequenceState | null = null
 
@@ -161,12 +162,20 @@ export class BrowserGestureEngine {
     }
 
     const step = this.sequenceStateMachine.step(raws)
-    if (process.env.NODE_ENV === 'development' && step.state !== this.lastLoggedSequenceState) {
-      console.log(`[engine] sequence: ${this.lastLoggedSequenceState ?? 'init'} → ${step.state}`)
+    if (step.state !== this.lastLoggedSequenceState) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[engine] sequence: ${this.lastLoggedSequenceState ?? 'init'} → ${step.state}`)
+      }
+      if (step.state === 'idle') {
+        this.dynamicPredictionHistory = []
+      }
       this.lastLoggedSequenceState = step.state
     }
-    if (step.shouldPredict && step.frames) {
-      void this.runDynamicInference(step.frames)
+    if (step.shouldPredict && step.frames && !this.dynamicInflight) {
+      this.dynamicInflight = true
+      void this.runDynamicInference(step.frames).finally(() => {
+        this.dynamicInflight = false
+      })
     }
   }
 
