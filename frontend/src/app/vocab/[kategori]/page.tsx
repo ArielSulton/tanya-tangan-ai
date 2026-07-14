@@ -228,17 +228,10 @@ export default function VocabKategoriPage() {
                   <GestureRecognition
                     onWordFormed={(word) => {
                       const normalized = word.toLowerCase()
-                      // EXPERIMENTAL: Jika input startsWith 'y' di kata_keterangan, langsung suggest 'yang'
-                      const immediateSuggestion =
-                        normalized.startsWith('y') && kategori === 'kata_keterangan'
-                          ? 'yang'
-                          : normalized.startsWith('k') && kategori === 'hewan'
-                            ? 'kucing'
-                            : null
                       setResult({
                         state: 'pending',
                         word: normalized,
-                        suggestedWord: immediateSuggestion,
+                        suggestedWord: null,
                         explanation: null,
                       })
 
@@ -252,15 +245,13 @@ export default function VocabKategoriPage() {
                           if (fallbackRes.ok) {
                             const data = await fallbackRes.json()
                             // Only update if user hasn't already acted on it.
-                            // If we already have a hardcoded prefix suggestion (immediateSuggestion),
-                            // don't let the backend override it — prefix rules take priority.
                             setResult((prev) => {
                               if (prev.state !== 'pending' || prev.word !== normalized) return prev
                               return {
                                 state: 'pending',
                                 word: normalized,
-                                suggestedWord: prev.suggestedWord ?? data.suggested_word ?? null,
-                                explanation: prev.suggestedWord ? prev.explanation : (data.explanation ?? null),
+                                suggestedWord: data.suggested_word ?? null,
+                                explanation: data.explanation ?? null,
                               }
                             })
                           }
@@ -269,7 +260,7 @@ export default function VocabKategoriPage() {
                     }}
                     enableWordFormation={true}
                     showAlternatives={false}
-                    letterMapping={kategori === 'kata_keterangan' ? { D: 'DAN', O: 'DAN', Y: 'YANG' } : {}}
+                    letterMapping={{}}
                   />
                 </div>
 

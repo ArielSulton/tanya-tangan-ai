@@ -31,6 +31,16 @@ DYNAMIC_OUT="../frontend/public/models/dynamic"
 STATIC_LABELS="keypoint_csv/sibi_label.csv"
 DYNAMIC_LABELS="point_history_csv/dynamic_label.csv"
 
+# dynamic_v2: reset_after=False GRU (train_dynamic_v2.ipynb) — loads
+# natively via tf.loadLayersModel(), same convert_layers function as the old
+# dynamic model above. Written into the SAME public/models/dynamic_v2/
+# directory that already holds the (unused, left-alone) friend's
+# best_sequence_model.h5/gesture_labels.json — filenames don't collide
+# (model.json/labels.json vs. best_sequence_model.h5/gesture_labels.json).
+DYNAMIC_V2_KERAS="dynamic_v2_classifier.keras"
+DYNAMIC_V2_OUT="../frontend/public/models/dynamic_v2"
+DYNAMIC_V2_LABELS="dynamic_v2_labels.csv"
+
 if ! command -v tensorflowjs_converter >/dev/null 2>&1; then
   echo "ERROR: tensorflowjs_converter not installed. Activate the venv first:" >&2
   echo "  source training/.venv/bin/activate" >&2
@@ -125,6 +135,7 @@ PY
 
 convert_graph  "$STATIC_SAVED"  "$STATIC_OUT"  "$STATIC_LABELS"
 convert_layers "$DYNAMIC_KERAS" "$DYNAMIC_OUT" "$DYNAMIC_LABELS"
+convert_layers "$DYNAMIC_V2_KERAS" "$DYNAMIC_V2_OUT" "$DYNAMIC_V2_LABELS"
 
 echo ""
 echo "All done. Reload the frontend (browser hard refresh) to pick up new models."

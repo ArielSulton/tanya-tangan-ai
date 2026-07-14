@@ -430,15 +430,15 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
           </div>
         )}
 
-        {/* Current Letter Feedback (Large & Friendly) */}
+        {/* Current Letter Feedback (compact, top-left) */}
         {isRunning && lastResult && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+          <div className="absolute top-4 left-4">
             <div
-              className={`flex items-center justify-center rounded-2xl px-6 py-3 shadow-xl backdrop-blur-md transition-all duration-300 ${
+              className={`flex items-center justify-center rounded-xl px-3 py-1.5 shadow-lg backdrop-blur-md transition-all duration-300 ${
                 lastResult.validated ? 'scale-100 bg-emerald-500/90' : 'scale-95 bg-orange-500/90'
               }`}
             >
-              <span className="text-4xl font-black text-white">
+              <span className="text-lg font-bold text-white">
                 {toDisplayLabel(lastResult.letter, lastResult.gestureType ?? 'static')}
               </span>
             </div>

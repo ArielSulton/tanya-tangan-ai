@@ -79,6 +79,15 @@ const DYNAMIC_VALIDATION_MIN_CONFIDENCE = 0.45
 // badge after the user lowers their hand.
 const RESULT_STALE_MS = 600
 
+// Static (fingerpose) keeps emitting every processed frame even while a
+// dynamic gesture is being recognized (the engine doesn't suppress it — see
+// engine.ts). Without this hold, a validated dynamic word would appear in
+// lastResult for at most one frame before the very next static emission
+// overwrites it, making dynamic results effectively invisible in the UI.
+// This window protects a validated dynamic result from being clobbered by
+// static emissions for a short, human-perceivable duration.
+const DYNAMIC_RESULT_HOLD_MS = 2000
+
 function toGestureResult(r: BrowserGestureResult, validated: boolean): GestureResult {
   return {
     letter: r.letter,
@@ -113,6 +122,11 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
 
   // YOLO path only: latch so a backend-validated held letter emits once.
   const yoloDedupeRef = useRef<YoloDedupeState>({ lastEmittedLetter: null })
+
+  // Timestamp (ms) until which a validated dynamic result should be
+  // protected from being overwritten by a static emission. See
+  // DYNAMIC_RESULT_HOLD_MS above.
+  const dynamicHoldUntilRef = useRef(0)
 
   const resetStreak = useCallback(() => {
     streakLetterRef.current = null
@@ -173,13 +187,27 @@ export const useGestureRecognition = (options: UseGestureRecognitionOptions = {}
             }
           }
           const result = toGestureResult(r, validated)
+          const now = Date.now()
+          if (result.gestureType === 'dynamic' && validated) {
+            dynamicHoldUntilRef.current = now + DYNAMIC_RESULT_HOLD_MS
+          } else if (result.gestureType !== 'dynamic' && now < dynamicHoldUntilRef.current) {
+            // A dynamic word is still being displayed — don't let this
+            // frame's static emission clobber it before the hold expires.
+            optionsRef.current.onResult?.(result)
+            return
+          }
           setLastResult(result)
           optionsRef.current.onResult?.(result)
           if (staleTimerRef.current !== null) clearTimeout(staleTimerRef.current)
+          // If a dynamic hold is active, the stale-clear must wait at least
+          // until the hold expires — otherwise the original RESULT_STALE_MS
+          // timer (armed when the dynamic result first appeared) fires early
+          // and blanks the badge well before DYNAMIC_RESULT_HOLD_MS is up.
+          const staleDelay = Math.max(RESULT_STALE_MS, dynamicHoldUntilRef.current - now)
           staleTimerRef.current = setTimeout(() => {
             setLastResult(null)
             resetStreak()
-          }, RESULT_STALE_MS)
+          }, staleDelay)
         },
         onError: (e: Error) => {
           setError(e)
