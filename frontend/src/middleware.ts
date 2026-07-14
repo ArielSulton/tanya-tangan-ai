@@ -5,8 +5,11 @@ import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 
 // Define protected routes that require authentication
-const protectedRoutes = ['/dashboard', '/admin']
-const adminRoutes = ['/admin']
+// '/dev' (gesture-recorder etc.) is gated the same as '/admin' — logged in
+// + role_id in [1,2] — so it can be safely reachable on prod without being
+// open to the public, e.g. to let a collaborator help collect training data.
+const protectedRoutes = ['/dashboard', '/admin', '/dev']
+const adminRoutes = ['/admin', '/dev']
 const dashboardRoutes = ['/dashboard']
 const authRoutes = ['/sign-in', '/sign-up', '/email-verify']
 
@@ -51,7 +54,7 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = authRoutes.some((route) => url.pathname.startsWith(route))
 
   // Debug logging — only for routes where middleware actually does auth work.
-  // Public pages (/vocab/*, /dev/*, /komunikasi/*, etc.) still pass through
+  // Public pages (/vocab/*, /komunikasi/*, etc.) still pass through
   // middleware so supabase.auth.getUser() can refresh session cookies, but
   // logging every one of those creates noise without diagnostic value.
   if (process.env.NODE_ENV === 'development' && (isProtectedRoute || isAdminRoute || isDashboardRoute || isAuthRoute)) {
