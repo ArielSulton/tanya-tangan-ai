@@ -37,9 +37,9 @@ DYNAMIC_LABELS="point_history_csv/dynamic_label.csv"
 # directory that already holds the (unused, left-alone) friend's
 # best_sequence_model.h5/gesture_labels.json — filenames don't collide
 # (model.json/labels.json vs. best_sequence_model.h5/gesture_labels.json).
-DYNAMIC_V2_KERAS="dynamic_v2_classifier.keras"
+DYNAMIC_V2_KERAS="dynamic_v2_classifier_new.keras"
 DYNAMIC_V2_OUT="../frontend/public/models/dynamic_v2"
-DYNAMIC_V2_LABELS="dynamic_v2_labels.csv"
+DYNAMIC_V2_LABELS="dynamic_v2_labels_new.csv"
 
 if ! command -v tensorflowjs_converter >/dev/null 2>&1; then
   echo "ERROR: tensorflowjs_converter not installed. Activate the venv first:" >&2
