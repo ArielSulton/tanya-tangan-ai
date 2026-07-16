@@ -577,6 +577,19 @@ export class GestureRecognitionService {
       // Start video playback
       await videoElement.play()
 
+      // Match the canvas's internal resolution to the ACTUAL stream
+      // dimensions. The 640x480 constraint above is only `ideal` — mobile
+      // front cameras are portrait-native and commonly deliver a different
+      // (often portrait) resolution. The draw loop paints the video with
+      // drawImage(video, 0, 0, canvas.width, canvas.height): if the canvas
+      // kept its hardcoded 640x480 attributes, a portrait stream would be
+      // squashed into landscape (distorted feed on tablets/phones) and the
+      // landmark overlay (in video-pixel coords) would misalign.
+      if (this.canvasElement && videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+        this.canvasElement.width = videoElement.videoWidth
+        this.canvasElement.height = videoElement.videoHeight
+      }
+
       console.log('✅ Camera setup complete')
       this.updateStatus('Camera access granted')
     } catch (error) {
