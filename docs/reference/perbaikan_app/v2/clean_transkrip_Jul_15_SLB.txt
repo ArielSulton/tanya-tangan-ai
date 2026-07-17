@@ -1,0 +1,100 @@
+TRANSKRIP BERSIH — VALIDASI APLIKASI DENGAN GURU SLB
+Sumber: Jul_15_SLB.mp3 (durasi ± 29 menit, direkam 15 Juli)
+Catatan: Ini adalah versi yang dirapikan dari hasil transkripsi speech-to-text otomatis (model Whisper large-v3 via Groq API, bahasa Indonesia). Karena audio berupa percakapan wawancara dua arah tanpa penanda pembicara (no speaker diarization), kualitas rekaman menghasilkan banyak potongan kalimat pendek dan beberapa istilah yang kemungkinan salah dengar (mis. "isarat" untuk "isyarat", "komtal"/"kontal" untuk "komunikasi total", "PSKata"/"piaskata" untuk "pias kata", "RPM" yang dimaksudkan sebagai "Rencana Pembelajaran Mendalam"). Pembersihan berikut menghilangkan pengulangan kata dan kata pengisi, lalu menyusun ulang potongan-potongan kalimat menjadi narasi yang mengalir sesuai urutan topik aslinya. Bagian yang benar-benar tidak dapat dipahami ditandai [tidak jelas] alih-alih ditebak.
+
+Konteks umum: ini adalah sesi wawancara validasi aplikasi antara peneliti (disapa "Aril"/"Ariel") dengan seorang guru SLB (disapa "Ibu", nama tidak tertangkap jelas di rekaman) yang mengampu kelas 3 dan 4. Tujuannya menggali bagaimana siswa tunarungu/tunawicara memahami materi Bahasa Indonesia di sekolah, terutama kata abstrak, sebagai bahan validasi arah pengembangan aplikasi pembelajaran bahasa isyarat (SIBI).
+
+======================================================================
+1. TUJUAN DAN CAKUPAN PERTANYAAN VALIDASI
+======================================================================
+Aril membuka wawancara dengan mengingatkan kembali kesepakatan yang sudah dibicarakan lewat WhatsApp sebelumnya, yaitu validasi aplikasi terkait kata abstrak. Ia menjelaskan akan mengajukan sekitar 8 pertanyaan bersifat umum, mencakup bagaimana siswa berinteraksi dengan materi dan bagaimana modul pembelajaran berjalan di sekolah tersebut.
+
+======================================================================
+2. MATERI BAHASA INDONESIA KELAS 3–4: AWALAN VS KATA DEPAN
+======================================================================
+Pertanyaan pertama: apa saja cakupan materi Bahasa Indonesia untuk kelas 3 dan 4. Guru menjelaskan materinya mencakup tata bahasa, terutama awalan ("di-", "ke-", "be-", "me-", "pe-") dan cara membedakannya dengan kata depan ("di", "ke") yang secara isyarat maupun tulisan berbeda perlakuannya — kata depan menunjukkan tempat (contoh: "di halaman", "di sekolah") dan penulisannya dipisah, sedangkan awalan dirangkai dengan kata dasarnya. Selain itu diajarkan juga kata benda dan kata sifat (terutama lawan kata, seperti "baik–buruk", "cantik").
+
+Guru mencontohkan cara mengecek pemahaman: memakai benda di kelas (misalnya "kursi") dan meminta siswa menentukan apakah kata yang menyertainya berfungsi sebagai awalan atau kata depan. Ia menegaskan bahwa membedakan dua hal ini memang sering membingungkan bahkan bagi orang dewasa/mahasiswa pada umumnya, bukan hanya siswa SLB.
+
+Materi pada dasarnya sama untuk kelas 3 dan 4, namun disesuaikan dengan kemampuan anak masing-masing (keduanya berada di fase kurikulum yang sama, "fase B"). Guru menyebut sebagai contoh, kelas 4 yang pernah ia ajar sebelumnya tergolong "bagus" secara kemampuan, sehingga penerapannya relatif tergantung kondisi murid setiap tahun.
+
+======================================================================
+3. EVALUASI PEMAHAMAN SISWA: TES LISAN, TULIS, DAN MEDIA
+======================================================================
+Untuk mengevaluasi pemahaman, guru menggunakan dua pendekatan: tes lisan/psikomotor (siswa maju ke depan dan mempraktikkan, misalnya menentukan penggunaan "di" pada benda di kelas) dan tes kognitif tertulis (semacam ulangan harian). Tes tertulis maupun pengenalan konsep dibantu dengan media gambar dan pias kata — kartu bergambar disandingkan dengan kartu kata, sehingga siswa bisa membedakan mana penulisan yang dirangkai (awalan/kata kerja) dan mana yang dipisah (kata depan).
+
+Media pembelajaran yang dipakai berbentuk paket lengkap: gambar benda (misalnya meja), isyarat SIBI untuk benda tersebut, dan tulisan nama bendanya — ditampilkan bersamaan, misalnya lewat LCD proyektor di kelas. Siswa lalu mendemonstrasikan pemahamannya secara psikomotor dengan merangkai pias gambar dan pias kata yang sesuai.
+
+Soal kemampuan membaca, guru menyebut bervariasi tergantung kemampuan anak — ada yang sudah lancar membaca sejak kelas 4 (kini naik ke kelas 5), tapi kemampuan membaca tidak otomatis berarti paham makna; pemahaman makna butuh waktu lebih lama. Ia juga membedakan siswa tunarungu "murni" (tanpa disabilitas penyerta) yang relatif lebih cepat memahami, dengan siswa yang punya disabilitas penyerta seperti hambatan wicara atau keterbelakangan mental, yang prosesnya lebih sulit.
+
+======================================================================
+4. PEMBAGIAN KELAS A DAN B, DAN SISTEM KELULUSAN
+======================================================================
+Dijelaskan bahwa sekolah membagi kelas menjadi kelas A dan kelas B berdasarkan tingkat kemampuan, agar proses belajar-mengajar (KBM) tidak terlalu berat sebelah — kelas dengan kemampuan lebih tinggi mendapat materi pengayaan lebih banyak (misalnya kosakata tambahan seperti "lemari", "kipas angin", di luar kosakata dasar sehari-hari seperti "meja", "kursi"), meski kurikulum yang dipakai sama. Sistem penilaiannya tetap disesuaikan: nilai 90 di kelas kemampuan dasar dan nilai 90 di kelas pengayaan mencerminkan cakupan materi yang berbeda.
+
+Soal kelulusan, guru menjelaskan sistem sekarang menganut prinsip "pasti naik kelas" dan seluruh siswa tetap dinyatakan tamat/lulus SD meski capaian materinya berbeda-beda — kategori penilaian dan keputusan akhir diserahkan ke masing-masing lembaga SLB. Untuk masa depan siswa, ia mencatat ada siswa yang secara akademis kurang tapi unggul di sisi vokasional, sama seperti pola yang juga ditemui pada anak-anak pada umumnya.
+
+======================================================================
+5. KECEPATAN PEMAHAMAN: KATA BENDA VS KATA ABSTRAK
+======================================================================
+Aril mengarahkan kembali pembahasan ke kata depan/kata sifat tadi, menanyakan perbandingan kecepatan pemahaman siswa antara kata benda (seperti "meja", "kalender") dengan kata abstrak. Guru menegaskan siswa jauh lebih cepat memahami kata benda dibanding kata abstrak seperti "cantik" atau pasangan lawan kata "baik–buruk" — kata abstrak perlu diulang berkali-kali, diperagakan, dan didukung media yang menarik agar bisa dipahami, dan tingkat kesulitannya makin tinggi untuk siswa dengan disabilitas penyerta seperti hambatan wicara.
+
+Ditanya apakah pengembangan aplikasi ke arah kata abstrak akan membantu, guru menjawab tegas: sangat membantu, terutama jika aplikasi bisa memunculkan saran/contoh pengayaan kata abstrak (misalnya "perbuatan baik" vs "perbuatan jelek", "kotor" vs "bersih") dengan contoh yang benar-benar mengena dan konkret bagi siswa.
+
+======================================================================
+6. CONTOH KATA ABSTRAK YANG SULIT DIPAHAMI
+======================================================================
+Ditanya kata abstrak spesifik apa yang paling sulit dipahami dan dijelaskan, guru menjawab: hampir semua kata sifat tergolong sulit, terutama pasangan seperti "panas–dingin". Untuk mengajarkannya, ia biasa membawa siswa merasakan langsung (misalnya mengajak ke ruangan ber-AC untuk "dingin", membandingkan air jeruk dingin dengan es, dsb.) supaya rasa tersebut benar-benar dialami, bukan hanya dijelaskan secara verbal. Pasangan kata "banyak–sedikit" juga disebut termasuk yang sulit, dan diajarkan dengan cara serupa: membandingkan dua kelompok benda sejenis dalam jumlah berbeda secara langsung di depan siswa.
+
+Guru menekankan bahwa menjelaskan kata abstrak sebenarnya "mudah untuk diterangkan", tapi jauh lebih sulit untuk benar-benar dipahamkan ke siswa — perlu diulang berkali-kali, apalagi untuk kelas dengan kemampuan lebih rendah.
+
+======================================================================
+7. STRATEGI GURU: KREATIVITAS MEDIA DAN INTERAKSI LANGSUNG
+======================================================================
+Karena media pembelajaran untuk kata abstrak masih terbatas/belum banyak tersedia, guru mengandalkan kreativitas masing-masing pengajar untuk mencari cara agar siswa paham. Ia menyebut sekarang sudah lebih mudah karena tersedia layar TV besar, tablet, laptop, dan akses ke Google untuk mencari contoh visual, dan ini sangat membantu proses mengajar dibanding sebelumnya.
+
+Soal aplikasi pembelajaran pada umumnya (termasuk aplikasi yang sedang dikembangkan Aril), guru menilai aplikasi yang bagus adalah yang merespons cepat dan mampu memotivasi anak agar punya rasa ingin tahu dari dalam diri sendiri — tanpa motivasi intrinsik semacam itu, kata abstrak akan tetap sulit dipahamkan.
+
+======================================================================
+8. JENIS KATA ABSTRAK LAIN: KATA TANYA, KATA PERINTAH, TANDA BACA
+======================================================================
+Ditanya apakah ada jenis kata abstrak lain selain kata sifat yang sebaiknya dimasukkan ke aplikasi, guru menyebutkan kata tanya (apa, siapa, di mana, ke mana, mengapa) dan kata perintah, serta menyinggung tanda baca sebagai hal yang juga perlu diperhatikan karena secara komunikasi total (komtal) turut memengaruhi makna.
+
+======================================================================
+9. REKOMENDASI KOMPONEN FITUR APLIKASI
+======================================================================
+Guru merekomendasikan agar aplikasi menampilkan kata secara lengkap dalam beberapa bentuk sekaligus: tulisan nama kata, gambar, isyarat (SIBI), dan idealnya juga ucapan/suara — pendekatan yang selaras dengan metode komunikasi total (komtal) yang dipakai di sekolah untuk siswa usia sekolah. Ia membedakan ini dengan SIBI/isyarat yang sifatnya lebih lokal (seperti BISINDO), sementara SIBI dinilai lebih cocok dipahami lintas usia sekolah karena sifatnya yang lebih universal/nasional.
+
+======================================================================
+10. PARAMETER PEMAHAMAN SISWA
+======================================================================
+Ditanya parameter apa yang dipakai guru untuk menilai siswa benar-benar sudah paham (di luar sekadar merasakan langsung, seperti contoh "panas"), guru menjawab kuncinya adalah memberi contoh dari berbagai sisi/konteks secara berulang — misalnya kata "panas" dikaitkan dengan panas matahari, AC (untuk kontras "dingin"), minum teh panas, api, dan es dari kulkas. Prinsipnya: satu contoh saja tidak cukup untuk meyakinkan siswa benar-benar paham ("kalau cuma satu, nanti nggak percaya, nggak yakin") — harus ada beberapa media berbeda yang menjelaskan kata abstrak yang sama agar pemahaman siswa benar-benar terbentuk.
+
+======================================================================
+11. MANFAAT APLIKASI UNTUK SISWA YANG BELUM BISA MEMBACA
+======================================================================
+Ditanya apakah aplikasi (yang menampilkan data/istilah) tetap bermanfaat untuk siswa yang belum bisa membaca, guru menjawab sangat membantu — selama aplikasi menyertakan gambar dan isyarat sekaligus dengan tulisan (pendekatan komunikasi total), siswa yang belum lancar membaca tetap bisa terbantu memahami lewat kombinasi visual dan isyarat tersebut, dengan pendampingan guru. Sebaliknya, jika hanya berupa teks tanpa gambar/isyarat, guru menilai siswa akan kesulitan memahami.
+
+======================================================================
+12. RENCANA KUESIONER KELAS 3 DAN 4
+======================================================================
+Dibahas rencana penyebaran kuesioner ke kelas 3 dan 4 setelah siswa mencoba aplikasi. Guru mengingatkan bahwa komposisi kelas 3 dan 4 saat wawancara ini dilakukan sudah berbeda dari semester sebelumnya (kenaikan kelas baru saja terjadi): siswa kelas 4 yang lama sudah naik ke kelas 5, dan siswa kelas 3 yang baru berasal dari kelas 2 sebelumnya dengan kemampuan yang belum tentu setara dengan angkatan sebelumnya (jumlah siswa kelas 3 baru disebut hanya tiga anak). Karena itu guru mengingatkan perlunya penyesuaian/pengondisian ulang saat melibatkan kelas-kelas ini untuk uji coba maupun kuesioner lanjutan, karena karakteristik dan kemampuan setiap angkatan siswa bisa berbeda-beda.
+
+======================================================================
+13. PERMINTAAN DOKUMEN ACUAN KURIKULUM (CP VS RPM)
+======================================================================
+Aril menanyakan apakah tersedia dokumen acuan kurikulum kelas 3 dan 4 (semacam silabus) yang bisa dipakai sebagai referensi pengembangan aplikasi, khususnya untuk mengetahui tingkat kesulitan kata-kata yang diajarkan. Guru menjelaskan ada dua jenis dokumen: CP (Capaian Pembelajaran) yang sifatnya masih umum (setara KI-KD), dan dokumen yang disebutnya "RPM" (Rencana Pembelajaran Mendalam) — perangkat pembelajaran yang lebih rinci/operasional, semacam pengganti istilah RPP/modul ajar di kurikulum sebelumnya, mencakup prinsip pembelajaran bermakna, berkesadaran, menggembirakan, dan berbasis proyek.
+
+Karena kebutuhan Aril lebih ke arah parameter tingkat kesulitan kata secara spesifik, guru menilai dokumen RPM lebih sesuai dibanding CP yang masih terlalu umum. Ia berjanji akan mencarikan dan mengirimkan dokumen RPM Bahasa Indonesia untuk kelas terkait.
+
+======================================================================
+14. PENUTUP
+======================================================================
+Sesi wawancara ditutup dengan Aril menyampaikan bahwa pertanyaannya sudah cukup terjawab. Ada obrolan singkat di akhir soal pengiriman berkas (kemungkinan dokumen RPM yang dijanjikan) dan menyebut nama pihak lain yang akan dihubungi, namun bagian ini tidak sepenuhnya tertangkap jelas oleh transkripsi.
+
+======================================================================
+CATATAN TAMBAHAN
+======================================================================
+- Sebagian istilah teknis pendidikan (RPM, CP, KI-KD, komtal, fase B) ditranskripsi apa adanya sesuai pengucapan; disarankan verifikasi ulang dengan mendengarkan audio asli bila istilah ini penting untuk dokumentasi resmi, terutama singkatan "RPM" yang tidak umum dan kemungkinan salah dengar dari istilah lain.
+- Bagian penutup percakapan (setelah menit ke-28) berisi obrolan singkat yang kurang jelas terdengar (nama-nama yang disebut seperti "Weni" dan potongan kalimat lain) dan tidak berkaitan langsung dengan substansi validasi aplikasi, sehingga tidak direkonstruksi lebih lanjut. [tidak jelas]
+- Transkrip mentah (hasil speech-to-text sebelum dirapikan) tidak disimpan sebagai file terpisah dalam repo ini; versi ini disusun langsung dari keluaran verbatim model transkripsi.

@@ -1,0 +1,36 @@
+POIN-POIN TEMUAN VALIDASI (WAWANCARA DENGAN GURU SLB)
+Sumber: Jul_15_SLB.mp3 — diringkas dari clean_transkrip_Jul_15_SLB.txt
+
+======================================================================
+1. KATA ABSTRAK: PRIORITAS DAN JENIS YANG PERLU DITAMBAHKAN
+======================================================================
+[ ] Konfirmasi arah pengembangan kata abstrak sudah tepat — guru menyatakan pengembangan ini "sangat membantu" pemahaman siswa, khususnya bila aplikasi memberi saran/contoh pengayaan kata abstrak yang mengena bagi siswa.
+[ ] Tambahkan kata sifat lawan-kata sebagai prioritas kata abstrak (dikonfirmasi guru sebagai yang tersulit dipahami siswa): "panas–dingin", "banyak–sedikit", "kotor–bersih", "malas–rajin", "baik–buruk", "cantik".
+[ ] Pertimbangkan menambah kategori kata abstrak di luar kata sifat: kata tanya (apa, siapa, di mana, ke mana, mengapa) dan kata perintah — disebut guru sebagai kandidat tambahan yang relevan.
+[ ] Pertimbangkan turut menyertakan tanda baca sebagai elemen yang memengaruhi makna dalam komunikasi total (komtal), sesuai masukan guru.
+
+======================================================================
+2. FORMAT PENYAJIAN KATA: KOMUNIKASI TOTAL (KOMTAL)
+======================================================================
+[ ] Pastikan setiap kata (terutama kata abstrak) ditampilkan lengkap dalam 4 bentuk sekaligus: tulisan nama kata, gambar/ilustrasi konkret, isyarat (SIBI), dan idealnya juga ucapan/audio — ini sesuai metode "komunikasi total" yang dipakai sekolah, bukan hanya gambar+isyarat+teks seperti saat ini.
+[ ] Validasi bahwa isyarat yang dipakai aplikasi adalah SIBI (bukan varian lokal seperti BISINDO/SINDU) — guru menegaskan SIBI lebih sesuai karena bisa dipahami lintas usia sekolah secara lebih universal.
+[ ] Untuk setiap kata abstrak, sediakan LEBIH DARI SATU contoh/konteks penggunaan (bukan cuma satu media/contoh) — guru menegaskan satu contoh saja membuat siswa "tidak percaya, tidak yakin" bahwa pemahamannya benar; perlu variasi konteks agar pemahaman benar-benar terbentuk (mis. kata "panas" dicontohkan lewat matahari, AC/dingin sebagai kontras, minum teh panas, api, es dari kulkas — bukan cuma satu ilustrasi).
+[ ] Pertimbangkan menambahkan contoh berbasis pengalaman sensorik/konkret di dalam materi (bukan hanya visual statis) — guru mencontohkan cara mengajarkan "panas–dingin" dengan mengajak siswa merasakan langsung (ke ruang AC, membandingkan minuman panas vs es), yang menunjukkan pentingnya ilustrasi yang terasa nyata/relatable, bukan sekadar gambar generik.
+
+======================================================================
+3. DUKUNGAN UNTUK SISWA YANG BELUM LANCAR MEMBACA
+======================================================================
+[ ] Pastikan aplikasi tetap bisa dipakai/bermanfaat untuk siswa yang belum bisa membaca — guru menegaskan aplikasi "sangat membantu" untuk kelompok ini SELAMA gambar dan isyarat selalu ditampilkan bersamaan dengan teks (bukan teks saja), idealnya dengan pendampingan guru.
+[ ] Jangan mengandalkan teks/istilah sebagai satu-satunya cara menyampaikan makna — guru menyebut aplikasi berbasis teks murni tanpa gambar/isyarat akan sulit dipahami siswa yang belum lancar membaca.
+
+======================================================================
+4. VARIASI KEMAMPUAN SISWA (KELAS A/B, DISABILITAS PENYERTA)
+======================================================================
+[ ] Pertimbangkan bahwa siswa tunarungu "murni" (tanpa disabilitas penyerta) relatif lebih cepat memahami kata abstrak dibanding siswa dengan disabilitas penyerta (mis. hambatan wicara, keterbelakangan mental) — desain tingkat kesulitan/pengulangan materi idealnya mengakomodasi rentang kemampuan ini, sejalan dengan pembagian kelas A (pengayaan/lebih tinggi) dan kelas B (dasar) yang berlaku di sekolah.
+[ ] Ingat bahwa kurikulum sama untuk semua kelas, tapi cakupan/kedalaman materi berbeda antar kelompok kemampuan — kalau aplikasi ingin dipakai lintas kelas, pertimbangkan levelisasi materi kata abstrak (dasar vs pengayaan), bukan satu tingkat kesulitan untuk semua.
+[ ] Kata benda dipahami jauh lebih cepat dibanding kata abstrak oleh siswa — validasi ini menguatkan temuan sebelumnya (lihat clean_transkrip_bu_lely.txt bagian 4) bahwa prioritas fitur kata abstrak sudah tepat secara kebutuhan lapangan.
+
+======================================================================
+CATATAN
+======================================================================
+Daftar ini disusun dari transkrip wawancara validasi (clean_transkrip_Jul_15_SLB.txt), pelengkap temuan dari sesi bimbingan sebelumnya (lihat v1/poin_perbaikan_aplikasi.txt). Untuk detail konteks tiap poin, rujuk ke bagian terkait di clean_transkrip_Jul_15_SLB.txt atau dengarkan ulang Jul_15_SLB.mp3 bila diperlukan kepastian lebih lanjut — terutama soal istilah "RPM" dan bagian penutup percakapan yang kurang jelas terdengar.

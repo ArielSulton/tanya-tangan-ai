@@ -1,0 +1,24 @@
+KATEGORI KATA BARU YANG SEBAIKNYA DITAMBAHKAN
+Sumber: poin_temuan_validasi_Jul_15_SLB.txt bagian 1
+
+Kategori sudah ada: hewan, benda, alam, perasaan, kata_keterangan
+
+(type: konkrit)
+[ ] benda: apel, jeruk
+
+(type: abstrak)
+[ ] kata sifat: kecil, banyak–sedikit, kotor–bersih, malas–rajin, baik–buruk
+[ ] kata tanya: apa, siapa, dimana, kapan, mengapa, bagaimana
+[ ] kata perintah: contoh kata belum ada, perlu digali lagi
+
+
+Contoh kata yang sudah ada:
+
+(type: konkrit)
+- hewan: gajah, kucing
+- alam: pohon
+
+(type: abstrak)
+- kata sifat: besar
+- kata keterangan: sangat
+- kata hubung/tugas: yang, seperti, dan
