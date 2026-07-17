@@ -3,5 +3,5 @@ export const CATEGORY_LABELS: Record<string, string> = {
   benda: 'Benda',
   alam: 'Alam',
   perasaan: 'Perasaan',
-  kata_keterangan: 'Kata Keterangan Abstrak',
+  kata_keterangan: 'Kata Abstrak',
 }

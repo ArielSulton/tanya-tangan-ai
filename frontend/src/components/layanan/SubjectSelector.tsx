@@ -119,7 +119,7 @@ export function SubjectSelector({ onSelectSubject, selectedSubject }: SubjectSel
       <div>
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
           <BookOpen className="text-primary h-5 w-5" />
-          {selectedJenjang ? `Mata Pelajaran — ${selectedJenjang}` : 'Semua Mata Pelajaran'}
+          {selectedJenjang ? `Mata Pelajaran - ${selectedJenjang}` : 'Semua Mata Pelajaran'}
         </h2>
 
         {filteredSubjects.length === 0 ? (

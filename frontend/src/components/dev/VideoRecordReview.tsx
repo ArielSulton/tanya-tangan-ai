@@ -181,7 +181,7 @@ export function VideoRecordReview({ stream, activeClass, handpose, onImported, o
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-xl">
             <div className="border-b border-slate-200 px-4 py-3">
-              <h2 className="text-base font-semibold text-slate-800">Rekam video — kelas {activeClass}</h2>
+              <h2 className="text-base font-semibold text-slate-800">Rekam video kelas {activeClass}</h2>
             </div>
             <div className="px-4 py-3">
               <video ref={videoPreviewRef} autoPlay playsInline muted className="w-full rounded-md bg-slate-900" />
@@ -230,7 +230,7 @@ export function VideoRecordReview({ stream, activeClass, handpose, onImported, o
             <div className="border-b border-slate-200 px-4 py-3">
               <h2 className="flex items-center gap-2 text-base font-semibold text-slate-800">
                 <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
-                Merekam — kelas {activeClass}
+                Merekam kelas {activeClass}
               </h2>
             </div>
             <div className="px-4 py-3">

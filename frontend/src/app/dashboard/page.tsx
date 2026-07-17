@@ -166,7 +166,7 @@ const VOCAB_CATEGORIES = [
   { value: 'benda', label: 'Benda' },
   { value: 'alam', label: 'Alam' },
   { value: 'perasaan', label: 'Perasaan' },
-  { value: 'kata_keterangan', label: 'Kata Keterangan Abstrak' },
+  { value: 'kata_keterangan', label: 'Kata Abstrak' },
 ]
 
 const ADVERB_SUBCATEGORIES = [
@@ -1337,7 +1337,7 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                               {r.suggested_word ? (
                                 <span className="text-sm">{r.suggested_word}</span>
                               ) : (
-                                <span className="text-muted-foreground text-sm">—</span>
+                                <span className="text-muted-foreground text-sm">-</span>
                               )}
                             </TableCell>
                             <TableCell>
@@ -1355,7 +1355,7 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                             </TableCell>
                             <TableCell>
                               <div className="text-muted-foreground text-xs">
-                                {r.created_at ? formatDate(r.created_at) : '—'}
+                                {r.created_at ? formatDate(r.created_at) : '-'}
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
@@ -1883,7 +1883,7 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                                     word.adverbSubcategory}
                                 </Badge>
                               ) : (
-                                <span className="text-muted-foreground text-xs">—</span>
+                                <span className="text-muted-foreground text-xs">-</span>
                               )}
                             </TableCell>
                             <TableCell>
@@ -1925,7 +1925,7 @@ function DashboardContentInner({ isSuperAdmin, isAdmin }: DashboardContentInnerP
                                   />
                                 </div>
                               ) : (
-                                <span className="text-muted-foreground text-xs">—</span>
+                                <span className="text-muted-foreground text-xs">-</span>
                               )}
                             </TableCell>
                             <TableCell className="text-right">

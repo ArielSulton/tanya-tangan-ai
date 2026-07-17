@@ -479,7 +479,7 @@ export function GestureRecorder() {
                     detik
                   </label>
                   <span className="text-slate-500">
-                    — countdown sebelum capture (0 = langsung). Press Space lagi untuk cancel.
+                    countdown sebelum capture (0 = langsung). Press Space lagi untuk cancel.
                   </span>
                   {countdown !== null && (
                     <button

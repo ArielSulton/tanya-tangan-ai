@@ -3,18 +3,46 @@
 import Link from 'next/link'
 import Image from 'next/image'
 
-const CATEGORIES = [
+export interface CategoryCardData {
+  slug: string
+  label: string
+  count: string
+  description: string
+  tags: string[]
+  image?: string
+  images?: string[]
+  overlayColor: string
+  btnColor: string
+  isFeatured?: boolean
+}
+
+const CATEGORIES: CategoryCardData[] = [
   {
     slug: 'kata_keterangan',
-    label: 'Kata Keterangan Abstrak',
+    label: 'Kata Abstrak',
     count: '16 Kata',
     description:
-      'Pelajari kata keterangan abstrak untuk memberikan detail dan makna pada kalimat. Kategori ini berisi kata penjelasan cara, tingkat, waktu, dan jumlah.',
+      'Pelajari kata sifat, kata hubung, dan keterangan abstrak untuk memberikan detail dan makna pada kalimat.',
     tags: ['Utama'],
     image: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80&w=600&h=800',
     overlayColor: 'from-emerald-950 via-emerald-900/90 to-transparent',
     btnColor: 'text-emerald-950 hover:bg-emerald-50',
     isFeatured: true,
+  },
+  {
+    slug: 'kata-konkrit',
+    label: 'Kata Konkrit',
+    count: '105 Kata',
+    description:
+      'Kata benda nyata yang mudah dikenali secara visual, mencakup pengenalan hewan, benda sehari-hari, dan alam sekitar.',
+    tags: ['Hewan, Benda & Alam', 'Populer'],
+    images: [
+      'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=300&h=800',
+      'https://images.unsplash.com/photo-1581428982868-e410dd047a90?auto=format&fit=crop&q=80&w=300&h=800',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=300&h=800',
+    ],
+    overlayColor: 'from-emerald-950 via-emerald-900/90 to-transparent',
+    btnColor: 'text-emerald-950 hover:bg-emerald-50',
   },
   {
     slug: 'contoh-kalimat',
@@ -26,37 +54,70 @@ const CATEGORIES = [
     overlayColor: 'from-amber-950 via-amber-900/90 to-transparent',
     btnColor: 'text-amber-950 hover:bg-amber-50',
   },
-  {
-    slug: 'hewan',
-    label: 'Hewan',
-    count: '32 Kata',
-    description: 'Pelajari kosakata berbagai jenis hewan melalui isyarat SIBI secara visual.',
-    tags: ['Makhluk Hidup', 'Populer'],
-    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=600&h=800',
-    overlayColor: 'from-emerald-950 via-emerald-900/90 to-transparent',
-    btnColor: 'text-emerald-950 hover:bg-emerald-50',
-  },
-  {
-    slug: 'benda',
-    label: 'Benda',
-    count: '45 Kata',
-    description: 'Kenali benda-benda di sekitar kita, mulai dari peralatan sekolah hingga perabotan rumah tangga.',
-    tags: ['Sekitar Kita', 'Umum'],
-    image: 'https://images.unsplash.com/photo-1581428982868-e410dd047a90?auto=format&fit=crop&q=80&w=600&h=800',
-    overlayColor: 'from-blue-950 via-blue-900/90 to-transparent',
-    btnColor: 'text-blue-950 hover:bg-blue-50',
-  },
-  {
-    slug: 'alam',
-    label: 'Alam',
-    count: '28 Kata',
-    description: 'Pelajari kosakata terkait fenomena alam, kondisi cuaca, dan lingkungan sekitar.',
-    tags: ['Lingkungan', 'Eksplorasi'],
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600&h=800',
-    overlayColor: 'from-stone-900 via-stone-800/90 to-transparent',
-    btnColor: 'text-stone-900 hover:bg-stone-50',
-  },
 ]
+
+export function CategoryCard({ cat }: { cat: CategoryCardData }) {
+  return (
+    <Link
+      href={`/vocab/${cat.slug}`}
+      className="group relative h-[480px] w-full overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+    >
+      <div className="absolute inset-0 h-[60%]">
+        {cat.images ? (
+          <div className="grid h-full grid-cols-3 gap-0.5">
+            {cat.images.map((src) => (
+              <div key={src} className="relative h-full w-full overflow-hidden">
+                <Image
+                  src={src}
+                  alt={cat.label}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          cat.image && (
+            <Image
+              src={cat.image}
+              alt={cat.label}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+            />
+          )
+        )}
+      </div>
+      <div className={`absolute inset-0 bg-gradient-to-t ${cat.overlayColor} opacity-100`} />
+      <div className="absolute inset-0 flex flex-col justify-end p-6">
+        <div className="mb-4 ml-1 flex gap-1.5 opacity-60">
+          <div className="h-1.5 w-1.5 rounded-full bg-white"></div>
+          <div className="h-1.5 w-1.5 rounded-full bg-white/40"></div>
+          <div className="h-1.5 w-1.5 rounded-full bg-white/40"></div>
+        </div>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-2xl font-bold tracking-tight text-white">{cat.label}</h2>
+          <span className="rounded-full bg-black/40 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
+            {cat.count}
+          </span>
+        </div>
+        <p className="mb-5 line-clamp-3 text-sm leading-relaxed text-slate-300">{cat.description}</p>
+        <div className="mb-6 flex flex-wrap gap-2">
+          {cat.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-white/5 bg-white/10 px-3 py-1 text-xs font-medium text-slate-200 backdrop-blur-sm"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <button className={`w-full rounded-full bg-white py-3.5 text-sm font-bold transition-colors ${cat.btnColor}`}>
+          Mulai Belajar
+        </button>
+      </div>
+    </Link>
+  )
+}
 
 export function CategoryGrid() {
   const featuredCategory = CATEGORIES.find((c) => c.isFeatured)
@@ -72,7 +133,7 @@ export function CategoryGrid() {
         >
           <div className="absolute inset-0 h-[55%]">
             <Image
-              src={featuredCategory.image}
+              src={featuredCategory.image ?? ''}
               alt={featuredCategory.label}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -116,56 +177,13 @@ export function CategoryGrid() {
         </Link>
       )}
 
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-        {otherCategories.map((cat) => {
-          return (
-            <Link
-              key={cat.slug}
-              href={`/vocab/${cat.slug}`}
-              className="group relative h-[480px] w-full overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-            >
-              <div className="absolute inset-0 h-[60%]">
-                <Image
-                  src={cat.image}
-                  alt={cat.label}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              </div>
-              <div className={`absolute inset-0 bg-gradient-to-t ${cat.overlayColor} opacity-100`} />
-              <div className="absolute inset-0 flex flex-col justify-end p-6">
-                <div className="mb-4 ml-1 flex gap-1.5 opacity-60">
-                  <div className="h-1.5 w-1.5 rounded-full bg-white"></div>
-                  <div className="h-1.5 w-1.5 rounded-full bg-white/40"></div>
-                  <div className="h-1.5 w-1.5 rounded-full bg-white/40"></div>
-                </div>
-                <div className="mb-2 flex items-center justify-between">
-                  <h2 className="text-2xl font-bold tracking-tight text-white">{cat.label}</h2>
-                  <span className="rounded-full bg-black/40 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
-                    {cat.count}
-                  </span>
-                </div>
-                <p className="mb-5 line-clamp-3 text-sm leading-relaxed text-slate-300">{cat.description}</p>
-                <div className="mb-6 flex flex-wrap gap-2">
-                  {cat.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-white/5 bg-white/10 px-3 py-1 text-xs font-medium text-slate-200 backdrop-blur-sm"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <button
-                  className={`w-full rounded-full bg-white py-3.5 text-sm font-bold transition-colors ${cat.btnColor}`}
-                >
-                  Mulai Belajar
-                </button>
-              </div>
-            </Link>
-          )
-        })}
-      </div>
+      {otherCategories.length > 0 && (
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+          {otherCategories.map((cat) => (
+            <CategoryCard key={cat.slug} cat={cat} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -142,7 +142,7 @@ export default function Beranda() {
               </h1>
 
               <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-600 sm:text-xl">
-                Peragakan isyarat lewat kamera, langsung lihat artinya lewat gambar dan AI — dirancang untuk siswa
+                Peragakan isyarat lewat kamera, langsung lihat artinya lewat gambar dan AI, dirancang untuk siswa
                 SDLB-B.
               </p>
 
@@ -226,7 +226,7 @@ export default function Beranda() {
         <div className="mx-auto mt-12 max-w-3xl text-center">
           <p className="text-lg leading-relaxed text-slate-600">
             Siswa tunarungu tidak memiliki akses terhadap{' '}
-            <strong className="font-semibold text-slate-900">incidental learning</strong>—kemampuan menyerap kosakata
+            <strong className="font-semibold text-slate-900">incidental learning</strong>, kemampuan menyerap kosakata
             secara pasif dari percakapan sehari-hari. Akibatnya, kesenjangan kosakata melebar signifikan di usia 8–9
             tahun.
           </p>
@@ -247,7 +247,7 @@ export default function Beranda() {
                 standar modern
               </span>
             </p>
-            <p className="mt-4 text-slate-600">Tanpa biaya lisensi—memanfaatkan ekosistem AI dan web terbaik.</p>
+            <p className="mt-4 text-slate-600">Tanpa biaya lisensi, memanfaatkan ekosistem AI dan web terbaik.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
@@ -362,7 +362,7 @@ export default function Beranda() {
               </h2>
               <p className="mt-8 text-lg leading-relaxed text-slate-600">
                 Tidak ada platform serupa yang secara bersamaan mendukung input gestur SIBI real-time, visualisasi kata
-                abstrak melalui komparasi, dan AI fallback untuk kata baru—semuanya berbasis browser tanpa instalasi.
+                abstrak melalui komparasi, dan AI fallback untuk kata baru, semuanya berbasis browser tanpa instalasi.
               </p>
 
               <div className="mt-10 border-t border-slate-200 pt-10">

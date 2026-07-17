@@ -33,8 +33,8 @@ export function SepertiCard({ word, category: _category, mode = 'explore' }: Sep
         </div>
 
         <p className="text-center text-sm leading-relaxed text-slate-600">
-          <span className="font-semibold text-violet-700">Seperti</span> dipakai untuk membandingkan dua hal yang mirip
-          — apel <em>seperti</em> tomat karena keduanya bulat dan merah.
+          <span className="font-semibold text-violet-700">Seperti</span> dipakai untuk membandingkan dua hal yang mirip:
+          apel <em>seperti</em> tomat karena keduanya bulat dan merah.
         </p>
       </CardContent>
     </Card>
