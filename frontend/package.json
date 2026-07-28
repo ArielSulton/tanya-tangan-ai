@@ -3,7 +3,7 @@
   "version": "v2.0.3",
   "private": true,
   "scripts": {
-    "dev": "bun --bun next dev --turbopack",
+    "dev": "next dev --turbopack",
     "build": "bun --bun next build",
     "start": "bun --bun next start",
     "tsc": "bunx tsc --noEmit",

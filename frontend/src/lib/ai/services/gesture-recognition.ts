@@ -546,7 +546,14 @@ export class GestureRecognitionService {
       console.log('📹 Setting up camera access...')
       this.updateStatus('Requesting camera access...')
 
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const mediaDevices = typeof navigator !== 'undefined' ? navigator.mediaDevices : undefined
+      if (!mediaDevices?.getUserMedia) {
+        const message = 'Browser tidak mendukung akses kamera atau API media belum tersedia.'
+        this.updateStatus(message)
+        throw new Error(message)
+      }
+
+      const stream = await mediaDevices.getUserMedia({
         video: {
           width: 640,
           height: 480,
