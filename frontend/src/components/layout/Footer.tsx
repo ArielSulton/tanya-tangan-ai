@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 const companyLinks = [
   { name: 'Beranda', href: '/' },
-  { name: 'Kamus Isyarat', href: '/vocab' },
+  { name: 'Kamus Isyarat', href: '/new-vocab' },
   { name: 'Akses Khusus', href: '/akses-khusus' },
 ]
 

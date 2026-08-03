@@ -24,6 +24,8 @@ import {
   Star,
 } from 'lucide-react'
 
+import Link from 'next/link'
+
 import { GestureRecognition } from '@/components/gesture/gesture-recognition'
 import { AbstractComparison } from '@/components/vocab/AbstractComparison'
 import { AIFallbackCard } from '@/components/vocab/AIFallbackCard'
@@ -974,18 +976,13 @@ export default function NewVocabPage() {
       <header className="sticky top-0 z-40 border-b border-emerald-100/80 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto grid max-w-[1500px] items-center gap-4 px-4 py-3 sm:px-6 lg:grid-cols-[240px_minmax(0,1fr)_240px] lg:px-8">
           <div className="flex items-center justify-between lg:justify-start">
-            {/* <Link
-              href="/vocab"
-              className="group inline-flex items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+            <Link
+              href="/"
+              className="group inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-50 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm transition group-hover:scale-105">
-                <Hand className="h-7 w-7" aria-hidden="true" />
-              </span>
-              <span>
-                <span className="block text-xl font-black tracking-tight text-emerald-800">PENSYARAT</span>
-                <span className="block text-xs font-medium text-slate-500">Belajar Bahasa Isyarat</span>
-              </span>
-            </Link> */}
+              <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" aria-hidden="true" />
+              Beranda
+            </Link>
 
             <div className="lg:hidden">
               <Dialog open={guideOpen} onOpenChange={setGuideOpen}>

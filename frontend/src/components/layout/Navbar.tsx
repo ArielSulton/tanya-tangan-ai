@@ -13,7 +13,7 @@ const navigationItems = [
   },
   {
     name: 'Kamus Isyarat',
-    href: '/vocab',
+    href: '/new-vocab',
     id: 'vocabulary',
   },
   {

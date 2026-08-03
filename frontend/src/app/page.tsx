@@ -1,440 +1,452 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { CheckCircle2, ArrowRight, Hand, Eye, Scale, Sparkles, Library, LayoutDashboard } from 'lucide-react'
+import {
+  Star,
+  PawPrint,
+  Rocket,
+  Lightbulb,
+  Smile,
+  Eye,
+  Bot,
+  Hand,
+  Sparkle,
+  Image as ImageIcon,
+  Heart,
+  GraduationCap,
+  BookOpen,
+} from 'lucide-react'
 
-const techStack = [
-  { name: 'YOLO Ultralytics', logo: '/assets/tech/ultralytics_yolo.svg' },
-  { name: 'MediaPipe', logo: '/assets/tech/mediapipe.png' },
-  { name: 'Next.js', logo: '/assets/tech/nextjs.png' },
-  { name: 'LLaMA', logo: '/assets/tech/llama.png' },
-  { name: 'FastAPI', logo: '/assets/tech/fastapi.png' },
-  { name: 'Supabase', logo: '/assets/tech/supabase.png' },
-  { name: 'Docker', logo: '/assets/tech/docker.png' },
-  { name: 'Google Cloud', logo: '/assets/tech/gcp.png' },
-]
-
-const features = [
-  {
-    title: 'Pengenalan Gestur SIBI Real-time',
-    description:
-      'Siswa memasukkan kata melalui gestur bahasa isyarat SIBI via kamera browser, tanpa instalasi. YOLO Ultralytics mengenali gestur secara langsung dari frame.',
-    icon: Hand,
-    bgColor: 'bg-orange-50/50 hover:bg-orange-50',
-    borderColor: 'border-orange-100',
-    accentColor: 'bg-orange-400',
-    iconColor: 'text-orange-600',
-    colSpan: 'md:col-span-2 lg:col-span-2',
-  },
-  {
-    title: 'Visualisasi Kata Konkret',
-    description:
-      'Untuk kata benda seperti "kucing", "apel", atau "pohon", platform menampilkan foto objek nyata beserta label kata agar makna tersampaikan secara visual.',
-    icon: Eye,
-    bgColor: 'bg-green-50/50 hover:bg-green-50',
-    borderColor: 'border-green-100',
-    accentColor: 'bg-green-400',
-    iconColor: 'text-green-600',
-    colSpan: 'md:col-span-1 lg:col-span-1',
-  },
-  {
-    title: 'Komparasi Visual Kata Abstrak',
-    description:
-      'Untuk keterangan abstrak seperti "sedikit", "agak", "sangat", dan "terlalu", platform menampilkan gambar berdampingan yang merepresentasikan derajat makna secara konkret.',
-    icon: Scale,
-    bgColor: 'bg-purple-50/50 hover:bg-purple-50',
-    borderColor: 'border-purple-100',
-    accentColor: 'bg-purple-400',
-    iconColor: 'text-purple-600',
-    colSpan: 'md:col-span-1 lg:col-span-1',
-  },
-  {
-    title: 'AI Fallback (LLaMA 3.3)',
-    description:
-      'Jika kata belum tersedia di basis data, sistem menggunakan LLaMA 3.3 via ChatGroq untuk memberikan saran kata terdekat dan penjelasan singkat kontekstual.',
-    icon: Sparkles,
-    bgColor: 'bg-emerald-50/50 hover:bg-emerald-50',
-    borderColor: 'border-emerald-100',
-    accentColor: 'bg-emerald-400',
-    iconColor: 'text-emerald-600',
-    colSpan: 'md:col-span-2 lg:col-span-2',
-  },
-  {
-    title: 'Kategori Kosakata Terstruktur',
-    description:
-      'Kosakata dikelompokkan dalam lima kategori: Hewan, Benda, Alam, Perasaan, dan Keterangan Abstrak, sesuai materi Bahasa Indonesia Kurikulum Merdeka SDLB-B.',
-    icon: Library,
-    bgColor: 'bg-pink-50/50 hover:bg-pink-50',
-    borderColor: 'border-pink-100',
-    accentColor: 'bg-pink-400',
-    iconColor: 'text-pink-600',
-    colSpan: 'md:col-span-2 lg:col-span-2',
-  },
-  {
-    title: 'Dashboard Admin Guru',
-    description:
-      'Guru dapat menambah, memperbarui, dan mengelola kosakata beserta gambar secara mandiri. Sistem juga mencatat kata yang sering dicari untuk prioritas pengembangan konten.',
-    icon: LayoutDashboard,
-    bgColor: 'bg-indigo-50/50 hover:bg-indigo-50',
-    borderColor: 'border-indigo-100',
-    accentColor: 'bg-indigo-400',
-    iconColor: 'text-indigo-600',
-    colSpan: 'md:col-span-1 lg:col-span-1',
-  },
-]
-
-const differentiators = [
-  { label: 'Input Gestur SIBI Real-time', have: true },
-  { label: 'Visual Konkret: Gambar Objek', have: true },
-  { label: 'Visual Abstrak: Komparasi Berdampingan', have: true },
-  { label: 'Berbasis Browser (tanpa install)', have: true },
-  { label: 'AI Fallback untuk Kata Baru', have: true },
-  { label: 'Konten Diperbarui Guru', have: true },
-]
-
-export default function Beranda() {
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-50 selection:bg-green-200 selection:text-green-900">
-      {/* Hero Section */}
-      <section className="relative flex min-h-screen items-center justify-center overflow-hidden py-20">
-        {/* Background Gradients */}
-        <div className="absolute inset-0 z-0 bg-white">
-          <Image src="/assets/hero_landing_page.png" alt="Hero Background" fill className="object-cover" priority />
-          {/* Light overlay to ensure text readability */}
-          <div className="absolute inset-0 bg-white/30" />
-          {/* Subtle animated gradients */}
-          <div className="absolute -top-[20%] -left-[10%] h-[500px] w-[500px] rounded-full bg-emerald-300/20 blur-[120px]" />
-          <div className="absolute top-[20%] -right-[10%] h-[400px] w-[400px] rounded-full bg-teal-300/20 blur-[100px]" />
-          <div className="absolute -bottom-[20%] left-[20%] h-[600px] w-[600px] rounded-full bg-green-300/10 blur-[150px]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-slate-50" />
-        </div>
+    <main className="bg-white text-slate-950 selection:bg-emerald-200 selection:text-emerald-900">
+      {/* ================= HERO ================= */}
+      <section className="relative overflow-hidden py-20 sm:py-24">
+        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-[3rem] border-2 border-dashed border-emerald-200/70 bg-gradient-to-b from-[#e3f8ef] to-white p-6 shadow-[0_20px_80px_rgba(15,23,42,0.06)] sm:p-10">
+            {/* decorative star */}
+            <div className="absolute top-8 right-8 text-amber-400">
+              <Star className="h-6 w-6" strokeWidth={2} />
+            </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center text-center">
-            <div className="max-w-4xl space-y-8">
-              <div className="inline-flex items-center rounded-full border border-emerald-100 bg-white/80 px-4 py-1.5 text-sm font-medium text-emerald-700 shadow-sm backdrop-blur-md">
-                <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
-                Produk Inovatif · Pilmapres 2026
+            <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+              <div className="space-y-7">
+                <div
+                  className="inline-flex items-center gap-2 rounded-full border border-dashed border-amber-300 bg-white px-5 py-2 text-base font-medium text-amber-600 italic shadow-sm"
+                  style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
+                >
+                  Halo Teman-teman! Selamat Datang! 👋
+                </div>
+
+                <div className="space-y-3">
+                  <h1 className="text-4xl leading-tight font-extrabold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                    Ayo Petualangan Memahami{' '}
+                    <span className="relative inline-block text-emerald-600">
+                      Kosakata
+                      <svg
+                        className="absolute -bottom-1 left-0 w-full"
+                        viewBox="0 0 200 12"
+                        preserveAspectRatio="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2 9 Q100 2 198 9"
+                          stroke="#f59e0b"
+                          strokeWidth="5"
+                          fill="none"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </span>
+                  </h1>
+
+                  {/* paragraph in accent-bordered card */}
+                  <div className="max-w-xl rounded-r-xl border-l-4 border-emerald-500 bg-slate-50/70 px-5 py-4">
+                    <p className="text-lg leading-8 text-slate-600 sm:text-xl">
+                      Cukup pakai kamera, peragakan isyarat SIBI, dan temukan dunia gambar yang luar biasa bersama Kiki
+                      si Kucing!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="relative">
+                    {/* floating sparkle marks */}
+                    <span className="absolute -bottom-3 -left-4 text-sky-400">✦</span>
+                    <span className="absolute -top-2 -left-6 text-xs text-sky-300">✦</span>
+                    <Link
+                      href="/new-vocab"
+                      className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-[0_20px_60px_-30px_rgba(16,185,129,0.9)] transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-500"
+                    >
+                      Mulai Belajar!
+                    </Link>
+                  </div>
+                  {/* <Link
+                    href="#cara-main"
+                    className="inline-flex items-center justify-center rounded-full border border-dashed border-slate-300 bg-white px-8 py-3 text-base font-semibold text-slate-700 transition duration-200 hover:border-emerald-300 hover:text-emerald-700"
+                  >
+                    Cara Main
+                  </Link> */}
+                </div>
               </div>
 
-              <h1 className="text-5xl leading-tight font-extrabold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-                <span className="lg:hidden">
-                  Belajar Kata Abstrak Lewat Isyarat{' '}
-                  <span
-                    className="relative inline-block bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent"
-                    style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}
-                  >
-                    SIBI
-                  </span>
-                </span>
-                <span className="hidden lg:inline">
-                  Platform Pemahaman Kosakata Abstrak Berbasis Sistem Isyarat Bahasa Indonesia dan Kecerdasan Buatan
-                  untuk Siswa{' '}
-                  <span
-                    className="relative inline-block bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent"
-                    style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}
-                  >
-                    SDLB-B
-                  </span>{' '}
-                  Tingkat Pemula
-                </span>
-              </h1>
+              <div className="relative mx-auto max-w-xl">
+                {/* soft blue glow behind the image */}
+                <div className="absolute top-1/2 -right-8 h-40 w-40 -translate-y-1/2 rounded-full bg-sky-200/60 blur-3xl" />
 
-              <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-600 sm:text-xl">
-                Peragakan isyarat lewat kamera, langsung lihat artinya lewat gambar dan AI, dirancang untuk siswa
-                SDLB-B.
-              </p>
+                {/* "Seru!" tag near the image */}
+                <div className="absolute -top-8 left-4 z-10 flex -rotate-6 items-center gap-1 text-lg text-sky-500">
+                  <Sparkle className="h-4 w-4" fill="currentColor" />
+                  <span className="font-serif italic">Seru!</span>
+                </div>
 
-              <div className="pt-8">
-                <Link href="/vocab">
-                  <Button
-                    size="lg"
-                    className="group h-14 rounded-full border-none bg-emerald-500 px-8 text-lg font-semibold text-white shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)] transition-all hover:scale-105 hover:bg-emerald-400 hover:shadow-[0_0_60px_-15px_rgba(16,185,129,0.7)]"
-                  >
-                    Mulai Belajar
-                    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </Link>
-                <p className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-slate-500">
-                  <Hand className="h-4 w-4 text-emerald-600" />
-                  Gratis · Tanpa instalasi · Langsung dari browser
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Statistics Section */}
-      <section className="relative z-20 mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mb-16 text-center">
-          <h2 className="mb-2 text-sm font-bold tracking-widest text-slate-400 uppercase">Landasan Riset</h2>
-          <p className="text-lg text-slate-500">Kenapa kosakata visual penting untuk siswa tunarungu</p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* Card 1 */}
-          <div className="group relative overflow-hidden rounded-[2.5rem] border border-slate-100 bg-white shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl">
-            <div className="pointer-events-none absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-30">
-              <div className="absolute -top-12 -left-12 h-48 w-48 scale-125 rounded-full bg-emerald-400 mix-blend-multiply blur-[40px] transition-transform duration-700 group-hover:scale-150" />
-              <div className="absolute -right-12 -bottom-12 h-48 w-48 scale-125 rounded-full bg-emerald-400 mix-blend-multiply blur-[40px] transition-transform duration-700 group-hover:scale-150" />
-            </div>
-            <div className="relative z-10 flex h-full flex-col p-8 sm:p-10">
-              <div className="mb-6 h-2 w-16 rounded-full bg-emerald-500" />
-              <div className="mb-2 text-4xl font-extrabold tracking-tight text-slate-900">162.806</div>
-              <p className="font-medium text-slate-600">Siswa SLB di Indonesia tahun ajaran 2024/2025</p>
-              <p className="mt-auto pt-6 text-xs font-semibold tracking-wider text-slate-400 uppercase">
-                Kemendikdasmen, 2025
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2 */}
-          <div className="group relative overflow-hidden rounded-[2.5rem] border border-slate-100 bg-white shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl">
-            <div className="pointer-events-none absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-30">
-              <div className="absolute -top-12 -left-12 h-48 w-48 scale-125 rounded-full bg-orange-400 mix-blend-multiply blur-[40px] transition-transform duration-700 group-hover:scale-150" />
-              <div className="absolute -right-12 -bottom-12 h-48 w-48 scale-125 rounded-full bg-orange-400 mix-blend-multiply blur-[40px] transition-transform duration-700 group-hover:scale-150" />
-            </div>
-            <div className="relative z-10 flex h-full flex-col p-8 sm:p-10">
-              <div className="mb-6 h-2 w-16 rounded-full bg-orange-500" />
-              <div className="mb-2 text-4xl font-extrabold tracking-tight text-slate-900">Persentil 19</div>
-              <p className="font-medium text-slate-600">
-                Rata-rata kemampuan kosakata siswa tunarungu, vs persentil 65 siswa mendengar
-              </p>
-              <p className="mt-auto pt-6 text-xs font-semibold tracking-wider text-slate-400 uppercase">
-                Sarchet dkk., 2014
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="group relative overflow-hidden rounded-[2.5rem] border border-slate-100 bg-white shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl">
-            <div className="pointer-events-none absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-30">
-              <div className="absolute -top-12 -left-12 h-48 w-48 scale-125 rounded-full bg-blue-400 mix-blend-multiply blur-[40px] transition-transform duration-700 group-hover:scale-150" />
-              <div className="absolute -right-12 -bottom-12 h-48 w-48 scale-125 rounded-full bg-blue-400 mix-blend-multiply blur-[40px] transition-transform duration-700 group-hover:scale-150" />
-            </div>
-            <div className="relative z-10 flex h-full flex-col p-8 sm:p-10">
-              <div className="mb-6 h-2 w-16 rounded-full bg-blue-500" />
-              <div className="mb-2 text-4xl font-extrabold tracking-tight text-slate-900">923 ribu</div>
-              <p className="font-medium text-slate-600">Penduduk Indonesia yang mengalami kesulitan mendengar berat</p>
-              <p className="mt-auto pt-6 text-xs font-semibold tracking-wider text-slate-400 uppercase">BPS, 2024</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-auto mt-12 max-w-3xl text-center">
-          <p className="text-lg leading-relaxed text-slate-600">
-            Siswa tunarungu tidak memiliki akses terhadap{' '}
-            <strong className="font-semibold text-slate-900">incidental learning</strong>, kemampuan menyerap kosakata
-            secara pasif dari percakapan sehari-hari. Akibatnya, kesenjangan kosakata melebar signifikan di usia 8–9
-            tahun.
-          </p>
-        </div>
-      </section>
-
-      {/* Tech Stack Section */}
-      <section className="py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-sm font-bold tracking-widest text-emerald-600 uppercase">Teknologi Open-Source</h2>
-            <p className="text-3xl font-bold text-slate-900 sm:text-4xl">
-              Dibangun dengan{' '}
-              <span
-                className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent"
-                style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}
-              >
-                standar modern
-              </span>
-            </p>
-            <p className="mt-4 text-slate-600">Tanpa biaya lisensi, memanfaatkan ekosistem AI dan web terbaik.</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
-            {techStack.map((tech, index) => (
-              <div
-                key={index}
-                className="group flex flex-col items-center justify-center rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:ring-emerald-100"
-              >
-                <div className="relative mb-3 h-12 w-12 sm:h-14 sm:w-14">
+                <div className="relative rotate-2 overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-3 shadow-[0_24px_80px_rgba(15,23,42,0.1)]">
                   <Image
-                    src={tech.logo}
-                    alt={tech.name}
-                    fill
-                    className="object-contain opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
+                    src="/assets/landing/hero-illustration.png"
+                    alt="Ilustrasi kelas interaktif dengan Kiki si Kucing"
+                    width={840}
+                    height={620}
+                    className="h-full w-full rounded-[2rem] object-cover"
+                    priority
                   />
                 </div>
-                <p className="text-center text-xs font-semibold text-slate-500 transition-colors group-hover:text-slate-900">
-                  {tech.name}
-                </p>
+
+                <div className="absolute -bottom-5 -left-5 flex h-14 w-14 items-center justify-center rounded-full bg-amber-400 text-white shadow-xl ring-4 ring-white">
+                  <PawPrint className="h-6 w-6" />
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= KENALAN YUK ================= */}
+      <section className="relative overflow-hidden bg-[#fdf5ec] py-16 sm:py-20">
+        {/* wave divider transitioning from the section above */}
+        <div className="absolute top-0 left-0 w-full -translate-y-[1px] overflow-hidden">
+          <svg viewBox="0 0 1440 100" className="h-16 w-full sm:h-24" preserveAspectRatio="none">
+            <path d="M0,40 C360,100 1080,0 1440,50 L1440,0 L0,0 Z" fill="#ffffff" />
+          </svg>
+        </div>
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-amber-400 text-white shadow-md">
+              <Hand className="h-6 w-6" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+              Kenalan yuk sama <span className="text-emerald-600">PENSyarat AI!</span>
+            </h2>
+            <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-white px-6 py-5 shadow-sm">
+              <p className="text-base leading-7 text-slate-600">
+                PENSyarat AI itu seperti teman pintar yang bisa membaca gerakan tanganmu! Kamu bisa belajar kata-kata
+                baru dengan cara yang seru banget, lho! 🚀
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            <article className="flex flex-col items-center rounded-[2rem] border-2 border-dashed border-sky-200 bg-white p-8 text-center shadow-sm">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                <ImageIcon className="h-6 w-6" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900">Benda Nyata</h3>
+              <p className="mt-3 max-w-xs text-slate-600">
+                Lihat foto asli benda-benda di sekitarmu. Belajar jadi makin nyata!
+              </p>
+              {/* <Link
+                href="#"
+                className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-400"
+              >
+                Lihat Contoh <ArrowRight className="h-4 w-4" />
+              </Link> */}
+            </article>
+
+            <article className="flex flex-col items-center rounded-[2rem] border-2 border-dashed border-orange-200 bg-white p-8 text-center shadow-sm">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+                <Lightbulb className="h-6 w-6" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900">Konsep Hebat</h3>
+              <p className="mt-3 max-w-xs text-slate-600">
+                Kata-kata sulit jadi gampang dimengerti lewat gambar yang asyik!
+              </p>
+              {/* <Link
+                href="#"
+                className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-400"
+              >
+                Lihat Contoh <ArrowRight className="h-4 w-4" />
+              </Link> */}
+            </article>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= PILIH TOPIK ================= */}
+      <section className="bg-white py-16 sm:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="relative inline-block text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+              Pilih Topik Belajarmu
+              <svg
+                className="absolute -bottom-2 left-0 w-full"
+                viewBox="0 0 220 10"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path d="M2 7 Q110 1 218 7" stroke="#38bdf8" strokeWidth="4" fill="none" strokeLinecap="round" />
+              </svg>
+            </h2>
+            <p className="mt-6 text-base text-slate-600">
+              Temukan ribuan kosakata yang dikelompokkan sesuai Kurikulum Merdeka.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                title: 'Kata Abstrak',
+                color: 'text-emerald-600',
+                description:
+                  'Pelajari kata sifat, kata hubung, dan keterangan abstrak untuk memberikan detail dan makna pada kalimat.',
+                image: '/assets/landing/topic-abstrak.png',
+              },
+              {
+                title: 'Kata Konkrit',
+                color: 'text-orange-500',
+                description:
+                  'Kata benda nyata yang mudah dikenali secara visual, mencakup pengenalan hewan, benda sehari-hari, dan alam sekitar.',
+                image: '/assets/landing/topic-konkrit.png',
+              },
+              {
+                title: 'Coba Kalimat',
+                color: 'text-sky-500',
+                description:
+                  'Latih susunan kalimatmu lewat kamera, dari level dasar sampai lanjut, langsung dapat koreksi.',
+                image: '/assets/landing/topic-kalimat.png',
+              },
+            ].map((topic) => (
+              <article
+                key={topic.title}
+                className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              >
+                <div className="relative h-48">
+                  <Image src={topic.image} alt={topic.title} fill className="object-cover" />
+                </div>
+                <div className="space-y-3 p-6">
+                  <h3 className={`text-xl font-bold ${topic.color}`}>{topic.title}</h3>
+                  <div className="rounded-xl bg-slate-50 px-4 py-3">
+                    <p className="text-sm text-slate-600">{topic.description}</p>
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section - Bento Grid */}
-      <section className="border-y border-slate-100 bg-white py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-4 text-sm font-bold tracking-widest text-emerald-600 uppercase">Kapabilitas Utama</h2>
-            <p className="text-3xl font-bold text-slate-900 sm:text-4xl">
-              Bagaimana{' '}
-              <span
-                className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent"
-                style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}
-              >
-                PENSyarat AI
-              </span>{' '}
-              bekerja?
-            </p>
-            <p className="mt-6 text-lg text-slate-600">
-              Siswa mengisyaratkan kata dalam SIBI → sistem mengenali → menampilkan visual makna. Untuk kata yang belum
-              tersedia, AI memberikan penjelasan kontekstual sekaligus mencatat untuk pengembangan konten berikutnya.
-            </p>
-          </div>
+      {/* ================= MENGAPA COCOK ================= */}
+      <section className="relative overflow-hidden bg-[#eef1ee] py-16 sm:py-20">
+        {/* wave divider transitioning from the section above */}
+        <div className="absolute top-0 left-0 w-full -translate-y-[1px] overflow-hidden">
+          <svg viewBox="0 0 1440 100" className="h-16 w-full sm:h-24" preserveAspectRatio="none">
+            <path d="M0,40 C360,100 1080,0 1440,50 L1440,0 L0,0 Z" fill="#ffffff" />
+          </svg>
+        </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className={`group relative overflow-hidden rounded-[2.5rem] border ${feature.borderColor} ${feature.bgColor} ${feature.colSpan} shadow-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl`}
-              >
-                {/* CTA-style Animated abstract background */}
-                <div className="pointer-events-none absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-30">
-                  <div
-                    className={`absolute -top-12 -left-12 h-48 w-48 rounded-full ${feature.accentColor} scale-125 mix-blend-multiply blur-[40px] transition-transform duration-700 group-hover:scale-150`}
-                  />
-                  <div
-                    className={`absolute -right-12 -bottom-12 h-48 w-48 rounded-full ${feature.accentColor} scale-125 mix-blend-multiply blur-[40px] transition-transform duration-700 group-hover:scale-150`}
-                  />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+            <div className="relative mx-auto max-w-md">
+              {/* decorative outline heart */}
+              <Heart className="absolute top-1/2 -left-10 hidden h-5 w-5 -translate-y-1/2 text-amber-300 lg:block" />
+
+              <div className="relative -rotate-2 overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-3 shadow-xl">
+                <Image
+                  src="/assets/landing/section-hero-cat.png"
+                  alt="Kiki si Kucing belajar bersama anak"
+                  width={1000}
+                  height={800}
+                  className="h-full w-full rounded-[2rem] object-cover"
+                />
+                <div className="absolute -right-4 -bottom-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-400 text-white shadow-lg">
+                  <Smile className="h-5 w-5" />
                 </div>
+              </div>
+            </div>
 
-                <div className="relative z-10 flex h-full flex-col p-8 sm:p-10">
-                  <div className="mb-8 flex items-center justify-between">
-                    <div
-                      className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-white p-3 shadow-sm ring-1 ring-black/5 transition-transform duration-500 group-hover:scale-110 ${feature.iconColor}`}
-                    >
-                      <feature.icon className="h-8 w-8" />
+            <div className="rounded-[2.5rem] border-2 border-dashed border-emerald-200 bg-white p-8 shadow-sm sm:p-10">
+              <h2 className="text-2xl font-bold text-slate-950 sm:text-3xl">Mengapa PENSyarat Cocok untuk Siswa?</h2>
+              <div className="mt-8 space-y-6">
+                {[
+                  {
+                    icon: Eye,
+                    color: 'bg-emerald-100 text-emerald-600',
+                    title: 'Pendekatan Visual Kuat',
+                    description: 'Setiap kata memiliki foto nyata atau perbandingan gambar agar mudah dipahami.',
+                  },
+                  {
+                    icon: Bot,
+                    color: 'bg-sky-100 text-sky-600',
+                    title: 'Kecerdasan Buatan (AI)',
+                    description: 'Jika kata belum ada, AI akan memberikan saran kata terdekat yang mudah dipelajari.',
+                  },
+                  {
+                    icon: Smile,
+                    color: 'bg-orange-100 text-orange-600',
+                    title: 'Mandiri & Menyenangkan',
+                    description: 'Siswa bisa belajar sendiri tanpa harus menunggu bantuan guru setiap saat.',
+                  },
+                ].map((item) => (
+                  <div key={item.title}>
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${item.color}`}>
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <p className="font-semibold text-slate-900">{item.title}</p>
+                    </div>
+                    <div className="mt-2 ml-[52px] rounded-xl bg-slate-100/80 px-4 py-3">
+                      <p className="text-sm text-slate-600">{item.description}</p>
                     </div>
                   </div>
-                  <h3 className="mb-4 text-2xl font-bold text-slate-900">{feature.title}</h3>
-                  <p className="flex-grow leading-relaxed text-slate-600">{feature.description}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= KENAPA BELAJAR BERSAMA ================= */}
+      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
+        {/* dekorasi kecil */}
+        <GraduationCap className="absolute top-6 right-6 h-6 w-6 text-slate-300" />
+        <Lightbulb className="absolute bottom-4 left-8 h-6 w-6 text-amber-300/80" strokeWidth={1.5} />
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+            {/* KIRI */}
+            <div className="space-y-6">
+              <div
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 px-5 py-2 text-lg font-bold text-white shadow-md"
+                style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
+              >
+                Tahukah Kamu?
+                <Lightbulb className="h-4 w-4 fill-amber-200 text-amber-100" />
+              </div>
+
+              <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
+                Kenapa Kita Belajar Bersama?
+              </h2>
+
+              <div className="max-w-xl rounded-2xl border-2 border-dashed border-slate-300 p-5">
+                <p className="text-base leading-7 text-slate-600">
+                  Banyak teman-teman kita yang kesulitan belajar kata-kata baru karena kurangnya gambar yang seru.
+                  PENSyarat AI hadir untuk membantu semua anak Indonesia jadi juara kosakata!
+                </p>
+              </div>
+
+              <div className="relative max-w-xl">
+                <div className="absolute inset-0 translate-y-2 rounded-[1.75rem] bg-slate-200/60" />
+                <div className="relative flex gap-4 rounded-[1.75rem] bg-[#fdf5ef] p-5 shadow-sm">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-500">
+                    <BookOpen className="h-5 w-5" />
+                  </div>
+                  <p
+                    className="pt-1 text-base leading-7 text-slate-600"
+                    style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
+                  >
+                    &ldquo;Belajar dengan gambar membantu otak kita mengingat 3x lebih cepat daripada hanya membaca
+                    tulisan saja!&rdquo;
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
 
-      {/* Differentiators Section */}
-      <section className="relative overflow-hidden py-24">
-        {/* Decorative background element */}
-        <div className="absolute top-0 right-0 -z-10 -mt-48 -mr-48 h-[800px] w-[800px] rounded-full bg-emerald-50/50 blur-[100px]" />
+            {/* KANAN */}
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="relative">
+                  <div className="absolute inset-0 translate-y-2 rounded-[1.75rem] bg-sky-100" />
+                  <div className="relative rounded-[1.75rem] bg-sky-50 p-6 text-center shadow-sm">
+                    <p
+                      className="text-4xl font-bold text-sky-500"
+                      style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
+                    >
+                      162rb+
+                    </p>
+                    <p className="mt-3 inline-block -rotate-1 rounded-lg border-2 border-dashed border-blue-400 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+                      Teman Hebat di SLB
+                    </p>
+                  </div>
+                </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
-            <div>
-              <h2 className="text-3xl leading-tight font-bold text-slate-900 sm:text-4xl">
-                Satu-satunya platform yang menggabungkan{' '}
-                <span className="relative whitespace-nowrap">
-                  <span
-                    className="relative z-10 text-emerald-600"
-                    style={{ fontFamily: 'var(--font-covered-by-your-grace)' }}
-                  >
-                    tiga kapabilitas kritis
-                  </span>
-                  <svg
-                    className="absolute -bottom-2 left-0 w-full text-emerald-200"
-                    viewBox="0 0 318 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M3.5 9.5C65.8333 4.16667 210.3 -4.5 314.5 9.5"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </h2>
-              <p className="mt-8 text-lg leading-relaxed text-slate-600">
-                Tidak ada platform serupa yang secara bersamaan mendukung input gestur SIBI real-time, visualisasi kata
-                abstrak melalui komparasi, dan AI fallback untuk kata baru, semuanya berbasis browser tanpa instalasi.
-              </p>
+                <div className="relative">
+                  <div className="absolute inset-0 translate-y-2 rounded-[1.75rem] bg-orange-100" />
+                  <div className="relative rounded-[1.75rem] bg-orange-50 p-6 text-center shadow-sm">
+                    <p
+                      className="text-4xl font-bold text-orange-500"
+                      style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
+                    >
+                      923rb
+                    </p>
+                    <p className="mt-3 inline-block rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
+                      Anak Luar Biasa
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-              <div className="mt-10 border-t border-slate-200 pt-10">
-                <Link href="/vocab">
-                  <Button
-                    variant="outline"
-                    className="h-12 rounded-full border-emerald-200 px-6 font-semibold text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50"
+              <div className="relative">
+                <div className="absolute inset-0 translate-y-2 rounded-[2rem] bg-amber-300" />
+                <div className="relative rounded-[2rem] bg-gradient-to-br from-amber-400 to-amber-500 p-7 text-center text-white shadow-lg">
+                  <p
+                    className="text-3xl font-bold sm:text-4xl"
+                    style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
                   >
-                    Jelajahi Kosakata
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                    Inovasi Juara 2026
+                  </p>
+                  <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-amber-50/90 px-4 py-1.5 text-sm font-semibold text-amber-700">
+                    Dibuat khusus untuk anak-anak Indonesia! 🎉
+                  </p>
+                </div>
               </div>
             </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 -z-10 scale-105 rotate-3 transform rounded-3xl bg-gradient-to-tr from-emerald-100 to-teal-50" />
-              <Card className="overflow-hidden rounded-3xl border-0 bg-white/80 shadow-2xl shadow-emerald-900/5 backdrop-blur-xl">
-                <CardContent className="p-8 sm:p-10">
-                  <ul className="space-y-6">
-                    {differentiators.map((item, index) => (
-                      <li key={index} className="flex items-start gap-4">
-                        <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                          <CheckCircle2 className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <span className="text-lg font-semibold text-slate-800">{item.label}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 px-6 py-20 text-center shadow-2xl sm:px-16 sm:py-24">
-          {/* Animated abstract background */}
-          <div className="absolute inset-0 opacity-40">
-            <div className="absolute -top-24 -left-24 h-96 w-96 animate-pulse rounded-full bg-emerald-500 mix-blend-screen blur-[80px]" />
-            <div className="absolute top-1/2 left-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-600 opacity-50 mix-blend-screen blur-[100px]" />
-            <div
-              className="absolute -right-24 -bottom-24 h-96 w-96 rounded-full bg-green-500 mix-blend-screen blur-[80px]"
-              style={{ animationDuration: '4s' }}
-            />
-          </div>
+      {/* ================= CTA FINAL ================= */}
+      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
+        {/* subtle warm background wash */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white via-orange-50/30 to-orange-50/60" />
 
-          <div className="relative z-10 mx-auto max-w-2xl">
-            <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-              Siap mencoba PENSyarat AI?
+        {/* soft glow behind the button */}
+        <div className="pointer-events-none absolute top-[65%] left-1/2 -z-0 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-200/40 blur-3xl" />
+
+        {/* full-width dashed divider */}
+        <div className="absolute top-0 right-0 left-0 border-t-[3px] border-dashed border-emerald-200" />
+
+        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-xl pt-14 text-center">
+            <Rocket className="mx-auto h-7 w-7 text-amber-400" />
+
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              Siap Belajar Bersama Kami?
             </h2>
-            <p className="mx-auto mt-6 max-w-xl text-xl leading-relaxed text-emerald-100/80">
-              Akses langsung dari browser, tidak perlu instalasi, cukup kamera standar laptop atau smartphone.
-            </p>
-            <div className="mt-10 flex justify-center gap-4">
-              <Link href="/vocab">
-                <Button
-                  size="lg"
-                  className="h-14 rounded-full border-none bg-white px-8 text-lg font-bold text-slate-900 shadow-xl transition-all hover:scale-105 hover:bg-slate-50 hover:shadow-2xl hover:shadow-white/20"
-                >
-                  Mulai Belajar Sekarang
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+
+            <div className="mt-6 rounded-2xl bg-white px-6 py-5 shadow-[0_10px_40px_-12px_rgba(15,23,42,0.15)]">
+              <p className="text-base leading-7 text-slate-600">
+                Akses langsung dari browser, tidak perlu instalasi, cukup gunakan kamera laptop atau smartphone.
+              </p>
             </div>
+
+            <Link
+              href="/new-vocab"
+              className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-b from-orange-400 to-orange-500 px-9 py-3.5 text-white shadow-[0_25px_50px_-15px_rgba(249,115,22,0.65)] transition hover:-translate-y-0.5 hover:from-orange-400 hover:to-orange-400"
+            >
+              <span className="font-['Caveat'] text-2xl">Mulai Belajar Sekarang!</span>
+              <span>✨</span>
+            </Link>
           </div>
         </div>
       </section>
-    </div>
+    </main>
   )
 }
