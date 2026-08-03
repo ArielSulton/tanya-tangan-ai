@@ -7,6 +7,7 @@ const companyLinks = [
   { name: 'Beranda', href: '/' },
   { name: 'Kamus Isyarat', href: '/new-vocab' },
   { name: 'Akses Khusus', href: '/akses-khusus' },
+  { name: 'About', href: '/landing' },
 ]
 
 export function Footer() {
