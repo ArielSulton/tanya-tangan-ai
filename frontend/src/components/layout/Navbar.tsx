@@ -14,19 +14,19 @@ const navigationItems = [
     id: 'beranda',
   },
   {
-    name: 'Kamus Isyarat',
+    name: 'Belajar',
     href: '/new-vocab',
     id: 'vocabulary',
+  },
+  {
+    name: 'Tentang',
+    href: '/landing',
+    id: 'about',
   },
   {
     name: 'Akses Khusus',
     href: '/akses-khusus',
     id: 'akses-khusus',
-  },
-  {
-    name: 'About',
-    href: '/landing',
-    id: 'about',
   },
 ]
 

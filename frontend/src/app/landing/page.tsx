@@ -147,7 +147,7 @@ export default function Beranda() {
               </p>
 
               <div className="pt-8">
-                <Link href="/vocab">
+                <Link href="/new-vocab">
                   <Button
                     size="lg"
                     className="group h-14 rounded-full border-none bg-emerald-500 px-8 text-lg font-semibold text-white shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)] transition-all hover:scale-105 hover:bg-emerald-400 hover:shadow-[0_0_60px_-15px_rgba(16,185,129,0.7)]"
@@ -366,7 +366,7 @@ export default function Beranda() {
               </p>
 
               <div className="mt-10 border-t border-slate-200 pt-10">
-                <Link href="/vocab">
+                <Link href="/new-vocab">
                   <Button
                     variant="outline"
                     className="h-12 rounded-full border-emerald-200 px-6 font-semibold text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50"
@@ -422,7 +422,7 @@ export default function Beranda() {
               Akses langsung dari browser, tidak perlu instalasi, cukup kamera standar laptop atau smartphone.
             </p>
             <div className="mt-10 flex justify-center gap-4">
-              <Link href="/vocab">
+              <Link href="/new-vocab">
                 <Button
                   size="lg"
                   className="h-14 rounded-full border-none bg-white px-8 text-lg font-bold text-slate-900 shadow-xl transition-all hover:scale-105 hover:bg-slate-50 hover:shadow-2xl hover:shadow-white/20"

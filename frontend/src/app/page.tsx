@@ -145,33 +145,33 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <article className="flex flex-col items-center rounded-[2rem] border-2 border-dashed border-sky-200 bg-white p-8 text-center shadow-sm">
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-sky-100 text-sky-600">
-                <ImageIcon className="h-6 w-6" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900">Benda Nyata</h3>
-              <p className="mt-3 max-w-xs text-slate-600">
-                Lihat foto asli benda-benda di sekitarmu. Belajar jadi makin nyata!
-              </p>
-              {/* <Link
-                href="#"
-                className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-400"
-              >
-                Lihat Contoh <ArrowRight className="h-4 w-4" />
-              </Link> */}
-            </article>
-
             <article className="flex flex-col items-center rounded-[2rem] border-2 border-dashed border-orange-200 bg-white p-8 text-center shadow-sm">
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-orange-100 text-orange-600">
                 <Lightbulb className="h-6 w-6" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900">Konsep Hebat</h3>
+              <h3 className="text-2xl font-bold text-slate-900">Kata Abstrak</h3>
               <p className="mt-3 max-w-xs text-slate-600">
                 Kata-kata sulit jadi gampang dimengerti lewat gambar yang asyik!
               </p>
               {/* <Link
                 href="#"
                 className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-400"
+              >
+                Lihat Contoh <ArrowRight className="h-4 w-4" />
+              </Link> */}
+            </article>
+
+            <article className="flex flex-col items-center rounded-[2rem] border-2 border-dashed border-sky-200 bg-white p-8 text-center shadow-sm">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                <ImageIcon className="h-6 w-6" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900">Kata konkrit</h3>
+              <p className="mt-3 max-w-xs text-slate-600">
+                Lihat foto asli benda-benda di sekitarmu. Belajar jadi makin nyata!
+              </p>
+              {/* <Link
+                href="#"
+                className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-400"
               >
                 Lihat Contoh <ArrowRight className="h-4 w-4" />
               </Link> */}
